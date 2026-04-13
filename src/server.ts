@@ -15,6 +15,10 @@ async function connectDB() {
     await db.authenticate();
     console.log(colors.green.bold('Database connected successfully'));
 
+    // DATABASE SYNC (UPDATE TABLE STRUCTURE)
+    await db.sync({ alter: true });
+    console.log(colors.yellow.bold('Database synchronized'));
+
   } catch (error) {
     console.error(colors.red.bold('Database connection error:'), error);
   }
@@ -25,5 +29,4 @@ connectDB();
 // ROUTES
 server.use('/api/products', productRoutes);
 
-// SERVER START
 export default server;
