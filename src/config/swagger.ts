@@ -7,12 +7,11 @@ const options: Options = {
     info: {
       title: "Products API",
       version: "1.0.0",
-      description: "API documentation for Products management"
+      description: "Advanced API documentation for Products"
     },
     servers: [
       {
-        url: "http://localhost:3000",
-        description: "Local server"
+        url: "http://localhost:3000"
       }
     ],
     components: {
@@ -21,30 +20,28 @@ const options: Options = {
           type: "object",
           required: ["name", "price"],
           properties: {
-            id: {
-              type: "integer",
-              example: 1
-            },
-            name: {
-              type: "string",
-              example: "Laptop"
-            },
-            price: {
-              type: "number",
-              example: 1500
-            },
-            availability: {
-              type: "boolean",
-              example: true
-            },
-            createdAt: {
-              type: "string",
-              example: "2026-04-13T21:45:28.840Z"
-            },
-            updatedAt: {
-              type: "string",
-              example: "2026-04-13T21:45:28.840Z"
-            }
+            id: { type: "integer", example: 1 },
+            name: { type: "string", example: "Laptop" },
+            price: { type: "number", example: 1500 },
+            availability: { type: "boolean", example: true },
+            createdAt: { type: "string", example: "2026-04-13T21:45:28.840Z" },
+            updatedAt: { type: "string", example: "2026-04-13T21:45:28.840Z" }
+          }
+        },
+
+        ProductInput: {
+          type: "object",
+          required: ["name", "price"],
+          properties: {
+            name: { type: "string", example: "Laptop" },
+            price: { type: "number", example: 1500 }
+          }
+        },
+
+        ErrorResponse: {
+          type: "object",
+          properties: {
+            message: { type: "string", example: "Error message" }
           }
         }
       }
@@ -53,6 +50,4 @@ const options: Options = {
   apis: ["./src/routes/*.ts"]
 };
 
-const swaggerSpec = swaggerJSDoc(options);
-
-export default swaggerSpec;
+export default swaggerJSDoc(options);
