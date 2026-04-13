@@ -1,42 +1,27 @@
-import express from 'express';
-import colors from 'colors';
-import productRoutes from './routes/product.routes.js';
-import { db } from './config/db.js';
-import { errorHandler } from './middlewares/error.js';
-
-// SWAGGER
+import express from "express";
+import router from "./routes/product.routes.js";
 import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./config/swagger.js";
+import swaggerSpec from "./config/swagger.js";
 
-// SERVER SETUP
+// SERVER CONFIG
 const server = express();
 
 // MIDDLEWARES
 server.use(express.json());
 
-// DATABASE CONNECTION
-async function connectDB() {
-  try {
-    await db.authenticate();
-    console.log(colors.green.bold('Database connected successfully'));
-
-    await db.sync({ alter: true });
-    console.log(colors.yellow.bold('Database synchronized'));
-
-  } catch (error) {
-    console.error(colors.red.bold('Database connection error:'), error);
-  }
-}
-
-connectDB();
-
 // ROUTES
-server.use('/api/products', productRoutes);
+server.use("/api/products", router);
 
-// SWAGGER ROUTE
-server.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// SWAGGER DOCS
+server.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// ERROR HANDLER
-server.use(errorHandler);
+// ROOT ROUTE
+server.get("/", (req, res) => {
+  res.json({
+    message: "API is running",
+    docs: "http://localhost:3000/docs"
+  });
+});
 
+// EXPORT
 export default server;

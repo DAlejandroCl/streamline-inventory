@@ -1,68 +1,69 @@
 import { Router } from "express";
-import { body, param } from "express-validator";
 import {
   getProducts,
-  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
   patchProduct
 } from "../controllers/product.controllers.js";
-import { handleInputErrors } from "../middlewares/validation.js";
 
-// ROUTER SETUP
 const router = Router();
 
-// GET ALL
-router.get('/', getProducts);
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Get all products
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: List of products
+ */
+router.get("/", getProducts);
 
-// GET BY ID
-router.get(
-  '/:id',
-  param('id').isInt().withMessage('ID must be a number'),
-  handleInputErrors,
-  getProductById
-);
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Create a new product
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Product'
+ *     responses:
+ *       201:
+ *         description: Product created
+ */
+router.post("/", createProduct);
 
-// CREATE
-router.post(
-  '/',
-  body('name')
-    .notEmpty()
-    .withMessage('Product name is required'),
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   put:
+ *     summary: Update a product completely
+ *     tags: [Products]
+ */
+router.put("/:id", updateProduct);
 
-  body('price')
-    .notEmpty()
-    .withMessage('Price is required')
-    .isNumeric()
-    .withMessage('Price must be a number'),
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   patch:
+ *     summary: Update a product partially
+ *     tags: [Products]
+ */
+router.patch("/:id", patchProduct);
 
-  handleInputErrors,
-  createProduct
-);
-
-// UPDATE (PUT)
-router.put(
-  '/:id',
-  param('id').isInt().withMessage('ID must be a number'),
-  handleInputErrors,
-  updateProduct
-);
-
-// PATCH
-router.patch(
-  '/:id',
-  param('id').isInt().withMessage('ID must be a number'),
-  handleInputErrors,
-  patchProduct
-);
-
-// DELETE
-router.delete(
-  '/:id',
-  param('id').isInt().withMessage('ID must be a number'),
-  handleInputErrors,
-  deleteProduct
-);
+/**
+ * @swagger
+ * /api/products/{id}:
+ *   delete:
+ *     summary: Delete a product
+ *     tags: [Products]
+ */
+router.delete("/:id", deleteProduct);
 
 export default router;
