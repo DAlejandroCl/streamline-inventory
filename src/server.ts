@@ -4,6 +4,10 @@ import productRoutes from './routes/product.routes.js';
 import { db } from './config/db.js';
 import { errorHandler } from './middlewares/error.js';
 
+// SWAGGER
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger.js";
+
 // SERVER SETUP
 const server = express();
 
@@ -29,7 +33,10 @@ connectDB();
 // ROUTES
 server.use('/api/products', productRoutes);
 
-// ERROR HANDLER (ALWAYS LAST)
+// SWAGGER ROUTE
+server.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// ERROR HANDLER
 server.use(errorHandler);
 
 export default server;
