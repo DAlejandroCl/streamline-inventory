@@ -17,7 +17,13 @@ const router = Router();
  *     tags: [Products]
  *     responses:
  *       200:
- *         description: List of products
+ *         description: Products retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
  */
 router.get("/", getProducts);
 
@@ -25,17 +31,23 @@ router.get("/", getProducts);
  * @swagger
  * /api/products:
  *   post:
- *     summary: Create a new product
+ *     summary: Create a product
  *     tags: [Products]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Product'
+ *             $ref: '#/components/schemas/ProductInput'
  *     responses:
  *       201:
  *         description: Product created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Validation error
  */
 router.post("/", createProduct);
 
@@ -43,8 +55,19 @@ router.post("/", createProduct);
  * @swagger
  * /api/products/{id}:
  *   put:
- *     summary: Update a product completely
+ *     summary: Replace a product
  *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Product updated
+ *       404:
+ *         description: Product not found
  */
 router.put("/:id", updateProduct);
 
