@@ -4,7 +4,8 @@ import {
   Model,
   DataType,
   PrimaryKey,
-  AutoIncrement
+  AutoIncrement,
+  Default
 } from "sequelize-typescript";
 
 // MODEL DEFINITION
@@ -13,7 +14,7 @@ import {
   timestamps: true
 })
 class Product extends Model {
-  
+
   // PRIMARY KEY
   @PrimaryKey
   @AutoIncrement
@@ -33,6 +34,14 @@ class Product extends Model {
     allowNull: false
   })
   declare price: number;
+
+  // PRODUCT AVAILABILITY
+  @Default(true)
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false
+  })
+  declare availability: boolean;
 }
 
 export default Product;
