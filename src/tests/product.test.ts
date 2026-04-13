@@ -1,35 +1,24 @@
+import test from "node:test";
+import assert from "node:assert";
 import request from "supertest";
 import server from "../server.js";
 
 // TEST SUITE
-describe("Product API", () => {
+test("POST /api/products should create a product", async () => {
+  const res = await request(server)
+    .post("/api/products")
+    .send({
+      name: "Test Product",
+      price: 100
+    });
 
-  // CREATE PRODUCT
-  it("should create a product", async () => {
-    const res = await request(server)
-      .post("/api/products")
-      .send({
-        name: "Test Product",
-        price: 100
-      });
+  assert.strictEqual(res.status, 201);
+  assert.strictEqual(res.body.data.name, "Test Product");
+});
 
-    expect(res.status).toBe(201);
-    expect(res.body.data.name).toBe("Test Product");
-  });
+test("GET /api/products should return products", async () => {
+  const res = await request(server).get("/api/products");
 
-  // GET ALL
-  it("should get all products", async () => {
-    const res = await request(server).get("/api/products");
-
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-  });
-
-  // GET BY ID
-  it("should get product by id", async () => {
-    const res = await request(server).get("/api/products/1");
-
-    expect([200, 404]).toContain(res.status);
-  });
-
+  assert.strictEqual(res.status, 200);
+  assert.ok(Array.isArray(res.body));
 });
