@@ -1,53 +1,65 @@
 import { Request, Response } from "express";
 import Product from "../models/Product.model.js";
 
-// GET ALL PRODUCTS
+// GET ALL
 export const getProducts = async (req: Request, res: Response) => {
   try {
     const products = await Product.findAll();
-
-    res.json(products);
+    return res.json(products);
   } catch (error) {
-    res.status(500).json({
-      message: "Error fetching products"
+    console.error(error);
+    return res.status(500).json({
+      message: "Error fetching products",
     });
   }
 };
 
-// CREATE PRODUCT
+// GET BY ID
+export const getProductById = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (isNaN(id)) {
+      return res.status(400).json({ message: "Invalid ID" });
+    }
+
+    const product = await Product.findByPk(id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.json(product);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Error fetching product",
+    });
+  }
+};
+
+// CREATE
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const product = await Product.create(req.body);
 
-    res.status(201).json({
-      message: "Product created successfully",
-      data: product
+    return res.status(201).json({
+      data: product,
     });
   } catch (error) {
-    res.status(400).json({
-      message: "Error creating product"
+    console.error(error);
+    return res.status(500).json({
+      message: "Error creating product",
     });
   }
 };
 
-// HELPER - PARSE ID
-const parseId = (id: string | string[]): number | null => {
-  if (Array.isArray(id)) return null;
-
-  const parsed = Number(id);
-  return isNaN(parsed) ? null : parsed;
-};
-
-// UPDATE (PUT)
+// UPDATE
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const parsedId = parseId(req.params.id);
+    const id = Number(req.params.id);
 
-    if (!parsedId) {
-      return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    const product = await Product.findByPk(parsedId);
+    const product = await Product.findByPk(id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -55,13 +67,14 @@ export const updateProduct = async (req: Request, res: Response) => {
 
     await product.update(req.body);
 
-    res.json({
+    return res.json({
       message: "Product updated",
-      data: product
+      data: product,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error updating product"
+    console.error(error);
+    return res.status(500).json({
+      message: "Error updating product",
     });
   }
 };
@@ -69,13 +82,9 @@ export const updateProduct = async (req: Request, res: Response) => {
 // PATCH
 export const patchProduct = async (req: Request, res: Response) => {
   try {
-    const parsedId = parseId(req.params.id);
+    const id = Number(req.params.id);
 
-    if (!parsedId) {
-      return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    const product = await Product.findByPk(parsedId);
+    const product = await Product.findByPk(id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -83,13 +92,14 @@ export const patchProduct = async (req: Request, res: Response) => {
 
     await product.update(req.body);
 
-    res.json({
+    return res.json({
       message: "Product patched",
-      data: product
+      data: product,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error patching product"
+    console.error(error);
+    return res.status(500).json({
+      message: "Error patching product",
     });
   }
 };
@@ -97,13 +107,9 @@ export const patchProduct = async (req: Request, res: Response) => {
 // DELETE
 export const deleteProduct = async (req: Request, res: Response) => {
   try {
-    const parsedId = parseId(req.params.id);
+    const id = Number(req.params.id);
 
-    if (!parsedId) {
-      return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    const product = await Product.findByPk(parsedId);
+    const product = await Product.findByPk(id);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
@@ -111,12 +117,13 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
     await product.destroy();
 
-    res.json({
-      message: "Product deleted"
+    return res.json({
+      message: "Product deleted",
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Error deleting product"
+    console.error(error);
+    return res.status(500).json({
+      message: "Error deleting product",
     });
   }
 };
