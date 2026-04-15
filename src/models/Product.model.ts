@@ -5,16 +5,15 @@ import {
   DataType,
   PrimaryKey,
   AutoIncrement,
-  Default
+  Default,
 } from "sequelize-typescript";
 
 // MODEL DEFINITION
 @Table({
   tableName: "products",
-  timestamps: true
+  timestamps: true,
 })
 class Product extends Model {
-
   // PRIMARY KEY
   @PrimaryKey
   @AutoIncrement
@@ -24,22 +23,22 @@ class Product extends Model {
   // PRODUCT NAME
   @Column({
     type: DataType.STRING,
-    allowNull: false
+    allowNull: false,
   })
   declare name: string;
 
   // PRODUCT PRICE
   @Column({
     type: DataType.FLOAT,
-    allowNull: false
+    allowNull: false,
   })
   declare price: number;
 
   // PRODUCT AVAILABILITY
-  @Default(true)
   @Column({
     type: DataType.BOOLEAN,
-    allowNull: false
+    allowNull: false,
+    defaultValue: true,
   })
   declare availability: boolean;
 }
