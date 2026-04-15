@@ -1,10 +1,12 @@
 import { db } from "../config/db.js";
 
-// GLOBAL HOOKS
+// SETUP
 export const setup = async () => {
-  await db.sync();
+  await db.authenticate();
+  await db.sync({ force: true });
 };
 
+// CLEAN BETWEEN TESTS
 export const cleanup = async () => {
   const models = Object.values(db.models);
 
@@ -16,6 +18,7 @@ export const cleanup = async () => {
   }
 };
 
+// CLOSE CONNECTION
 export const teardown = async () => {
   await db.close();
 };
