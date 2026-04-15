@@ -1,92 +1,40 @@
 import { Router } from "express";
+import { body } from "express-validator";
+
+// CONTROLLERS
 import {
   getProducts,
+  getProductById,
   createProduct,
   updateProduct,
-  deleteProduct,
-  patchProduct
+  patchProduct,
+  deleteProduct
 } from "../controllers/product.controllers.js";
+
+// MIDDLEWARES
+import { validate } from "../middlewares/validation.js";
 
 const router = Router();
 
-/**
- * @swagger
- * /api/products:
- *   get:
- *     summary: Get all products
- *     tags: [Products]
- *     responses:
- *       200:
- *         description: Products retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
- */
 router.get("/", getProducts);
+router.get("/:id", getProductById);
 
-/**
- * @swagger
- * /api/products:
- *   post:
- *     summary: Create a product
- *     tags: [Products]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ProductInput'
- *     responses:
- *       201:
- *         description: Product created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
- *       400:
- *         description: Validation error
- */
-router.post("/", createProduct);
+router.post(
+  "/",
+  [
+    body("name").notEmpty().withMessage("Product name is required"),
+    body("price")
+      .notEmpty()
+      .withMessage("Price is required")
+      .isFloat({ gt: 0 })
+      .withMessage("Price must be greater than 0")
+  ],
+  validate,
+  createProduct
+);
 
-/**
- * @swagger
- * /api/products/{id}:
- *   put:
- *     summary: Replace a product
- *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Product updated
- *       404:
- *         description: Product not found
- */
 router.put("/:id", updateProduct);
-
-/**
- * @swagger
- * /api/products/{id}:
- *   patch:
- *     summary: Update a product partially
- *     tags: [Products]
- */
 router.patch("/:id", patchProduct);
-
-/**
- * @swagger
- * /api/products/{id}:
- *   delete:
- *     summary: Delete a product
- *     tags: [Products]
- */
 router.delete("/:id", deleteProduct);
 
 export default router;
