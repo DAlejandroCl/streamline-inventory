@@ -70,7 +70,7 @@ Thumbs.db
 *.sqlite3
 
 # =========================
-# DOCKER (SI LO USAS LUEGO)
+# DOCKER
 # =========================
 docker-compose.override.yml
 
