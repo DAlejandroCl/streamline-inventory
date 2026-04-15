@@ -4,30 +4,39 @@ import path from "path";
 import { fileURLToPath } from "url";
 import colors from "colors";
 
+// IMPORT MODEL EXPLÍCITO
+import Product from "../models/Product.model.js";
+
 dotenv.config();
 
-// ESM __dirname FIX
+// ESM FIX
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ENV
+const isTest = process.env.NODE_ENV === "test";
+
 // DATABASE INSTANCE
-export const db = new Sequelize(process.env.DATABASE_URL as string, {
-  dialect: "postgres",
-  logging: false,
+export const db = isTest
+  ? new Sequelize({
+      dialect: "sqlite",
+      storage: ":memory:",
+      logging: false,
+      models: [Product] // ✅ FIX
+    })
+  : new Sequelize(process.env.DATABASE_URL as string, {
+      dialect: "postgres",
+      logging: false,
+      models: [Product], // ✅ FIX
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      }
+    });
 
-  // LOAD MODELS
-  models: [path.join(__dirname, "../models")],
-
-  // SSL FOR RENDER
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  }
-});
-
-// DATABASE CONNECTION HELPER
+// CONNECT
 export const connectDB = async () => {
   try {
     await db.authenticate();
@@ -38,7 +47,7 @@ export const connectDB = async () => {
 
   } catch (error) {
     console.error(colors.red.bold("✖ Database connection error"));
-    console.error(colors.red(error));
+    console.error(error);
     process.exit(1);
   }
 };
