@@ -1,46 +1,19 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/layout/Sidebar";
+import Navbar from "../components/layout/Navbar";
 
 export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* HEADER */}
-      <header className="border-b border-slate-800 bg-slate-900">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <Link
-            to="/"
-            className="text-xl font-bold tracking-tight text-indigo-400"
-          >
-            Streamline Inventory
-          </Link>
+    <div className="flex h-screen">
+      <Sidebar />
 
-          <nav className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="text-sm text-slate-300 hover:text-white transition"
-            >
-              Home
-            </Link>
-            <Link
-              to="/products"
-              className="text-sm text-slate-300 hover:text-white transition"
-            >
-              Products
-            </Link>
+      <div className="flex-1 flex flex-col">
+        <Navbar />
 
-            <Link
-              to="/products/new"
-              className="bg-indigo-500 hover:bg-indigo-600 text-sm px-4 py-2 rounded-lg font-medium transition"
-            >
-              + New Product
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* MAIN */}
-      <main className="mx-auto max-w-7xl px-6 py-10">
-        <Outlet />
-      </main>
+        <main className="p-6 bg-gray-100 flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }
