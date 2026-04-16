@@ -1,5 +1,5 @@
-import ProductForm from "../components/ProductForm";
-import type { ProductFormData } from "../types/products";
+import ProductForm from "../features/products/components/ProductForm";
+import type { ProductFormData } from "../features/products/types/products";
 
 export default function EditProductPage() {
   const mockProduct: ProductFormData = {
