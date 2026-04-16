@@ -18,6 +18,12 @@ export default function MainLayout() {
               to="/"
               className="text-sm text-slate-300 hover:text-white transition"
             >
+              Home
+            </Link>
+            <Link
+              to="/products"
+              className="text-sm text-slate-300 hover:text-white transition"
+            >
               Products
             </Link>
 
