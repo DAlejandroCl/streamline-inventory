@@ -1,114 +1,80 @@
-import { useState } from "react";
+import { Form, useActionData } from "react-router-dom";
 import type { ProductFormData } from "../types/products";
-import { ProductSchema } from "../schemas/product.schema";
 
 type Props = {
-  onSubmit: (data: ProductFormData) => Promise<void>;
   defaultValues?: ProductFormData;
   isEditing?: boolean;
+  onSubmit?: (data: ProductFormData) => Promise<void>; // opcional
+};
+
+type ActionErrors = {
+  errors?: {
+    name?: string[];
+    price?: string[];
+    availability?: string[];
+    general?: string[];
+  };
+  values?: ProductFormData;
 };
 
 export default function ProductForm({
-  onSubmit,
   defaultValues,
   isEditing = false
 }: Props) {
-  const [form, setForm] = useState<ProductFormData>(
-    defaultValues ?? {
-      name: "",
-      price: 0,
-      availability: true
-    }
-  );
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
-
-    setForm({
-      ...form,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : type === "number"
-          ? Number(value)
-          : value
-    });
-  };
-
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
-    e.preventDefault();
-
-    const result = ProductSchema.safeParse(form);
-
-    if (!result.success) {
-      const fieldErrors: Record<string, string> = {};
-
-      result.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          fieldErrors[err.path[0].toString()] = err.message;
-        }
-      });
-
-      setErrors(fieldErrors);
-      return;
-    }
-
-    setErrors({});
-    await onSubmit(result.data);
-  };
+  const actionData = useActionData() as ActionErrors | undefined;
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white shadow-md rounded-xl p-6 space-y-4"
-    >
-      <h2 className="text-xl font-bold">
-        {isEditing ? "Editar Producto" : "Crear Producto"}
-      </h2>
+    <Form method="post" className="bg-white p-6 rounded-xl shadow-md space-y-4">
+      
+      {/* NAME */}
+      <div>
+        <label className="block font-semibold">Name</label>
+        <input
+          name="name"
+          defaultValue={actionData?.values?.name ?? defaultValues?.name}
+          className="w-full border p-2 rounded"
+        />
+        {actionData?.errors?.name && (
+          <p className="text-red-500 text-sm">{actionData.errors.name[0]}</p>
+        )}
+      </div>
 
-      <input
-        type="text"
-        name="name"
-        placeholder="Nombre"
-        value={form.name}
-        onChange={handleChange}
-        className="w-full border p-2 rounded"
-      />
-      {errors.name && (
-        <p className="text-red-500 text-sm">{errors.name}</p>
-      )}
+      {/* PRICE */}
+      <div>
+        <label className="block font-semibold">Price</label>
+        <input
+          name="price"
+          type="number"
+          defaultValue={actionData?.values?.price ?? defaultValues?.price}
+          className="w-full border p-2 rounded"
+        />
+        {actionData?.errors?.price && (
+          <p className="text-red-500 text-sm">{actionData.errors.price[0]}</p>
+        )}
+      </div>
 
-      <input
-        type="number"
-        name="price"
-        placeholder="Precio"
-        value={form.price}
-        onChange={handleChange}
-        className="w-full border p-2 rounded"
-      />
-      {errors.price && (
-        <p className="text-red-500 text-sm">{errors.price}</p>
-      )}
-
-      <label className="flex items-center gap-2">
+      {/* AVAILABILITY */}
+      <div className="flex items-center gap-2">
         <input
           type="checkbox"
           name="availability"
-          checked={form.availability}
-          onChange={handleChange}
+          defaultChecked={
+            actionData?.values?.availability ??
+            defaultValues?.availability ??
+            true
+          }
         />
-        Disponible
-      </label>
+        <label>Available</label>
+      </div>
 
-      <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        {isEditing ? "Actualizar" : "Guardar"}
+      {/* SERVER ERROR */}
+      {actionData?.errors?.general && (
+        <p className="text-red-600">{actionData.errors.general[0]}</p>
+      )}
+
+      <button className="bg-indigo-600 text-white px-4 py-2 rounded">
+        {isEditing ? "Update Product" : "Create Product"}
       </button>
-    </form>
+    </Form>
   );
 }
