@@ -1,6 +1,6 @@
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
-import { createProduct } from "../api/products";
+import { createProduct } from "../lib/api/products";
 
 export async function createProductAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
