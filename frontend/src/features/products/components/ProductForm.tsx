@@ -1,11 +1,9 @@
 import { Form, useActionData } from "react-router-dom";
 import type { ProductFormData } from "../types/products";
 
-
 type Props = {
   defaultValues?: ProductFormData;
   isEditing?: boolean;
-  onSubmit?: (data: ProductFormData) => Promise<void>; // opcional
 };
 
 type ActionErrors = {
@@ -20,14 +18,12 @@ type ActionErrors = {
 
 export default function ProductForm({
   defaultValues,
-  isEditing = false
+  isEditing = false,
 }: Props) {
   const actionData = useActionData() as ActionErrors | undefined;
 
   return (
-    <Form method="post" className="bg-white p-6 rounded-xl shadow-md space-y-4">
-      
-      {/* NAME */}
+    <Form className="bg-white p-6 rounded-xl shadow-md space-y-4" method="post">
       <div>
         <label className="block font-semibold">Name</label>
         <input
@@ -40,7 +36,6 @@ export default function ProductForm({
         )}
       </div>
 
-      {/* PRICE */}
       <div>
         <label className="block font-semibold">Price</label>
         <input
@@ -54,7 +49,6 @@ export default function ProductForm({
         )}
       </div>
 
-      {/* AVAILABILITY */}
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
@@ -68,7 +62,6 @@ export default function ProductForm({
         <label>Available</label>
       </div>
 
-      {/* SERVER ERROR */}
       {actionData?.errors?.general && (
         <p className="text-red-600">{actionData.errors.general[0]}</p>
       )}
