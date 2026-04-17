@@ -1,5 +1,6 @@
-import { useLoaderData, useNavigation, Link } from "react-router-dom";
+import { useLoaderData, useNavigation, Link, Form } from "react-router-dom";
 import type { Product } from "../features/products/types/products";
+
 import Table from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
@@ -12,12 +13,10 @@ export default function ProductsPage() {
 
   const isLoading = navigation.state === "loading";
 
-  // 🔹 LOADING STATE
   if (isLoading) {
     return <ProductsSkeleton />;
   }
 
-  // 🔹 EMPTY STATE
   if (!products.length) {
     return (
       <EmptyState
@@ -27,7 +26,6 @@ export default function ProductsPage() {
     );
   }
 
-  // 🔹 DATA STATE
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -46,9 +44,22 @@ export default function ProductsPage() {
             <td className="p-3">${p.price}</td>
 
             <td className="p-3">
-              <Badge variant={p.availability ? "success" : "danger"}>
-                {p.availability ? "Available" : "Out"}
-              </Badge>
+              <Form method="post" action="/products/toggle">
+                <input type="hidden" name="id" value={p.id} />
+                <input
+                  type="hidden"
+                  name="availability"
+                  value={String(p.availability)}
+                />
+
+                <button type="submit">
+                  <Badge
+                    variant={p.availability ? "success" : "danger"}
+                  >
+                    {p.availability ? "Available" : "Out"}
+                  </Badge>
+                </button>
+              </Form>
             </td>
 
             <td className="p-3 space-x-2">
@@ -56,7 +67,12 @@ export default function ProductsPage() {
                 <Button variant="secondary">Edit</Button>
               </Link>
 
-              <Button variant="danger">Delete</Button>
+              <Form method="post" action="/products/delete">
+                <input type="hidden" name="id" value={p.id} />
+                <Button variant="danger" type="submit">
+                  Delete
+                </Button>
+              </Form>
             </td>
           </tr>
         ))}
