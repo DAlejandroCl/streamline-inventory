@@ -1,18 +1,16 @@
-export async function deleteProductAction({ request }: { request: Request }) {
+const API_URL = import.meta.env.VITE_API_URL;
+
+export async function deleteProductAction({
+  request,
+}: {
+  request: Request;
+}) {
   const formData = await request.formData();
   const id = formData.get("id");
 
-  if (!id) {
-    throw new Response("Invalid product ID", { status: 400 });
-  }
+  await fetch(`${API_URL}/api/products/${id}`, {
+    method: "DELETE",
+  });
 
-  try {
-    await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
-      method: "DELETE"
-    });
-
-    return null;
-  } catch {
-    throw new Response("Error deleting product", { status: 500 });
-  }
+  return null;
 }
