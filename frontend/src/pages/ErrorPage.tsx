@@ -1,55 +1,25 @@
-import { useLoaderData, Link } from "react-router-dom";
-import type { Product } from "../features/products/types/products";
-import Table from "../components/ui/Table";
+import { useRouteError, isRouteErrorResponse, Link } from "react-router-dom";
 import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
-import EmptyState from "../components/ui/EmptyState";
 
-export default function ProductsPage() {
-  const products = useLoaderData() as Product[];
+export default function ErrorPage() {
+  const error = useRouteError();
 
-  if (!products.length) {
-    return (
-      <EmptyState
-        title="No products yet"
-        description="Start by creating your first product"
-      />
-    );
+  let title = "Something went wrong";
+  let message = "Unexpected error occurred";
+
+  if (isRouteErrorResponse(error)) {
+    title = `Error ${error.status}`;
+    message = error.statusText;
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products</h1>
+    <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+      <h1 className="text-3xl font-bold">{title}</h1>
+      <p className="text-gray-500">{message}</p>
 
-        <Link to="/products/new">
-          <Button>+ New Product</Button>
-        </Link>
-      </div>
-
-      <Table headers={["Name", "Price", "Status", "Actions"]}>
-        {products.map((p) => (
-          <tr key={p.id} className="border-t hover:bg-gray-50">
-            <td className="p-3 font-medium">{p.name}</td>
-
-            <td className="p-3">${p.price}</td>
-
-            <td className="p-3">
-              <Badge variant={p.availability ? "success" : "danger"}>
-                {p.availability ? "Available" : "Out"}
-              </Badge>
-            </td>
-
-            <td className="p-3 space-x-2">
-              <Link to={`/products/${p.id}/edit`}>
-                <Button variant="secondary">Edit</Button>
-              </Link>
-
-              <Button variant="danger">Delete</Button>
-            </td>
-          </tr>
-        ))}
-      </Table>
+      <Link to="/products">
+        <Button>Back to Products</Button>
+      </Link>
     </div>
   );
 }
