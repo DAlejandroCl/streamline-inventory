@@ -1,25 +1,21 @@
+import { useLoaderData } from "react-router-dom";
 import ProductForm from "../features/products/components/ProductForm";
-import type { ProductFormData } from "../features/products/types/products";
+import type { Product } from "../features/products/types/products";
 
 export default function EditProductPage() {
-  const mockProduct: ProductFormData = {
-    name: "Sample Product",
-    price: 100,
-    availability: true
-  };
-
-  const handleSubmit = async (data: ProductFormData) => {
-    console.log("update", data);
-  };
+  const product = useLoaderData() as Product;
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Edit Product</h1>
 
       <ProductForm
-        defaultValues={mockProduct}
+        defaultValues={{
+          name: product.name,
+          price: product.price,
+          availability: product.availability,
+        }}
         isEditing
-        onSubmit={handleSubmit}
       />
     </div>
   );
