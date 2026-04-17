@@ -1,14 +1,27 @@
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
 import { createProduct } from "../lib/api/products";
+import type { ProductFormData } from "../features/products/types/products";
 
-export async function createProductAction({ request }: ActionFunctionArgs) {
+type ActionResponse = {
+  errors?: {
+    name?: string[];
+    price?: string[];
+    availability?: string[];
+    general?: string[];
+  };
+  values?: ProductFormData;
+};
+
+export async function createProductAction({
+  request,
+}: ActionFunctionArgs): Promise<Response | ActionResponse> {
   const formData = await request.formData();
 
-  const data = {
-    name: formData.get("name"),
-    price: Number(formData.get("price")),
-    availability: formData.get("availability") === "on"
+  const data: ProductFormData = {
+    name: String(formData.get("name") ?? ""),
+    price: Number(formData.get("price") ?? 0),
+    availability: formData.get("availability") === "on",
   };
 
   const result = ProductSchema.safeParse(data);
@@ -16,7 +29,7 @@ export async function createProductAction({ request }: ActionFunctionArgs) {
   if (!result.success) {
     return {
       errors: result.error.flatten().fieldErrors,
-      values: data
+      values: data,
     };
   }
 
@@ -26,9 +39,9 @@ export async function createProductAction({ request }: ActionFunctionArgs) {
   } catch {
     return {
       errors: {
-        general: ["Error creating product"]
+        general: ["Error creating product"],
       },
-      values: data
+      values: data,
     };
   }
 }
