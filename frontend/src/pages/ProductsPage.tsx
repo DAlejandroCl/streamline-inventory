@@ -1,11 +1,10 @@
 import { useLoaderData, useNavigation, Link } from "react-router-dom";
 import type { Product } from "../features/products/types/products";
-
 import Table from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
-import ProductsTableSkeleton from "../components/tables/ProductsTableSkeleton";
+import ProductsSkeleton from "../components/tables/ProductsTableSkeleton";
 
 export default function ProductsPage() {
   const products = useLoaderData() as Product[];
@@ -13,12 +12,12 @@ export default function ProductsPage() {
 
   const isLoading = navigation.state === "loading";
 
-  // 🔄 LOADING STATE (route transition)
+  // 🔹 LOADING STATE
   if (isLoading) {
-    return <ProductsTableSkeleton />;
+    return <ProductsSkeleton />;
   }
 
-  // 📭 EMPTY STATE
+  // 🔹 EMPTY STATE
   if (!products.length) {
     return (
       <EmptyState
@@ -28,21 +27,20 @@ export default function ProductsPage() {
     );
   }
 
+  // 🔹 DATA STATE
   return (
-    <div className="space-y-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold">Products</h1>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Products</h1>
 
         <Link to="/products/new">
           <Button>+ New Product</Button>
         </Link>
       </div>
 
-      {/* TABLE */}
       <Table headers={["Name", "Price", "Status", "Actions"]}>
         {products.map((p) => (
-          <tr key={p.id} className="border-t hover:bg-gray-50 transition">
+          <tr key={p.id} className="border-t hover:bg-gray-50">
             <td className="p-3 font-medium">{p.name}</td>
 
             <td className="p-3">${p.price}</td>
