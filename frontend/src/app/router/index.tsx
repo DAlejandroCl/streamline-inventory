@@ -16,17 +16,19 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <DashboardPage />
+        element: <DashboardPage />,
       },
       {
         path: "products",
         element: <ProductsPage />,
-        loader: productsLoader
+        loader: productsLoader,
+        errorElement: <ErrorPage />,
       },
       {
         path: "products/new",
-        element: <NewProductPage />
-      }
-    ]
-  }
+        element: <NewProductPage />,
+        errorElement: <ErrorPage />,
+      },
+    ],
+  },
 ]);

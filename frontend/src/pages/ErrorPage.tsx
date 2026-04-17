@@ -1,4 +1,4 @@
-import { useRouteError, isRouteErrorResponse, Link } from "react-router-dom";
+import { isRouteErrorResponse, useRouteError, Link } from "react-router-dom";
 import Button from "../components/ui/Button";
 
 export default function ErrorPage() {
@@ -9,11 +9,11 @@ export default function ErrorPage() {
 
   if (isRouteErrorResponse(error)) {
     title = `Error ${error.status}`;
-    message = error.statusText;
+    message = error.data || error.statusText;
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+    <div className="flex flex-col items-center justify-center h-full gap-4">
       <h1 className="text-3xl font-bold">{title}</h1>
       <p className="text-gray-500">{message}</p>
 
