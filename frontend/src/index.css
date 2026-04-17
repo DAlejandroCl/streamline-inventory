@@ -5,5 +5,5 @@ html, body, #root {
 }
 
 body {
-  @apply bg-background text-gray-800;
+  @apply bg-gray-100;
 }
