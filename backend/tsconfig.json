@@ -8,7 +8,7 @@
     "module": "NodeNext",
     "types": ["node"],
     "isolatedModules": true,
-    "strict": false,
+    "strict": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "declaration": true,
