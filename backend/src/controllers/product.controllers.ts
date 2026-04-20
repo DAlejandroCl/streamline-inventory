@@ -1,129 +1,80 @@
+/* ============================================================
+   PRODUCT CONTROLLERS
+   Thin HTTP handlers. Each controller delegates all business
+   logic to the product service and never interacts with the
+   Sequelize model directly.
+
+   Express 5 native async error handling: rejected promises
+   propagate automatically to the global error handler, so
+   no try-catch blocks are needed here.
+   ============================================================ */
+
 import { Request, Response } from "express";
-import Product from "../models/Product.model.js";
+import * as ProductService from "../services/product.service.js";
+import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js";
 
-// GET ALL
-export const getProducts = async (req: Request, res: Response) => {
-  try {
-    const products = await Product.findAll();
-    return res.json(products);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error fetching products",
-    });
-  }
+/* ---- GET ALL ---------------------------------------------- */
+
+export const getProducts = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
+  const products = await ProductService.getAllProducts();
+  res.json(products);
 };
 
-// GET BY ID
-export const getProductById = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
+/* ---- GET BY ID -------------------------------------------- */
 
-    if (isNaN(id)) {
-      return res.status(400).json({ message: "Invalid ID" });
-    }
-
-    const product = await Product.findByPk(id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    return res.json(product);
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error fetching product",
-    });
-  }
+export const getProductById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const product = await ProductService.getProductById(Number(req.params.id));
+  res.json(product);
 };
 
-// CREATE
-export const createProduct = async (req: Request, res: Response) => {
-  try {
-    const product = await Product.create(req.body);
+/* ---- CREATE ----------------------------------------------- */
 
-    return res.status(201).json({
-      data: product,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error creating product",
-    });
-  }
+export const createProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const product = await ProductService.createProduct(req.body as CreateProductDTO);
+  res.status(201).json({ data: product });
 };
 
-// UPDATE
-export const updateProduct = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
+/* ---- UPDATE (full replace) -------------------------------- */
 
-    const product = await Product.findByPk(id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    await product.update(req.body);
-
-    return res.json({
-      message: "Product updated",
-      data: product,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error updating product",
-    });
-  }
+export const updateProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const product = await ProductService.updateProduct(
+    Number(req.params.id),
+    req.body as UpdateProductDTO
+  );
+  res.json({ message: "Product updated", data: product });
 };
 
-// PATCH
-export const patchProduct = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
+/* ---- PATCH (partial update) ------------------------------- */
 
-    const product = await Product.findByPk(id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    await product.update(req.body);
-
-    return res.json({
-      message: "Product patched",
-      data: product,
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error patching product",
-    });
-  }
+export const patchProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const product = await ProductService.updateProduct(
+    Number(req.params.id),
+    req.body as UpdateProductDTO
+  );
+  res.json({ message: "Product patched", data: product });
 };
 
-// DELETE
-export const deleteProduct = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
+/* ---- DELETE ----------------------------------------------- */
 
-    const product = await Product.findByPk(id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    await product.destroy();
-
-    return res.json({
-      message: "Product deleted",
-    });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      message: "Error deleting product",
-    });
-  }
+export const deleteProduct = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await ProductService.deleteProduct(Number(req.params.id));
+  res.json({ message: "Product deleted" });
 };
