@@ -1,10 +1,6 @@
 import { Form, useActionData } from "react-router-dom";
 import type { ProductFormData } from "../types/products";
-
-type Props = {
-  defaultValues?: ProductFormData;
-  isEditing?: boolean;
-};
+import Button from "../../../components/ui/Button";
 
 type ActionErrors = {
   errors?: {
@@ -16,10 +12,12 @@ type ActionErrors = {
   values?: ProductFormData;
 };
 
-export default function ProductForm({
-  defaultValues,
-  isEditing = false,
-}: Props) {
+type Props = {
+  defaultValues?: ProductFormData;
+  isEditing?: boolean;
+};
+
+export default function ProductForm({ defaultValues, isEditing = false }: Props) {
   const actionData = useActionData() as ActionErrors | undefined;
 
   return (
@@ -54,9 +52,7 @@ export default function ProductForm({
           type="checkbox"
           name="availability"
           defaultChecked={
-            actionData?.values?.availability ??
-            defaultValues?.availability ??
-            true
+            actionData?.values?.availability ?? defaultValues?.availability ?? true
           }
         />
         <label>Available</label>
@@ -66,9 +62,9 @@ export default function ProductForm({
         <p className="text-red-600">{actionData.errors.general[0]}</p>
       )}
 
-      <button className="bg-indigo-600 text-white px-4 py-2 rounded">
+      <Button type="submit">
         {isEditing ? "Update Product" : "Create Product"}
-      </button>
+      </Button>
     </Form>
   );
 }
