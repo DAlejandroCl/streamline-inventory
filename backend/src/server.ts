@@ -1,11 +1,12 @@
 /* ============================================================
    EXPRESS SERVER
-   Middleware order matters:
-   1. CORS and body parsing
-   2. Static assets
-   3. Application routes
-   4. API documentation
-   5. Global error handler (MUST be last)
+   El orden del middleware es crítico:
+   1. CORS
+   2. Body parsing
+   3. Static files
+   4. Routes
+   5. Swagger docs
+   6. Global error handler — DEBE ir último
    ============================================================ */
 
 import express from "express";
@@ -15,7 +16,7 @@ import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger.js";
 import router from "./routes/product.routes.js";
-import { errorHandler } from "./middlewares/error.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,11 @@ const server = express();
 
 /* ---- CORS ------------------------------------------------- */
 
-server.use(cors({ origin: process.env.CORS_ORIGIN ?? "http://localhost:5173" }));
+server.use(
+  cors({
+    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+  })
+);
 
 /* ---- BODY PARSING ----------------------------------------- */
 
@@ -34,7 +39,7 @@ server.use(express.json());
 
 server.use("/public", express.static(path.join(__dirname, "public")));
 
-/* ---- SWAGGER CONFIGURATION -------------------------------- */
+/* ---- SWAGGER ---------------------------------------------- */
 
 const swaggerOptions = {
   customCss: `
@@ -59,14 +64,17 @@ const swaggerOptions = {
 /* ---- ROUTES ----------------------------------------------- */
 
 server.get("/", (_req, res) => {
-  res.json({ message: "API is running", docs: "/docs" });
+  res.json({
+    message: "Streamline API is running",
+    docs: "/docs",
+    version: "1.0.0",
+  });
 });
 
 server.use("/api/products", router);
-
 server.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
-/* ---- GLOBAL ERROR HANDLER (must be last) ------------------ */
+/* ---- GLOBAL ERROR HANDLER (debe ir último) ---------------- */
 
 server.use(errorHandler);
 
