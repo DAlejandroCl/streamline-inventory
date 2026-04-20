@@ -1,24 +1,26 @@
+/* ============================================================
+   TEST SETUP
+   Helpers para el ciclo de vida de los tests de integración.
+   setup()   → autentica y sincroniza el schema en SQLite.
+   cleanup() → destruye todos los registros entre suites.
+   teardown()→ cierra la conexión al finalizar.
+   ============================================================ */
+
 import { db } from "../config/db.js";
 
-// SETUP
-export const setup = async () => {
+export const setup = async (): Promise<void> => {
   await db.authenticate();
   await db.sync({ force: true });
 };
 
-// CLEAN BETWEEN TESTS
-export const cleanup = async () => {
+export const cleanup = async (): Promise<void> => {
   const models = Object.values(db.models);
 
   for (const model of models) {
-    await model.destroy({
-      where: {},
-      force: true
-    });
+    await model.destroy({ where: {}, force: true });
   }
 };
 
-// CLOSE CONNECTION
-export const teardown = async () => {
+export const teardown = async (): Promise<void> => {
   await db.close();
 };
