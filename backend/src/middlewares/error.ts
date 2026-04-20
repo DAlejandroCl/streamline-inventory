@@ -1,24 +1,25 @@
-import { Request, Response, NextFunction } from "express";
+/* ============================================================
+   GLOBAL ERROR HANDLER
+   Must be registered LAST in server.ts after all routes.
+   Handles AppError (typed, operational errors) and unknown
+   errors (bugs, unhandled rejections) separately.
+   ============================================================ */
 
-// GLOBAL ERROR HANDLER
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "../types/AppError.js";
+
 export const errorHandler = (
-  error: any,
+  error: unknown,
   req: Request,
   res: Response,
-  next: NextFunction
-) => {
-
+  _next: NextFunction
+): void => {
   console.error(error);
 
-  // CUSTOM ERROR
-  if (error.message === "Product not found") {
-    return res.status(404).json({
-      message: error.message
-    });
+  if (error instanceof AppError) {
+    res.status(error.statusCode).json({ message: error.message });
+    return;
   }
 
-  // DEFAULT ERROR
-  res.status(500).json({
-    message: "Internal server error"
-  });
+  res.status(500).json({ message: "Internal server error" });
 };
