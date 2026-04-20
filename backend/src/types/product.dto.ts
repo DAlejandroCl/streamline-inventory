@@ -1,8 +1,8 @@
 /* ============================================================
    PRODUCT DTOs
-   Shared data-transfer types consumed by the service layer.
-   Kept separate from the Sequelize model to maintain clean
-   architecture boundaries between ORM and business logic.
+   Tipos de transferencia de datos para el service layer.
+   Separados del modelo Sequelize para mantener el límite
+   limpio entre ORM y lógica de negocio.
    ============================================================ */
 
 export type CreateProductDTO = {

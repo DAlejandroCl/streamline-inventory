@@ -1,8 +1,8 @@
 /* ============================================================
    APP ERROR
-   Custom error class that carries an HTTP status code.
-   Allows the global error handler to produce typed, structured
-   responses without relying on fragile string comparisons.
+   Clase de error operacional con status HTTP explícito.
+   El global error handler la detecta con instanceof y produce
+   respuestas tipadas sin comparaciones de strings frágiles.
    ============================================================ */
 
 export class AppError extends Error {
@@ -12,6 +12,11 @@ export class AppError extends Error {
     super(message);
     this.name = "AppError";
     this.statusCode = statusCode;
+
+    /*
+     * Restaura la cadena de prototipos correcta al extender
+     * clases nativas de JavaScript con TypeScript.
+     */
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
