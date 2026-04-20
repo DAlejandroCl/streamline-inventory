@@ -1,12 +1,11 @@
 /* ============================================================
    PRODUCT CONTROLLERS
-   Thin HTTP handlers. Each controller delegates all business
-   logic to the product service and never interacts with the
-   Sequelize model directly.
+   Handlers HTTP delgados. Cada función delega completamente
+   al service layer y nunca toca el modelo Sequelize.
 
-   Express 5 native async error handling: rejected promises
-   propagate automatically to the global error handler, so
-   no try-catch blocks are needed here.
+   Express 5: las promesas rechazadas se propagan automáticamente
+   al global error handler — no se necesitan bloques try-catch.
+   Las respuestas de error las maneja error.middleware.ts.
    ============================================================ */
 
 import { Request, Response } from "express";
@@ -43,7 +42,7 @@ export const createProduct = async (
   res.status(201).json({ data: product });
 };
 
-/* ---- UPDATE (full replace) -------------------------------- */
+/* ---- UPDATE (PUT — reemplazo completo) -------------------- */
 
 export const updateProduct = async (
   req: Request,
@@ -56,7 +55,7 @@ export const updateProduct = async (
   res.json({ message: "Product updated", data: product });
 };
 
-/* ---- PATCH (partial update) ------------------------------- */
+/* ---- PATCH (actualización parcial) ------------------------ */
 
 export const patchProduct = async (
   req: Request,
