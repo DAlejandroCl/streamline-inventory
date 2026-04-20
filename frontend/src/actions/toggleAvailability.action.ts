@@ -1,24 +1,9 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { toggleAvailability } from "../lib/api/products";
 
-export async function toggleAvailabilityAction({
-  request,
-}: {
-  request: Request;
-}) {
+export async function toggleAvailabilityAction({ request }: { request: Request }) {
   const formData = await request.formData();
-
-  const id = formData.get("id");
+  const id = formData.get("id") as string;
   const availability = formData.get("availability") === "true";
-
-  await fetch(`${API_URL}/api/products/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      availability: !availability,
-    }),
-  });
-
+  await toggleAvailability(id, availability);
   return null;
 }

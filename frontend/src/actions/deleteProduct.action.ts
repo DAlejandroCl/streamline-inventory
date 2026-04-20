@@ -1,16 +1,8 @@
-const API_URL = import.meta.env.VITE_API_URL;
+import { deleteProduct } from "../lib/api/products";
 
-export async function deleteProductAction({
-  request,
-}: {
-  request: Request;
-}) {
+export async function deleteProductAction({ request }: { request: Request }) {
   const formData = await request.formData();
-  const id = formData.get("id");
-
-  await fetch(`${API_URL}/api/products/${id}`, {
-    method: "DELETE",
-  });
-
+  const id = formData.get("id") as string;
+  await deleteProduct(id);
   return null;
 }
