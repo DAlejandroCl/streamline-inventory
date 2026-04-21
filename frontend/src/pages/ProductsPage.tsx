@@ -5,7 +5,7 @@ import Table from "../components/ui/Table";
 import Button from "../components/ui/Button";
 import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
-import ProductsSkeleton from "../components/tables/ProductsTableSkeleton";
+import ProductsTableSkeleton from "../components/ui/ProductsTableSkeleton";
 
 export default function ProductsPage() {
   const products = useLoaderData() as Product[];
@@ -14,7 +14,7 @@ export default function ProductsPage() {
   const isLoading = navigation.state === "loading";
 
   if (isLoading) {
-    return <ProductsSkeleton />;
+    return <ProductsTableSkeleton />;
   }
 
   if (!products.length) {
