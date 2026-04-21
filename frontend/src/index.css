@@ -1,11 +1,18 @@
 @import "tailwindcss";
 
+/*
+ * Custom design tokens — Tailwind 4 CSS-first.
+ * Estos valores reemplazan el tailwind.config.ts eliminado.
+ * Se usan como clases: bg-background, text-foreground, etc.
+ */
 @theme {
   --color-background: #f9fafb;
   --color-foreground: #111827;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 
