@@ -2,7 +2,8 @@
    PRODUCT MODEL
    Modelo Sequelize-TypeScript con decoradores estrictos.
    Solo esta capa conoce los detalles de la tabla en Postgres.
-   Ningún controller debe importar este archivo directamente.
+   Ningún controller debe importar este archivo directamente —
+   toda interacción con la BD pasa por product.service.ts.
    ============================================================ */
 
 import {
