@@ -1,17 +1,27 @@
 /* ============================================================
    PRODUCT LOADERS
-   Use the centralized API client. No fetch calls inline.
+   Delegan al API client centralizado.
+   Ningún loader construye fetch calls directamente.
    ============================================================ */
 
 import { type LoaderFunctionArgs } from "react-router-dom";
-import { getProducts, getProductById } from "../../../lib/api/products";
 import type { Product } from "../types/products";
+import { getProducts, getProductById } from "../../../lib/api/products";
+
+/* ---- GET ALL ---------------------------------------------- */
 
 export async function productsLoader(): Promise<Product[]> {
   return getProducts();
 }
 
-export async function productByIdLoader({ params }: LoaderFunctionArgs): Promise<Product> {
-  if (!params.id) throw new Response("Product ID is required", { status: 400 });
+/* ---- GET BY ID -------------------------------------------- */
+
+export async function productByIdLoader({
+  params,
+}: LoaderFunctionArgs): Promise<Product> {
+  if (!params.id) {
+    throw new Response("Product ID is required", { status: 400 });
+  }
+
   return getProductById(params.id);
 }
