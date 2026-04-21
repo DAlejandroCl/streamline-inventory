@@ -1,34 +1,34 @@
+/* ============================================================
+   APP BOOTSTRAP
+   Conecta la base de datos antes de iniciar el servidor HTTP.
+   Si la conexión falla, el proceso termina con exit code 1.
+   ============================================================ */
+
 import server from "./server.js";
 import { connectDB } from "./config/db.js";
 import colors from "colors";
 
-// APP BOOTSTRAP
-const startServer = async () => {
+const startServer = async (): Promise<void> => {
   try {
-    // DATABASE
     await connectDB();
 
-    // SERVER START
-    const PORT = process.env.PORT || 3000;
+    const PORT = process.env.PORT ?? 3000;
 
     server.listen(PORT, () => {
       console.log(
-        colors.yellow.bold("🚀 Server is running on: ") +
-        colors.white(`http://localhost:${PORT}`)
+        colors.yellow.bold("🚀 Server running on: ") +
+          colors.white(`http://localhost:${PORT}`)
       );
-
       console.log(
         colors.blue.bold("📄 Swagger docs: ") +
-        colors.white(`http://localhost:${PORT}/docs`)
+          colors.white(`http://localhost:${PORT}/docs`)
       );
     });
-
   } catch (error) {
     console.error(colors.red.bold("✖ Error starting server"));
-    console.error(colors.red(error as string));
+    console.error(colors.red(String(error)));
     process.exit(1);
   }
 };
 
-// INIT
 startServer();
