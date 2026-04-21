@@ -12,6 +12,7 @@ import {
   productByIdLoader,
 } from "../../features/products/loaders/products.loader";
 
+import { createProductAction } from "../../actions/product.actions";
 import { deleteProductAction } from "../../actions/deleteProduct.action";
 import { toggleAvailabilityAction } from "../../actions/toggleAvailability.action";
 import { updateProductAction } from "../../actions/updateProduct.action";
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <DashboardPage />,
+        loader: productsLoader,
       },
       {
         path: "products",
@@ -34,6 +36,7 @@ export const router = createBrowserRouter([
       {
         path: "products/new",
         element: <NewProductPage />,
+        action: createProductAction,
       },
       {
         path: "products/:id/edit",
