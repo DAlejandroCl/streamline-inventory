@@ -1,4 +1,8 @@
 import { useLoaderData, Link } from "react-router-dom";
+import {
+  Plus, TrendingUp, AlertTriangle, Package, BarChart3,
+  ArrowRight, FileText, ArrowUpRight,
+} from "lucide-react";
 import type { Product } from "../features/products/types/products";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
@@ -7,47 +11,63 @@ import PageHeader from "../components/layout/PageHeader";
 import ProductCard from "../features/products/components/ProductCard";
 import { formatCurrency } from "../lib/utils/formatCurrency";
 
-/* ---- Metric helpers --------------------------------------- */
+/* ---- Compute metrics from loader data -------------------- */
 
-function computeMetrics(products: Product[]) {
+function useMetrics(products: Product[]) {
   const total = products.length;
   const available = products.filter((p) => p.availability).length;
   const outOfStock = total - available;
-  const totalValue = products.reduce((sum, p) => sum + p.price, 0);
+  const totalValue = products.reduce((s, p) => s + p.price, 0);
   const avgPrice = total > 0 ? totalValue / total : 0;
-  return { total, available, outOfStock, totalValue, avgPrice };
+  const stockRate = total > 0 ? Math.round((available / total) * 100) : 0;
+  return { total, available, outOfStock, totalValue, avgPrice, stockRate };
 }
 
-/* ---- MetricBlock ------------------------------------------ */
+/* ---- MetricCard ------------------------------------------ */
 
-type MetricBlockProps = {
+type MetricCardProps = {
   label: string;
   value: string;
-  sub?: string;
-  icon: string;
+  sub: string;
+  icon: React.ReactNode;
   accent: "primary" | "error" | "secondary" | "none";
-  iconColor?: string;
+  trend?: { value: string; up: boolean };
 };
 
-function MetricBlock({ label, value, sub, icon, accent, iconColor = "text-[var(--color-primary)]" }: MetricBlockProps) {
+function MetricCard({ label, value, sub, icon, accent, trend }: MetricCardProps) {
+  const valueColors: Record<string, string> = {
+    primary:   "text-[var(--color-primary)]",
+    error:     "text-[var(--color-error)]",
+    secondary: "text-[var(--color-secondary)]",
+    none:      "text-[var(--color-text-primary)]",
+  };
+  const iconBg: Record<string, string> = {
+    primary:   "bg-[var(--color-primary-container)]",
+    error:     "bg-[var(--color-error-container)]",
+    secondary: "bg-[var(--color-secondary-container)]",
+    none:      "bg-[var(--color-surface-high)]",
+  };
+
   return (
-    <Card accent={accent} className="relative overflow-hidden">
-      <div className="flex justify-between items-start mb-4">
-        <span className={`text-[10px] font-bold uppercase tracking-widest font-label ${iconColor}`}>
-          {label}
-        </span>
-        <span className={`material-symbols-outlined text-2xl opacity-30 ${iconColor}`}>
+    <Card accent={accent}>
+      <div className="flex items-start justify-between mb-4">
+        <div className={["w-10 h-10 rounded-xl flex items-center justify-center", iconBg[accent]].join(" ")}>
           {icon}
-        </span>
+        </div>
+        {trend && (
+          <span className={["flex items-center gap-0.5 text-xs font-bold", trend.up ? "text-[var(--color-secondary)" : "text-[var(--color-error)"].join(" ")}>
+            <ArrowUpRight size={12} strokeWidth={3} className={trend.up ? "" : "rotate-90"} />
+            {trend.value}
+          </span>
+        )}
       </div>
-      <div className={`text-3xl font-extrabold font-headline ${iconColor}`}>
+      <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-text-muted) mb-1">
+        {label}
+      </p>
+      <p className={["text-3xl font-extrabold font-headline tabular", valueColors[accent]].join(" ")}>
         {value}
-      </div>
-      {sub && (
-        <p className="mt-2 text-xs font-medium text-[var(--color-on-surface-variant)] flex items-center gap-1">
-          {sub}
-        </p>
-      )}
+      </p>
+      <p className="text-xs text-[var(--color-text-muted) font-medium mt-1.5">{sub}</p>
     </Card>
   );
 }
@@ -56,95 +76,87 @@ function MetricBlock({ label, value, sub, icon, accent, iconColor = "text-[var(-
 
 export default function DashboardPage() {
   const products = useLoaderData() as Product[];
-  const { total, available, outOfStock, totalValue, avgPrice } = computeMetrics(products);
+  const { total, available, outOfStock, totalValue, avgPrice, stockRate } = useMetrics(products);
 
   const recentProducts = [...products]
-    .sort((a, b) => {
-      const dA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dB - dA;
-    })
+    .sort((a, b) => new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime())
     .slice(0, 5);
+
+  const QUICK_ACTIONS = [
+    { to: "/products/new", icon: <Plus size={18} className="text-[var(--color-primary)" strokeWidth={2} />, label: "Add Product", sub: "Create new entry", bg: "bg-[var(--color-primary-container)" },
+    { to: "/products",     icon: <Package size={18} className="text-[var(--color-secondary)" strokeWidth={2} />, label: "View Inventory", sub: `${total} entries`, bg: "bg-[var(--color-secondary-container)" },
+    { to: "http://localhost:3000/docs", icon: <FileText size={18} className="text-[var(--color-text-secondary)" strokeWidth={2} />, label: "API Docs", sub: "Swagger UI", bg: "bg-[var(--color-surface-high)", external: true },
+  ];
 
   return (
     <div className="space-y-10">
       <PageHeader
         title="Dashboard Overview"
-        description="Real-time status of the operational ledger"
+        description="Real-time status of the operational ledger."
         action={
           <Link to="/products/new">
-            <Button icon="add" size="lg">Create New Product</Button>
+            <Button icon={Plus} size="lg">Create New Product</Button>
           </Link>
         }
       />
 
-      {/* METRIC BLOCKS */}
+      {/* METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <MetricBlock
+        <MetricCard
           label="Inventory Value"
           value={formatCurrency(totalValue)}
           sub="Total asset value"
-          icon="payments"
+          icon={<TrendingUp size={18} className="text-[var(--color-primary)" strokeWidth={2} />}
           accent="primary"
-          iconColor="text-[var(--color-primary)]"
         />
-        <MetricBlock
+        <MetricCard
           label="Out of Stock"
           value={outOfStock.toString()}
-          sub={outOfStock > 0 ? "Requires attention" : "All stocked"}
-          icon="warning"
-          accent="error"
-          iconColor="text-[var(--color-error)]"
+          sub={outOfStock > 0 ? "Requires attention" : "All items stocked"}
+          icon={<AlertTriangle size={18} className="text-[var(--color-error)" strokeWidth={2} />}
+          accent={outOfStock > 0 ? "error" : "none"}
         />
-        <MetricBlock
+        <MetricCard
           label="Total Products"
           value={total.toString()}
           sub={`${available} available`}
-          icon="inventory_2"
+          icon={<Package size={18} className="text-[var(--color-text-secondary)" strokeWidth={2} />}
           accent="none"
-          iconColor="text-[var(--color-on-surface)]"
         />
-        <MetricBlock
+        <MetricCard
           label="Avg. Price"
           value={formatCurrency(avgPrice)}
           sub="Across catalog"
-          icon="analytics"
+          icon={<BarChart3 size={18} className="text-[var(--color-secondary)" strokeWidth={2} />}
           accent="secondary"
-          iconColor="text-[var(--color-secondary)]"
         />
       </div>
 
-      {/* CENTRAL GRID — Recent + Quick Actions */}
+      {/* CENTRAL GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
         {/* RECENT PRODUCTS */}
-        <div className="lg:col-span-2 bg-[var(--color-surface-container-lowest)] rounded-2xl shadow-ambient overflow-hidden">
-          <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-[var(--color-outline-variant)]/10">
+        <div className="lg:col-span-2 bg-[var(--color-surface) rounded-2xl shadow-card border border-[var(--color-border)/40 overflow-hidden">
+          <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-[var(--color-border)/30">
             <div>
-              <h2 className="text-lg font-bold text-[var(--color-on-surface)] font-headline">
-                Recent Products
-              </h2>
-              <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5">
-                Latest additions to the ledger
-              </p>
+              <h2 className="text-base font-bold text-[var(--color-text-primary) font-headline">Recent Products</h2>
+              <p className="text-xs text-[var(--color-text-muted) mt-0.5">Latest additions to the ledger</p>
             </div>
             <Link
               to="/products"
-              className="text-xs font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-container)] transition-colors flex items-center gap-1"
+              className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary) hover:text-[var(--color-primary-hover) transition-colors"
             >
-              View all
-              <span className="material-symbols-outlined text-sm leading-none">arrow_forward</span>
+              View all <ArrowRight size={12} strokeWidth={2.5} />
             </Link>
           </div>
 
-          <div className="px-4 py-2">
+          <div className="px-3 py-2">
             {recentProducts.length === 0 ? (
-              <div className="py-12 text-center">
-                <span className="material-symbols-outlined text-4xl text-[var(--color-outline)] opacity-40">
-                  inventory_2
-                </span>
-                <p className="text-sm text-[var(--color-on-surface-variant)] mt-3">
+              <div className="py-12 text-center space-y-3">
+                <Package size={36} className="mx-auto text-[var(--color-text-muted) opacity-30" strokeWidth={1.5} />
+                <p className="text-sm text-[var(--color-text-muted)">
                   No products yet.{" "}
-                  <Link to="/products/new" className="text-[var(--color-primary)] hover:underline font-medium">
+                  <Link to="/products/new" className="text-[var(--color-primary) font-semibold hover:underline">
                     Create one
                   </Link>
                 </p>
@@ -155,93 +167,68 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* QUICK ACTIONS */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-[var(--color-on-surface)] font-headline px-1">
-            Quick Actions
-          </h2>
+        {/* RIGHT COLUMN */}
+        <div className="flex flex-col gap-5">
 
-          {[
-            {
-              to: "/products/new",
-              icon: "add_box",
-              label: "Add Product",
-              sub: "Create new inventory entry",
-              color: "text-[var(--color-primary)]",
-              bg: "bg-[var(--color-primary-fixed)]/40",
-            },
-            {
-              to: "/products",
-              icon: "list_alt",
-              label: "View Inventory",
-              sub: `${total} products in ledger`,
-              color: "text-[var(--color-secondary)]",
-              bg: "bg-[var(--color-secondary-container)]/30",
-            },
-            {
-              to: "http://localhost:3000/docs",
-              icon: "description",
-              label: "API Docs",
-              sub: "Open Swagger UI",
-              color: "text-[var(--color-on-surface-variant)]",
-              bg: "bg-[var(--color-surface-container-high)]",
-              external: true,
-            },
-          ].map((item) => {
-            const inner = (
-              <div className="bg-[var(--color-surface-container-lowest)] rounded-xl p-4 flex items-center gap-4 shadow-ambient hover:shadow-[rgba(36,56,156,0.1)_0px_8px_24px] transition-all duration-200 group cursor-pointer border border-transparent hover:border-[var(--color-outline-variant)]/20">
-                <div className={`w-10 h-10 ${item.bg} rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
-                  <span className={`material-symbols-outlined text-xl leading-none ${item.color}`}>
-                    {item.icon}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-[var(--color-on-surface)]">{item.label}</p>
-                  <p className="text-xs text-[var(--color-on-surface-variant)] mt-0.5">{item.sub}</p>
-                </div>
-                <span className="material-symbols-outlined text-sm text-[var(--color-outline)] ml-auto opacity-0 group-hover:opacity-100 transition-opacity leading-none">
-                  arrow_forward
-                </span>
-              </div>
-            );
-
-            return item.external ? (
-              <a key={item.label} href={item.to} target="_blank" rel="noopener noreferrer">
-                {inner}
-              </a>
-            ) : (
-              <Link key={item.label} to={item.to}>{inner}</Link>
-            );
-          })}
-
-          {/* STOCK SUMMARY */}
-          <div className="bg-[var(--color-surface-container-lowest)] rounded-xl p-5 shadow-ambient mt-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)] mb-4 font-label">
-              Stock Summary
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-[var(--color-on-surface-variant)]">
-                  <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)]" />
-                  Available
-                </span>
-                <span className="font-bold text-[var(--color-on-surface)] tabular-nums">{available}</span>
-              </div>
-              <div className="w-full h-1.5 bg-[var(--color-surface-container-high)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[var(--color-secondary)] to-[var(--color-secondary-fixed-dim)] rounded-full transition-all duration-700"
-                  style={{ width: total > 0 ? `${(available / total) * 100}%` : "0%" }}
-                />
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-[var(--color-on-surface-variant)]">
-                  <span className="w-2 h-2 rounded-full bg-[var(--color-error)]" />
-                  Out of stock
-                </span>
-                <span className="font-bold text-[var(--color-on-surface)] tabular-nums">{outOfStock}</span>
-              </div>
+          {/* QUICK ACTIONS */}
+          <div className="bg-[var(--color-surface) rounded-2xl shadow-card border border-[var(--color-border)/40 p-5">
+            <h2 className="text-sm font-bold text-[var(--color-text-primary) font-headline mb-4">Quick Actions</h2>
+            <div className="space-y-2">
+              {QUICK_ACTIONS.map((item) => {
+                const inner = (
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-surface-low) transition-colors duration-150 group cursor-pointer">
+                    <div className={["w-9 h-9 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200", item.bg].join(" ")}>
+                      {item.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[var(--color-text-primary)">{item.label}</p>
+                      <p className="text-xs text-[var(--color-text-muted)">{item.sub}</p>
+                    </div>
+                    <ArrowRight size={13} className="text-[var(--color-text-muted) opacity-0 group-hover:opacity-100 transition-opacity" strokeWidth={2.5} />
+                  </div>
+                );
+                return item.external ? (
+                  <a key={item.label} href={item.to} target="_blank" rel="noopener noreferrer">{inner}</a>
+                ) : (
+                  <Link key={item.label} to={item.to}>{inner}</Link>
+                );
+              })}
             </div>
           </div>
+
+          {/* STOCK SUMMARY */}
+          <div className="bg-[var(--color-surface) rounded-2xl shadow-card border border-[var(--color-border)/40 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-bold text-[var(--color-text-primary) font-headline">Stock Summary</h2>
+              <Badge variant={stockRate >= 75 ? "success" : stockRate >= 50 ? "warning" : "danger"}>
+                {stockRate}% stocked
+              </Badge>
+            </div>
+
+            <div className="space-y-4">
+              {[
+                { label: "Available", count: available, color: "bg-[var(--color-secondary)]", variant: "success" as const },
+                { label: "Out of stock", count: outOfStock, color: "bg-[var(--color-error)]", variant: "danger" as const },
+              ].map(({ label, count, color }) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between text-xs mb-1.5">
+                    <span className="font-semibold text-[var(--color-text-secondary) flex items-center gap-1.5">
+                      <span className={["w-2 h-2 rounded-full", color].join(" ")} />
+                      {label}
+                    </span>
+                    <span className="font-bold text-[var(--color-text-primary) tabular">{count}</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[var(--color-surface-high) rounded-full overflow-hidden">
+                    <div
+                      className={["h-full rounded-full transition-all duration-700", color].join(" ")}
+                      style={{ width: total > 0 ? `${(count / total) * 100}%` : "0%" }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
