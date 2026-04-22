@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 
 type Breadcrumb = { label: string; to: string };
 
@@ -11,39 +12,35 @@ type Props = {
 
 export default function PageHeader({ title, description, breadcrumbs, action }: Props) {
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--color-on-surface-variant)] mb-2">
+          <nav className="flex items-center gap-1 text-xs text-[var(--color-text-muted) mb-2.5 flex-wrap">
             {breadcrumbs.map((crumb, i) => (
-              <span key={crumb.to} className="flex items-center gap-1.5">
-                {i > 0 && (
-                  <span className="material-symbols-outlined text-sm leading-none opacity-40">
-                    chevron_right
-                  </span>
-                )}
+              <span key={crumb.to} className="flex items-center gap-1">
+                {i > 0 && <ChevronRight size={11} strokeWidth={2.5} className="opacity-50" />}
                 <Link
                   to={crumb.to}
-                  className="hover:text-[var(--color-primary)] transition-colors font-medium"
+                  className="font-semibold hover:text-[var(--color-primary) transition-colors"
                 >
                   {crumb.label}
                 </Link>
               </span>
             ))}
-            <span className="material-symbols-outlined text-sm leading-none opacity-40">chevron_right</span>
-            <span className="text-[var(--color-on-surface)] font-semibold">{title}</span>
+            <ChevronRight size={11} strokeWidth={2.5} className="opacity-50" />
+            <span className="font-bold text-[var(--color-text-secondary)">{title}</span>
           </nav>
         )}
-        <h1 className="text-4xl font-extrabold text-[var(--color-on-surface)] font-headline tracking-tight">
+        <h1 className="text-4xl font-extrabold font-headline text-[var(--color-text-primary) tracking-tight leading-tight">
           {title}
         </h1>
         {description && (
-          <p className="text-[var(--color-on-surface-variant)] mt-1.5 font-medium">
+          <p className="text-[var(--color-text-secondary) mt-2 font-medium text-sm leading-relaxed">
             {description}
           </p>
         )}
       </div>
-      {action && <div className="flex-shrink-0">{action}</div>}
+      {action && <div className="shrink-0">{action}</div>}
     </div>
   );
 }
