@@ -1,13 +1,14 @@
 import { useLocation } from "react-router-dom";
+import { Search, Bell, ChevronDown } from "lucide-react";
 
-const PAGE_TITLES: Record<string, string> = {
-  "/":              "Dashboard Overview",
-  "/products":      "Inventory Ledger",
-  "/products/new":  "New Product Entry",
+const TITLES: Record<string, string> = {
+  "/":             "Dashboard Overview",
+  "/products":     "Inventory Ledger",
+  "/products/new": "New Product Entry",
 };
 
-function getTitle(pathname: string): string {
-  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+function getTitle(pathname: string) {
+  if (TITLES[pathname]) return TITLES[pathname];
   if (pathname.endsWith("/edit")) return "Edit Product";
   return "Streamline";
 }
@@ -16,39 +17,42 @@ export default function Navbar() {
   const { pathname } = useLocation();
 
   return (
-    <header className="w-full sticky top-0 z-40 glass-nav border-b border-[var(--color-outline-variant)]/30 shadow-sm flex items-center justify-between px-8 h-16">
-      {/* LEFT — brand + search */}
+    <header className="w-full sticky top-0 z-40 glass shadow-navbar flex items-center justify-between px-8 h-16 shrink-0">
+      {/* LEFT */}
       <div className="flex items-center gap-6">
-        <span className="text-xl font-extrabold bg-gradient-to-br from-indigo-700 to-indigo-500 bg-clip-text text-transparent font-headline tracking-tight hidden lg:block">
+        <h2 className="text-lg font-extrabold font-headline gradient-text hidden lg:block select-none">
           {getTitle(pathname)}
-        </span>
-        <div className="relative group">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-outline)] text-lg pointer-events-none">
-            search
-          </span>
+        </h2>
+
+        <div className="relative">
+          <Search
+            size={14}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted) pointer-events-none"
+            strokeWidth={2}
+          />
           <input
             type="text"
             placeholder="Search products..."
-            className="pl-10 pr-4 py-2 bg-[var(--color-surface-container-low)] border-none rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 w-72 transition-all placeholder:text-[var(--color-outline)]"
+            className="pl-9 pr-4 py-2 text-sm bg-[var(--color-surface-low) border border-[var(--color-border) rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)/20 focus:border-[var(--color-primary) transition-all w-64 placeholder:text-[var(--color-text-muted)"
           />
         </div>
       </div>
 
-      {/* RIGHT — actions + user */}
-      <div className="flex items-center gap-2">
-        <button className="p-2 text-[var(--color-on-surface-variant)] hover:text-[var(--color-primary)] hover:bg-[var(--color-surface-container-low)] rounded-full transition-all active:scale-95">
-          <span className="material-symbols-outlined text-xl leading-none">notifications</span>
+      {/* RIGHT */}
+      <div className="flex items-center gap-1">
+        <button className="relative p-2 text-[var(--color-text-secondary) hover:text-[var(--color-primary) hover:bg-[var(--color-primary-container) rounded-xl transition-all active:scale-95">
+          <Bell size={17} strokeWidth={2} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[var(--color-error) rounded-full" />
         </button>
 
-        <div className="w-px h-6 bg-[var(--color-outline-variant)]/40 mx-2" />
+        <div className="w-px h-5 bg-[var(--color-border) mx-2" />
 
-        <button className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-[var(--color-surface-container-low)] transition-all active:scale-95">
-          <div className="w-8 h-8 rounded-full bg-[var(--color-primary-fixed)] flex items-center justify-center">
-            <span className="material-symbols-outlined text-[var(--color-primary)] text-xl leading-none" style={{ fontVariationSettings: "'FILL' 1" }}>
-              account_circle
-            </span>
+        <button className="flex items-center gap-2.5 pl-1 pr-3 py-1.5 rounded-xl hover:bg-[var(--color-surface-low) transition-all active:scale-95 border border-transparent hover:border-[var(--color-border)">
+          <div className="w-7 h-7 btn-gradient rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+            A
           </div>
-          <span className="text-sm font-semibold text-[var(--color-on-surface)]">Admin</span>
+          <span className="text-sm font-semibold text-[var(--color-text-primary)">Admin</span>
+          <ChevronDown size={13} className="text-[var(--color-text-muted)" strokeWidth={2} />
         </button>
       </div>
     </header>
