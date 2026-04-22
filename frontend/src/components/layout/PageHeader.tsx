@@ -1,41 +1,49 @@
 import { Link } from "react-router-dom";
 
-type Breadcrumb = {
-  label: string;
-  to: string;
-};
+type Breadcrumb = { label: string; to: string };
 
 type Props = {
   title: string;
+  description?: string;
   breadcrumbs?: Breadcrumb[];
   action?: React.ReactNode;
 };
 
-export default function PageHeader({ title, breadcrumbs, action }: Props) {
+export default function PageHeader({ title, description, breadcrumbs, action }: Props) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm text-gray-500 mb-1">
-            {breadcrumbs.map((crumb, index) => (
-              <span key={crumb.to} className="flex items-center gap-1">
-                {index > 0 && <span aria-hidden="true">/</span>}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[var(--color-on-surface-variant)] mb-2">
+            {breadcrumbs.map((crumb, i) => (
+              <span key={crumb.to} className="flex items-center gap-1.5">
+                {i > 0 && (
+                  <span className="material-symbols-outlined text-sm leading-none opacity-40">
+                    chevron_right
+                  </span>
+                )}
                 <Link
                   to={crumb.to}
-                  className="hover:text-indigo-600 transition-colors"
+                  className="hover:text-[var(--color-primary)] transition-colors font-medium"
                 >
                   {crumb.label}
                 </Link>
               </span>
             ))}
-            <span aria-hidden="true">/</span>
-            <span className="text-gray-800 font-medium">{title}</span>
+            <span className="material-symbols-outlined text-sm leading-none opacity-40">chevron_right</span>
+            <span className="text-[var(--color-on-surface)] font-semibold">{title}</span>
           </nav>
         )}
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        <h1 className="text-4xl font-extrabold text-[var(--color-on-surface)] font-headline tracking-tight">
+          {title}
+        </h1>
+        {description && (
+          <p className="text-[var(--color-on-surface-variant)] mt-1.5 font-medium">
+            {description}
+          </p>
+        )}
       </div>
-
-      {action && <div className="shrink-0">{action}</div>}
+      {action && <div className="flex-shrink-0">{action}</div>}
     </div>
   );
 }
