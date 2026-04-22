@@ -1,9 +1,10 @@
 @import "tailwindcss";
 
 /* ============================================================
-   STREAMLINE — ARCHITECTURAL LEDGER DESIGN SYSTEM v2
-   Fuentes: Manrope (headlines) + Inter (body/data)
-   Íconos: Lucide React — sin dependencia de fuentes externas
+   STREAMLINE — DESIGN SYSTEM v2
+   Tema claro por defecto. Tema oscuro activado con .dark en <html>.
+   Fuentes cargadas via <link> en index.html (Manrope + Inter).
+   Íconos: Lucide React — sin dependencia de fuentes externas.
    ============================================================ */
 
 @theme {
@@ -21,42 +22,82 @@
   --color-on-secondary:          #ffffff;
   --color-on-secondary-container:#004d45;
 
-  /* ---- Error / Danger ------------------------------------ */
+  /* ---- Error --------------------------------------------- */
   --color-error:                 #ba1a1a;
   --color-error-container:       #ffdad6;
   --color-on-error-container:    #93000a;
 
-  /* ---- Warning — Amber ----------------------------------- */
+  /* ---- Warning ------------------------------------------- */
   --color-warning:               #7c4a00;
   --color-warning-container:     #ffdcc6;
   --color-on-warning-container:  #5c3400;
-
-  /* ---- Surface hierarchy --------------------------------- */
-  --color-background:                #f4f6fa;
-  --color-surface:                   #ffffff;
-  --color-surface-low:               #f0f2f7;
-  --color-surface-high:              #e8eaf2;
-  --color-surface-highest:           #dde0ec;
-
-  /* ---- Sidebar ------------------------------------------ */
-  --color-sidebar-bg:                #0f1729;
-  --color-sidebar-text:              #94a3b8;
-  --color-sidebar-text-active:       #ffffff;
-  --color-sidebar-item-active:       rgba(255,255,255,0.08);
-  --color-sidebar-item-hover:        rgba(255,255,255,0.05);
-
-  /* ---- On-surface --------------------------------------- */
-  --color-text-primary:          #0f1421;
-  --color-text-secondary:        #4a5568;
-  --color-text-muted:            #94a3b8;
-  --color-border:                #e2e8f0;
 
   /* ---- Fonts -------------------------------------------- */
   --font-headline: "Manrope", system-ui, sans-serif;
   --font-body:     "Inter", system-ui, sans-serif;
 }
 
-/* ---- BASE ------------------------------------------------- */
+/* ============================================================
+   LIGHT THEME (default)
+   ============================================================ */
+:root {
+  --color-background:     #f4f6fa;
+  --color-surface:        #ffffff;
+  --color-surface-low:    #f0f2f7;
+  --color-surface-high:   #e4e7f0;
+  --color-surface-highest:#d8dce8;
+
+  --color-sidebar-bg:     #0f1729;
+
+  --color-text-primary:   #0f1421;
+  --color-text-secondary: #4a5568;
+  --color-text-muted:     #94a3b8;
+  --color-border:         #e2e8f0;
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   DARK THEME — activated by .dark on <html>
+   ============================================================ */
+.dark {
+  --color-background:     #0d1117;
+  --color-surface:        #161b27;
+  --color-surface-low:    #1c2333;
+  --color-surface-high:   #232d42;
+  --color-surface-highest:#2a3550;
+
+  --color-sidebar-bg:     #080d18;
+
+  --color-text-primary:   #e6edf3;
+  --color-text-secondary: #8b949e;
+  --color-text-muted:     #484f58;
+  --color-border:         #21262d;
+
+  /* Adjust primary for dark — lighter for contrast */
+  --color-primary:              #818cf8;
+  --color-primary-hover:        #a5b4fc;
+  --color-primary-container:    #1e1f3a;
+  --color-on-primary-container: #c7d2fe;
+
+  --color-secondary:             #5eead4;
+  --color-secondary-container:   #0f2a27;
+  --color-on-secondary-container:#99f6e4;
+
+  --color-error:                 #f87171;
+  --color-error-container:       #2d1b1b;
+  --color-on-error-container:    #fca5a5;
+
+  --color-warning:               #fbbf24;
+  --color-warning-container:     #2d2006;
+  --color-on-warning-container:  #fde68a;
+
+  color-scheme: dark;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
@@ -67,9 +108,14 @@ body {
   color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* ---- CUSTOM SCROLLBAR ------------------------------------ */
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
@@ -77,12 +123,15 @@ body {
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* ---- SHADOWS --------------------------------------------- */
-.shadow-card    { box-shadow: 0 1px 3px rgba(15,23,41,0.06), 0 4px 16px rgba(15,23,41,0.04); }
-.shadow-lifted  { box-shadow: 0 4px 12px rgba(36,56,156,0.12), 0 12px 32px rgba(36,56,156,0.08); }
-.shadow-navbar  { box-shadow: 0 1px 0 var(--color-border); }
+/* Shadows */
+.shadow-card   { box-shadow: 0 1px 3px rgba(15,23,41,0.06), 0 4px 16px rgba(15,23,41,0.04); }
+.shadow-lifted { box-shadow: 0 4px 12px rgba(36,56,156,0.15), 0 12px 32px rgba(36,56,156,0.10); }
+.shadow-navbar { box-shadow: 0 1px 0 var(--color-border); }
 
-/* ---- GRADIENT CTA ---------------------------------------- */
+.dark .shadow-card   { box-shadow: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2); }
+.dark .shadow-lifted { box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.3); }
+
+/* Gradient CTA — unchanged across themes */
 .btn-gradient {
   background: linear-gradient(135deg, #24389c 0%, #3f51b5 50%, #5c6bc0 100%);
   background-size: 200% 200%;
@@ -95,25 +144,31 @@ body {
 }
 .btn-gradient:active { transform: translateY(0); }
 
-/* ---- GLASS ----------------------------------------------- */
+/* Glassmorphism — adapts to light/dark */
 .glass {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
+.dark .glass {
+  background: rgba(22, 27, 39, 0.85);
+}
 
-/* ---- TABULAR NUMS ---------------------------------------- */
-.tabular { font-variant-numeric: tabular-nums; }
-
-/* ---- ANIMATED GRADIENT TEXT ------------------------------ */
+/* Gradient text */
 .gradient-text {
   background: linear-gradient(135deg, #24389c, #5c6bc0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+.dark .gradient-text {
+  background: linear-gradient(135deg, #818cf8, #a5b4fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-/* ---- SIDEBAR ACTIVE INDICATOR ---------------------------- */
+/* Sidebar active indicator */
 .sidebar-active::before {
   content: '';
   position: absolute;
@@ -126,7 +181,10 @@ body {
   background: linear-gradient(180deg, #818cf8, #6366f1);
 }
 
-/* ---- SONNER TOAST OVERRIDES ------------------------------ */
-[data-sonner-toast] {
-  font-family: var(--font-body) !important;
+/* Tabular nums */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* Smooth theme transition on key elements */
+.theme-transition {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
 }
