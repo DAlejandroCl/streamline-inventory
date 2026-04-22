@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
+import { Tag, DollarSign, ToggleRight, CheckCircle, ArrowLeft } from "lucide-react";
 import ProductForm from "../features/products/components/ProductForm";
 import PageHeader from "../components/layout/PageHeader";
 import Button from "../components/ui/Button";
 
 const TIPS = [
-  { icon: "label", text: "Product name must be at least 1 character." },
-  { icon: "attach_money", text: "Price must be greater than 0." },
-  { icon: "toggle_on", text: "Toggle availability to control catalog visibility." },
-  { icon: "check_circle", text: "Products are available by default when created." },
+  { icon: Tag,         text: "Product name must be at least 1 character." },
+  { icon: DollarSign,  text: "Price must be greater than 0." },
+  { icon: ToggleRight, text: "Toggle availability to control catalog visibility." },
+  { icon: CheckCircle, text: "Products are available by default when created." },
 ];
 
 export default function NewProductPage() {
@@ -23,40 +24,34 @@ export default function NewProductPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* FORM */}
         <div className="lg:col-span-2">
           <ProductForm />
         </div>
 
-        {/* TIPS PANEL */}
-        <aside className="bg-[var(--color-surface-container-low)] rounded-2xl p-6 space-y-5">
+        <aside className="bg-[var(--color-surface) rounded-2xl p-6 shadow-card border border-[var(--color-border)/40 space-y-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)] font-label mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted) mb-1">
               Guidelines
             </p>
-            <h3 className="text-base font-bold text-[var(--color-on-surface)] font-headline">
+            <h3 className="text-base font-bold text-[var(--color-text-primary) font-headline">
               Entry Requirements
             </h3>
           </div>
 
           <ul className="space-y-4">
-            {TIPS.map((tip) => (
-              <li key={tip.icon} className="flex items-start gap-3">
-                <div className="w-7 h-7 rounded-lg bg-[var(--color-primary-fixed)]/40 flex items-center justify-center shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-sm text-[var(--color-primary)] leading-none">
-                    {tip.icon}
-                  </span>
+            {TIPS.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-start gap-3">
+                <div className="w-7 h-7 rounded-lg bg-[var(--color-primary-container) flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon size={13} className="text-[var(--color-primary)" strokeWidth={2.2} />
                 </div>
-                <p className="text-sm text-[var(--color-on-surface-variant)] leading-relaxed">
-                  {tip.text}
-                </p>
+                <p className="text-sm text-[var(--color-text-secondary) leading-relaxed">{text}</p>
               </li>
             ))}
           </ul>
 
-          <div className="pt-4 border-t border-[var(--color-outline-variant)]/15">
+          <div className="pt-2 border-t border-[var(--color-border)/40">
             <Link to="/products">
-              <Button variant="secondary" className="w-full" icon="arrow_back">
+              <Button variant="secondary" icon={ArrowLeft} className="w-full justify-center">
                 Back to Inventory
               </Button>
             </Link>
