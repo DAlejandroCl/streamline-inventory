@@ -1,11 +1,4 @@
-/* ============================================================
-   PRODUCT FORM
-   Compartido entre NewProductPage y EditProductPage.
-   Usa los componentes del design system (Label, Input, Button)
-   en lugar de elementos HTML raw para consistencia visual.
-   ============================================================ */
-
-import { Form, useActionData } from "react-router-dom";
+import { Form, useActionData, useNavigation } from "react-router-dom";
 import type { ProductFormData } from "../types/products";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
@@ -26,76 +19,92 @@ type Props = {
   isEditing?: boolean;
 };
 
-export default function ProductForm({
-  defaultValues,
-  isEditing = false,
-}: Props) {
+export default function ProductForm({ defaultValues, isEditing = false }: Props) {
   const actionData = useActionData() as ActionErrors | undefined;
+  const navigation = useNavigation();
+  const isSubmitting = navigation.state === "submitting";
 
   return (
-    <Form className="bg-white p-6 rounded-xl shadow-md space-y-5" method="post">
-
+    <Form
+      method="post"
+      className="bg-[var(--color-surface-container-lowest)] rounded-2xl p-8 shadow-ambient space-y-6"
+    >
       {/* PRODUCT NAME */}
-      <div>
-        <Label htmlFor="name" required>
-          Product name
-        </Label>
-        <Input
-          id="name"
-          name="name"
-          type="text"
-          placeholder="e.g. Wireless Keyboard"
-          defaultValue={actionData?.values?.name ?? defaultValues?.name ?? ""}
-          error={actionData?.errors?.name?.[0]}
-        />
-      </div>
+      <Input
+        id="name"
+        name="name"
+        type="text"
+        label="Product name"
+        required
+        placeholder="e.g. Wireless Keyboard"
+        icon="label"
+        defaultValue={actionData?.values?.name ?? defaultValues?.name ?? ""}
+        error={actionData?.errors?.name?.[0]}
+      />
 
       {/* PRICE */}
-      <div>
-        <Label htmlFor="price" required>
-          Price (USD)
-        </Label>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          placeholder="0.00"
-          min={0}
-          step="0.01"
-          defaultValue={actionData?.values?.price ?? defaultValues?.price ?? ""}
-          error={actionData?.errors?.price?.[0]}
-        />
-      </div>
+      <Input
+        id="price"
+        name="price"
+        type="number"
+        label="Price (USD)"
+        required
+        placeholder="0.00"
+        min={0}
+        step="0.01"
+        icon="attach_money"
+        defaultValue={actionData?.values?.price ?? defaultValues?.price ?? ""}
+        error={actionData?.errors?.price?.[0]}
+      />
 
       {/* AVAILABILITY */}
-      <div className="flex items-center gap-3">
-        <input
-          id="availability"
-          type="checkbox"
-          name="availability"
-          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-          defaultChecked={
-            actionData?.values?.availability ??
-            defaultValues?.availability ??
-            true
-          }
-        />
-        <Label htmlFor="availability" className="mb-0 cursor-pointer">
-          Available for sale
-        </Label>
+      <div>
+        <Label>Availability</Label>
+        <label className="flex items-center gap-3 cursor-pointer group w-fit">
+          <div className="relative">
+            <input
+              id="availability"
+              type="checkbox"
+              name="availability"
+              className="sr-only peer"
+              defaultChecked={
+                actionData?.values?.availability ??
+                defaultValues?.availability ??
+                true
+              }
+            />
+            <div className="w-10 h-6 bg-[var(--color-surface-container-high)] rounded-full peer-checked:bg-[var(--color-primary)] transition-colors duration-200" />
+            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200 peer-checked:translate-x-4" />
+          </div>
+          <span className="text-sm font-medium text-[var(--color-on-surface-variant)] group-hover:text-[var(--color-on-surface)] transition-colors">
+            Available for sale
+          </span>
+        </label>
       </div>
 
       {/* GENERAL ERROR */}
       {actionData?.errors?.general && (
-        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-          {actionData.errors.general[0]}
-        </p>
+        <div className="flex items-center gap-2 px-4 py-3 bg-[var(--color-error-container)]/30 rounded-xl border-l-4 border-[var(--color-error)]">
+          <span className="material-symbols-outlined text-[var(--color-error)] text-lg leading-none">
+            error
+          </span>
+          <p className="text-sm text-[var(--color-on-error-container)] font-medium">
+            {actionData.errors.general[0]}
+          </p>
+        </div>
       )}
 
       {/* SUBMIT */}
-      <div className="flex items-center gap-3 pt-1">
-        <Button type="submit">
-          {isEditing ? "Update product" : "Create product"}
+      <div className="pt-2 flex items-center gap-3">
+        <Button
+          type="submit"
+          size="lg"
+          icon={isSubmitting ? undefined : isEditing ? "save" : "add"}
+          loading={isSubmitting}
+        >
+          {isSubmitting
+            ? isEditing ? "Saving..." : "Creating..."
+            : isEditing ? "Save changes" : "Create product"}
         </Button>
       </div>
     </Form>

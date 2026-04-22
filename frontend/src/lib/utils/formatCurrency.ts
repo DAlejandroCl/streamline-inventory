@@ -1,13 +1,3 @@
-/*
- * Formateador de precios centralizado.
- * Usar este helper en lugar de inline toLocaleString()
- * para garantizar consistencia en toda la aplicación.
- *
- * formatCurrency(1499)    → "$1,499.00"
- * formatCurrency(49.9)    → "$49.90"
- * formatCurrency(0)       → "$0.00"
- */
-
 export function formatCurrency(
   value: number,
   currency = "USD",
