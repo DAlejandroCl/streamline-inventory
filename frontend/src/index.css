@@ -1,21 +1,168 @@
 @import "tailwindcss";
 
-/*
- * Custom design tokens — Tailwind 4 CSS-first.
- * Estos valores reemplazan el tailwind.config.ts eliminado.
- * Se usan como clases: bg-background, text-foreground, etc.
- */
+/* ============================================================
+   DESIGN SYSTEM — THE ARCHITECTURAL LEDGER
+   Basado en el sistema "Indigo Logistics" del diseño de referencia.
+   Reglas clave:
+   - No 1px borders para separar secciones — usar background shifts
+   - Gradiente primary→primary-container para CTAs principales
+   - Tipografía dual: Manrope (display) + Inter (datos/cuerpo)
+   - Dark mode via clase .dark en <html>
+   ============================================================ */
+
+/* ---- FONTS ------------------------------------------------ */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap");
+
+/* ---- DESIGN TOKENS ---------------------------------------- */
 @theme {
-  --color-background: #f9fafb;
-  --color-foreground: #111827;
+  /* Primary — Deep Indigo */
+  --color-primary:               #24389c;
+  --color-primary-container:     #3f51b5;
+  --color-primary-fixed:         #dee0ff;
+  --color-primary-fixed-dim:     #bac3ff;
+  --color-on-primary:            #ffffff;
+  --color-on-primary-container:  #cacfff;
+  --color-on-primary-fixed:      #00105c;
+  --color-inverse-primary:       #bac3ff;
+
+  /* Secondary — Teal */
+  --color-secondary:             #006a60;
+  --color-secondary-container:   #85f6e5;
+  --color-secondary-fixed:       #85f6e5;
+  --color-secondary-fixed-dim:   #67d9c9;
+  --color-on-secondary:          #ffffff;
+  --color-on-secondary-container:#007166;
+  --color-on-secondary-fixed:    #00201c;
+
+  /* Tertiary — Warm amber */
+  --color-tertiary:              #6c3400;
+  --color-tertiary-container:    #8f4700;
+  --color-tertiary-fixed:        #ffdcc6;
+  --color-tertiary-fixed-dim:    #ffb784;
+  --color-on-tertiary:           #ffffff;
+  --color-on-tertiary-container: #ffc7a2;
+  --color-on-tertiary-fixed:     #301400;
+
+  /* Error */
+  --color-error:                 #ba1a1a;
+  --color-error-container:       #ffdad6;
+  --color-on-error:              #ffffff;
+  --color-on-error-container:    #93000a;
+
+  /* Surface hierarchy — The Layering System */
+  --color-surface:               #f8fafb;
+  --color-surface-bright:        #f8fafb;
+  --color-surface-dim:           #d8dadb;
+  --color-surface-container-lowest:  #ffffff;
+  --color-surface-container-low:     #f2f4f5;
+  --color-surface-container:         #eceeef;
+  --color-surface-container-high:    #e6e8e9;
+  --color-surface-container-highest: #e1e3e4;
+  --color-surface-variant:           #e1e3e4;
+  --color-surface-tint:              #4355b9;
+
+  /* On-surface */
+  --color-on-surface:            #191c1d;
+  --color-on-surface-variant:    #454652;
+  --color-on-background:         #191c1d;
+  --color-inverse-surface:       #2e3132;
+  --color-inverse-on-surface:    #eff1f2;
+
+  /* Outline */
+  --color-outline:               #757684;
+  --color-outline-variant:       #c5c5d4;
+
+  /* Background */
+  --color-background:            #f8fafb;
+
+  /* Fonts */
+  --font-headline: "Manrope", sans-serif;
+  --font-body:     "Inter", sans-serif;
+  --font-label:    "Inter", sans-serif;
+
+  /* Border radius */
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg:      0.5rem;
+  --radius-xl:      0.75rem;
+  --radius-full:    9999px;
 }
 
-html,
-body,
-#root {
+/* ---- MATERIAL SYMBOLS ------------------------------------- */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+.material-symbols-filled {
+  font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+}
+
+/* ---- BASE ------------------------------------------------- */
+html, body, #root {
   height: 100%;
 }
 
 body {
-  @apply bg-gray-100;
+  font-family: "Inter", sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- SCROLLBAR -------------------------------------------- */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ---- SIGNATURE GRADIENT CTA ------------------------------- */
+.btn-primary-gradient {
+  background: linear-gradient(135deg, #24389c 0%, #3f51b5 100%);
+}
+
+/* ---- GLASSMORPHISM NAVBAR --------------------------------- */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* ---- AMBIENT SHADOW --------------------------------------- */
+.shadow-ambient {
+  box-shadow: rgba(36, 56, 156, 0.06) 0px 8px 32px;
+}
+
+/* ---- GHOST BORDER (accessibility fallback) ---------------- */
+.border-ghost {
+  border: 1px solid rgba(197, 197, 212, 0.25);
+}
+
+/* ---- INPUT FOCUS RULE — bottom border only ---------------- */
+.input-ledger {
+  background: var(--color-surface-container-lowest);
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0.5rem 0.5rem 0 0;
+  transition: border-color 0.2s ease;
+}
+.input-ledger:focus {
+  outline: none;
+  border-bottom-color: var(--color-primary);
+  box-shadow: none;
+}
+
+/* ---- DARK MODE TOKENS ------------------------------------- */
+.dark {
+  --color-surface:               #0f1011;
+  --color-surface-container-lowest:  #1a1c1e;
+  --color-surface-container-low:     #1f2122;
+  --color-surface-container:         #232527;
+  --color-surface-container-high:    #2d2f31;
+  --color-surface-container-highest: #383a3c;
+  --color-on-surface:            #e2e2e5;
+  --color-on-surface-variant:    #c5c5d4;
+  --color-background:            #0f1011;
+  --color-outline-variant:       #454652;
+  --color-primary:               #bac3ff;
+  --color-primary-container:     #293ca0;
+  --color-on-primary:            #00105c;
+  --color-secondary:             #67d9c9;
+  --color-error:                 #ffb4ab;
 }
