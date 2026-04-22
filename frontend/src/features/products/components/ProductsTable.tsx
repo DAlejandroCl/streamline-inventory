@@ -1,24 +1,23 @@
 import { Link, Form } from "react-router-dom";
+import { Edit2, Trash2, Package } from "lucide-react";
 import type { Product } from "../types/products";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import { formatCurrency } from "../../../lib/utils/formatCurrency";
 
-type Props = {
-  products: Product[];
-};
+type Props = { products: Product[] };
 
 export default function ProductsTable({ products }: Props) {
   return (
-    <div className="bg-[var(--color-surface-container-lowest)] rounded-2xl shadow-ambient overflow-hidden">
+    <div className="bg-[var(--color-surface) rounded-2xl shadow-card overflow-hidden border border-[var(--color-border)/40">
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full">
           <thead>
-            <tr className="bg-[var(--color-surface-container-low)]">
-              {["Product Name", "Price", "Status", "Created", "Actions"].map((h) => (
+            <tr className="bg-[var(--color-surface-low) border-b border-[var(--color-border)/50">
+              {["Product", "Price", "Status", "Added", "Actions"].map((h) => (
                 <th
                   key={h}
-                  className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-[var(--color-on-surface-variant)] font-label"
+                  className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)"
                 >
                   {h}
                 </th>
@@ -29,36 +28,37 @@ export default function ProductsTable({ products }: Props) {
             {products.map((p) => (
               <tr
                 key={p.id}
-                className="border-t border-[var(--color-outline-variant)]/10 hover:bg-[var(--color-surface-container-low)]/60 transition-colors duration-150 group"
+                className="border-b border-[var(--color-border)/20] hover:bg-[var(--color-surface-low)/60 transition-colors duration-100 group"
               >
-                {/* NAME */}
+                {/* PRODUCT */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-fixed)]/40 flex items-center justify-center shrink-0">
-                      <span className="material-symbols-outlined text-sm text-[var(--color-primary)] leading-none">
-                        inventory_2
-                      </span>
+                    <div className="w-9 h-9 rounded-xl bg-[var(--color-primary-container) flex items-center justify-center shrink-0">
+                      <Package size={15} className="text-[var(--color-primary)" strokeWidth={2} />
                     </div>
-                    <span className="font-semibold text-sm text-[var(--color-on-surface)]">
-                      {p.name}
-                    </span>
+                    <div>
+                      <p className="text-sm font-bold text-[var(--color-text-primary)">{p.name}</p>
+                      <p className="text-xs text-[var(--color-text-muted) font-medium">ID #{p.id}</p>
+                    </div>
                   </div>
                 </td>
 
                 {/* PRICE */}
-                <td className="px-6 py-4 text-sm font-semibold text-[var(--color-on-surface)] tabular-nums text-right">
-                  {formatCurrency(p.price)}
+                <td className="px-6 py-4">
+                  <span className="text-sm font-bold text-[var(--color-text-primary) tabular">
+                    {formatCurrency(p.price)}
+                  </span>
                 </td>
 
-                {/* STATUS — toggle on click */}
+                {/* STATUS */}
                 <td className="px-6 py-4">
                   <Form method="post" action="/products/toggle">
                     <input type="hidden" name="id" value={p.id} />
                     <input type="hidden" name="availability" value={String(p.availability)} />
                     <button
                       type="submit"
-                      title="Click to toggle availability"
-                      className="focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 rounded-full transition-transform hover:scale-105"
+                      className="focus:outline-none rounded-full transition-transform hover:scale-105 active:scale-95"
+                      title="Click to toggle"
                     >
                       <Badge variant={p.availability ? "success" : "danger"}>
                         {p.availability ? "Available" : "Out of stock"}
@@ -68,28 +68,23 @@ export default function ProductsTable({ products }: Props) {
                 </td>
 
                 {/* CREATED */}
-                <td className="px-6 py-4 text-xs text-[var(--color-on-surface-variant)]">
+                <td className="px-6 py-4 text-xs text-[var(--color-text-muted) font-medium tabular">
                   {p.createdAt
                     ? new Date(p.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
+                        month: "short", day: "numeric", year: "numeric",
                       })
                     : "—"}
                 </td>
 
                 {/* ACTIONS */}
                 <td className="px-6 py-4">
-                  <div className="flex items-center gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity duration-150">
                     <Link to={`/products/${p.id}/edit`}>
-                      <Button variant="ghost" size="sm" icon="edit">
-                        Edit
-                      </Button>
+                      <Button variant="ghost" size="sm" icon={Edit2}>Edit</Button>
                     </Link>
-
                     <Form method="post" action="/products/delete">
                       <input type="hidden" name="id" value={p.id} />
-                      <Button variant="danger" size="sm" icon="delete" type="submit">
+                      <Button variant="danger" size="sm" icon={Trash2} type="submit">
                         Delete
                       </Button>
                     </Form>
@@ -99,6 +94,12 @@ export default function ProductsTable({ products }: Props) {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="px-6 py-4 bg-[var(--color-surface-low)/50 border-t border-[var(--color-border)/30 flex items-center justify-between">
+        <p className="text-xs text-[var(--color-text-muted) font-medium">
+          Showing <span className="font-bold text-[var(--color-text-secondary)">{products.length}</span> entries
+        </p>
       </div>
     </div>
   );
