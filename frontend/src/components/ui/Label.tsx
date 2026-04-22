@@ -6,16 +6,14 @@ export default function Label({ children, required, className = "", ...props }: 
   return (
     <label
       className={[
-        "block text-xs font-semibold uppercase tracking-wider",
-        "text-[var(--color-on-surface-variant)] mb-2 font-label",
+        "block text-[11px] font-bold uppercase tracking-widest",
+        "text-[var(--color-text-secondary) mb-1.5",
         className,
       ].join(" ")}
       {...props}
     >
       {children}
-      {required && (
-        <span className="ml-1 text-[var(--color-primary)]" aria-hidden="true">*</span>
-      )}
+      {required && <span className="ml-1 text-[var(--color-primary)" aria-hidden="true">*</span>}
     </label>
   );
 }
