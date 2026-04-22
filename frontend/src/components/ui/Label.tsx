@@ -5,14 +5,16 @@ type Props = React.LabelHTMLAttributes<HTMLLabelElement> & {
 export default function Label({ children, required, className = "", ...props }: Props) {
   return (
     <label
-      className={`block text-sm font-medium text-gray-700 mb-1 ${className}`}
+      className={[
+        "block text-xs font-semibold uppercase tracking-wider",
+        "text-[var(--color-on-surface-variant)] mb-2 font-label",
+        className,
+      ].join(" ")}
       {...props}
     >
       {children}
       {required && (
-        <span className="ml-1 text-red-500" aria-hidden="true">
-          *
-        </span>
+        <span className="ml-1 text-[var(--color-primary)]" aria-hidden="true">*</span>
       )}
     </label>
   );

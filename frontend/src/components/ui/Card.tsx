@@ -1,12 +1,26 @@
 type Props = {
   children: React.ReactNode;
   className?: string;
+  accent?: "primary" | "error" | "secondary" | "tertiary" | "none";
 };
 
-export default function Card({ children, className = "" }: Props) {
+const accents: Record<string, string> = {
+  primary:   "border-b-2 border-[var(--color-primary)]",
+  error:     "border-b-2 border-[var(--color-error)]",
+  secondary: "border-b-2 border-[var(--color-secondary)]",
+  tertiary:  "border-b-2 border-[var(--color-tertiary)]",
+  none:      "",
+};
+
+export default function Card({ children, className = "", accent = "none" }: Props) {
   return (
     <div
-      className={`bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition ${className}`}
+      className={[
+        "bg-[var(--color-surface-container-lowest)] rounded-xl p-6",
+        "shadow-ambient transition-shadow duration-200",
+        accents[accent],
+        className,
+      ].join(" ")}
     >
       {children}
     </div>

@@ -1,31 +1,39 @@
-/*
- * Movido de src/components/tables/ a src/components/ui/
- * para centralizar todos los componentes UI base en un solo lugar.
- * Actualizar el import en ProductsPage.tsx al aplicar este cambio.
- */
-
 export default function ProductsTableSkeleton() {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <div className="h-8 w-40 bg-gray-200 rounded animate-pulse" />
-        <div className="h-10 w-32 bg-gray-200 rounded animate-pulse" />
+    <div className="space-y-6 animate-pulse">
+      <div className="flex justify-between items-center">
+        <div className="space-y-2">
+          <div className="h-8 w-56 bg-[var(--color-surface-container-high)] rounded-lg" />
+          <div className="h-4 w-80 bg-[var(--color-surface-container)] rounded" />
+        </div>
+        <div className="h-10 w-36 bg-[var(--color-surface-container-high)] rounded-lg" />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div className="bg-gray-100 px-3 py-3 grid grid-cols-4 gap-4">
-          {["Name", "Price", "Status", "Actions"].map((col) => (
-            <div key={col} className="h-4 bg-gray-200 rounded animate-pulse" />
+      {/* Stats bar */}
+      <div className="grid grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="bg-[var(--color-surface-container-lowest)] p-6 rounded-xl shadow-ambient space-y-3">
+            <div className="h-3 w-24 bg-[var(--color-surface-container-high)] rounded" />
+            <div className="h-8 w-16 bg-[var(--color-surface-container-high)] rounded" />
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      <div className="bg-[var(--color-surface-container-lowest)] rounded-2xl overflow-hidden shadow-ambient">
+        <div className="bg-[var(--color-surface-container-low)] px-6 py-4 grid grid-cols-5 gap-4">
+          {["Name", "Price", "Status", "Created", "Actions"].map((col) => (
+            <div key={col} className="h-3 bg-[var(--color-surface-container-high)] rounded" />
           ))}
         </div>
-
-        <div className="divide-y divide-gray-100">
+        <div>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="px-3 py-4 grid grid-cols-4 gap-4 animate-pulse">
-              <div className="h-4 bg-gray-200 rounded col-span-1" />
-              <div className="h-4 bg-gray-200 rounded w-16" />
-              <div className="h-5 bg-gray-200 rounded-full w-20" />
-              <div className="h-4 bg-gray-200 rounded w-24" />
+            <div key={i} className="px-6 py-4 grid grid-cols-5 gap-4 border-t border-[var(--color-outline-variant)]/10">
+              <div className="h-4 bg-[var(--color-surface-container)] rounded col-span-1" />
+              <div className="h-4 bg-[var(--color-surface-container)] rounded w-20" />
+              <div className="h-5 bg-[var(--color-surface-container)] rounded-full w-24" />
+              <div className="h-4 bg-[var(--color-surface-container)] rounded w-20" />
+              <div className="h-4 bg-[var(--color-surface-container)] rounded w-16" />
             </div>
           ))}
         </div>

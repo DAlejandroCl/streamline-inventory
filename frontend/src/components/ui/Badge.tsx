@@ -1,16 +1,29 @@
+type Variant = "success" | "danger" | "warning" | "neutral" | "primary";
+
 type Props = {
   children: React.ReactNode;
-  variant?: "success" | "danger";
+  variant?: Variant;
+  className?: string;
 };
 
-export default function Badge({ children, variant = "success" }: Props) {
-  const styles = {
-    success: "bg-green-100 text-green-700",
-    danger: "bg-red-100 text-red-700"
-  };
+const styles: Record<Variant, string> = {
+  success: "bg-[var(--color-secondary-container)] text-[var(--color-on-secondary-container)]",
+  danger:  "bg-[var(--color-error-container)] text-[var(--color-on-error-container)]",
+  warning: "bg-[var(--color-tertiary-fixed)] text-[var(--color-on-tertiary-fixed)]",
+  neutral: "bg-[var(--color-surface-container-high)] text-[var(--color-on-surface-variant)]",
+  primary: "bg-[var(--color-primary-fixed)] text-[var(--color-primary)]",
+};
 
+export default function Badge({ children, variant = "neutral", className = "" }: Props) {
   return (
-    <span className={`px-2 py-1 rounded text-xs ${styles[variant]}`}>
+    <span
+      className={[
+        "inline-flex items-center px-2.5 py-0.5 rounded-full",
+        "text-xs font-semibold tracking-wide",
+        styles[variant],
+        className,
+      ].join(" ")}
+    >
       {children}
     </span>
   );
