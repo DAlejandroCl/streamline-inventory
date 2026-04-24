@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Form, useActionData, useNavigation } from "react-router-dom";
-import { DollarSign, Tag, Save, Plus } from "lucide-react";
+import { Tag, DollarSign, Save, Plus } from "lucide-react";
 import type { ProductFormData } from "../types/products";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
@@ -25,12 +26,33 @@ export default function ProductForm({ defaultValues, isEditing = false }: Props)
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
+  /*
+   * FIX: el toggle debe ser CONTROLADO con useState.
+   *
+   * Root cause del bug:
+   * - defaultChecked es uncontrolled — React lo aplica solo en el
+   *   mount inicial y nunca más. Si el valor cambia (re-render,
+   *   action data), el DOM no se actualiza.
+   * - El CSS peer-checked solo funciona cuando el checkbox nativo
+   *   está en el DOM con :checked real, no con un estado de React.
+   *
+   * Solución:
+   * - useState controla el valor booleano visible
+   * - <button type="button"> reemplaza el checkbox nativo
+   * - <input type="hidden"> envía el valor al FormData de React Router
+   * - El track/thumb se colorean con clases condicionales directas,
+   *   sin depender de :checked del navegador
+   */
+  const [available, setAvailable] = useState<boolean>(
+    actionData?.values?.availability ?? defaultValues?.availability ?? true
+  );
+
   return (
     <Form
       method="post"
-      className="bg-[var(--color-surface) rounded-2xl p-8 shadow-card border border-[var(--color-border)/40 space-y-6"
+      className="bg-[var(--color-surface)] rounded-2xl p-8 shadow-card border border-[var(--color-border)]/40 space-y-6"
     >
-      {/* NAME */}
+      {/* PRODUCT NAME */}
       <Input
         id="name"
         name="name"
@@ -61,27 +83,63 @@ export default function ProductForm({ defaultValues, isEditing = false }: Props)
       {/* AVAILABILITY TOGGLE */}
       <div>
         <Label>Availability</Label>
-        <label className="flex items-center gap-3 cursor-pointer w-fit group">
-          <div className="relative">
-            <input
-              type="checkbox"
-              name="availability"
-              className="sr-only peer"
-              defaultChecked={actionData?.values?.availability ?? defaultValues?.availability ?? true}
+
+        {/*
+         * Input hidden — garantiza que el FormData de React Router
+         * siempre tenga "availability" independientemente del estado
+         * del botón. El action lee este valor, no el checkbox nativo.
+         */}
+        <input
+          type="hidden"
+          name="availability"
+          value={available ? "on" : "off"}
+        />
+
+        <button
+          type="button"
+          role="switch"
+          aria-checked={available}
+          aria-label="Toggle product availability"
+          onClick={() => setAvailable((prev) => !prev)}
+          className="flex items-center gap-3 cursor-pointer group w-fit rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
+        >
+          {/* TRACK */}
+          <div
+            className={[
+              "relative w-11 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0",
+              available
+                ? "bg-[var(--color-primary)]"
+                : "bg-[var(--color-surface-high)] border border-[var(--color-border)]",
+            ].join(" ")}
+          >
+            {/* THUMB */}
+            <div
+              className={[
+                "absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md",
+                "transition-transform duration-300 ease-in-out",
+                available ? "translate-x-5" : "translate-x-0.5",
+              ].join(" ")}
             />
-            <div className="w-11 h-6 bg-[var(--color-surface-high) border border-[var(--color-border) rounded-full peer-checked:bg-[var(--color-primary) peer-checked:border-transparent transition-all duration-200" />
-            <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-200 peer-checked:translate-x-5" />
           </div>
-          <span className="text-sm font-semibold text-[var(--color-text-secondary) group-hover:text-[var(--color-text-primary) transition-colors">
-            Available for sale
+
+          {/* STATUS LABEL — changes with state */}
+          <span
+            className={[
+              "text-sm font-semibold transition-colors duration-200 select-none",
+              available
+                ? "text-[var(--color-primary)]"
+                : "text-[var(--color-text-muted)]",
+            ].join(" ")}
+          >
+            {available ? "Available for sale" : "Not available"}
           </span>
-        </label>
+        </button>
       </div>
 
       {/* GENERAL ERROR */}
       {actionData?.errors?.general && (
-        <div className="flex items-start gap-3 px-4 py-3 bg-[var(--color-error-container)/40 rounded-xl border-l-4 border-[var(--color-error)">
-          <p className="text-sm text-[var(--color-on-error-container) font-medium">
+        <div className="flex items-start gap-3 px-4 py-3 bg-[var(--color-error-container)]/40 rounded-xl border-l-4 border-[var(--color-error)]">
+          <p className="text-sm text-[var(--color-on-error-container)] font-medium">
             {actionData.errors.general[0]}
           </p>
         </div>
@@ -97,8 +155,12 @@ export default function ProductForm({ defaultValues, isEditing = false }: Props)
           className="w-full sm:w-auto"
         >
           {isSubmitting
-            ? isEditing ? "Saving changes..." : "Creating product..."
-            : isEditing ? "Save changes" : "Create product"}
+            ? isEditing
+              ? "Saving changes..."
+              : "Creating product..."
+            : isEditing
+            ? "Save changes"
+            : "Create product"}
         </Button>
       </div>
     </Form>
