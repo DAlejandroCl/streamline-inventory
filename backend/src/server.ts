@@ -1,11 +1,11 @@
 /* ============================================================
    EXPRESS SERVER
-   El orden del middleware es crítico:
+   Orden de middleware crítico:
    1. CORS
    2. Body parsing
    3. Static files
    4. Routes
-   5. Swagger docs
+   5. Swagger
    6. Global error handler — DEBE ir último
    ============================================================ */
 
@@ -15,7 +15,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerSpec from "./config/swagger.js";
-import router from "./routes/product.routes.js";
+import productRouter from "./routes/product.routes.js";
+import categoryRouter from "./routes/category.routes.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -44,19 +45,8 @@ server.use("/public", express.static(path.join(__dirname, "public")));
 const swaggerOptions = {
   customCss: `
     .swagger-ui .topbar { background-color: #0f172a; }
-    .swagger-ui .topbar-wrapper { display: flex; align-items: center; }
     .swagger-ui .topbar-wrapper img,
     .swagger-ui .topbar-wrapper svg { display: none !important; }
-    .swagger-ui .topbar-wrapper::before {
-      content: '';
-      display: block;
-      width: 220px;
-      height: 60px;
-      background-image: url('/public/logo.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: left center;
-    }
   `,
   customSiteTitle: "Streamline Inventory API",
 };
@@ -64,14 +54,11 @@ const swaggerOptions = {
 /* ---- ROUTES ----------------------------------------------- */
 
 server.get("/", (_req, res) => {
-  res.json({
-    message: "Streamline API is running",
-    docs: "/docs",
-    version: "1.0.0",
-  });
+  res.json({ message: "Streamline API is running", docs: "/docs", version: "1.0.0" });
 });
 
-server.use("/api/products", router);
+server.use("/api/products", productRouter);
+server.use("/api/categories", categoryRouter);
 server.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerOptions));
 
 /* ---- GLOBAL ERROR HANDLER (debe ir último) ---------------- */
