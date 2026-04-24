@@ -1,12 +1,18 @@
 /* ============================================================
    DATABASE CONFIG
-   Instancia única de Sequelize. En test usa SQLite en memoria
-   para aislamiento total. En producción usa PostgreSQL con SSL.
+   Instancia única de Sequelize.
+   - Test: SQLite en memoria para aislamiento total
+   - Dev/Prod: PostgreSQL con SSL
+
+   db.sync({ alter: true }) actualiza las columnas existentes
+   sin destruir datos. Para producción real usar migraciones
+   con sequelize-cli en lugar de sync.
    ============================================================ */
 
 import { Sequelize } from "sequelize-typescript";
 import dotenv from "dotenv";
 import colors from "colors";
+import Category from "../models/Category.model.js";
 import Product from "../models/Product.model.js";
 
 dotenv.config();
@@ -19,12 +25,17 @@ export const db = isTest
       dialect: "sqlite",
       storage: ":memory:",
       logging: false,
-      models: [Product],
+      models: [Category, Product],
     })
   : new Sequelize(process.env.DATABASE_URL as string, {
       dialect: "postgres",
       logging: false,
-      models: [Product],
+      /*
+       * Category debe ir antes de Product porque Product
+       * tiene una FK que referencia a categories.id.
+       * Sequelize respeta este orden al hacer sync.
+       */
+      models: [Category, Product],
       dialectOptions: {
         ssl: {
           require: true,
@@ -39,7 +50,12 @@ export const connectDB = async (): Promise<void> => {
     await db.authenticate();
     console.log(colors.green.bold("✔ Database connected successfully"));
 
-    await db.sync();
+    /*
+     * alter: true — añade columnas nuevas y modifica tipos
+     * sin DROP TABLE. Seguro para desarrollo.
+     * En producción: reemplazar con sequelize-cli migrations.
+     */
+    await db.sync({ alter: true });
     console.log(colors.cyan.bold("✔ Database synchronized"));
   } catch (error) {
     console.error(colors.red.bold("✖ Database connection error"));
