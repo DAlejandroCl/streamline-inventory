@@ -1,19 +1,22 @@
-/* ============================================================
-   UPDATE PRODUCT ACTION
-   1. Valida los datos del formulario con Zod.
-   2. Si hay errores, los retorna para que el form los muestre
-      sin perder los valores que el usuario ya escribió.
-   3. Si la validación pasa, llama al API client y redirige.
-   ============================================================ */
-
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
 import { updateProduct } from "../lib/api/products";
+import type { ProductFormData } from "../features/products/types/products";
+
+type ActionResponse = {
+  errors?: {
+    name?: string[];
+    price?: string[];
+    availability?: string[];
+    general?: string[];
+  };
+  values?: Partial<ProductFormData>;
+};
 
 export async function updateProductAction({
   request,
   params,
-}: ActionFunctionArgs) {
+}: ActionFunctionArgs): Promise<Response | ActionResponse> {
   const id = params.id;
 
   if (!id) {
@@ -21,14 +24,18 @@ export async function updateProductAction({
   }
 
   const formData = await request.formData();
+  const rawAvailability = formData.get("availability");
 
   const data = {
     name: String(formData.get("name") ?? ""),
     price: Number(formData.get("price") ?? 0),
-    availability: formData.get("availability") === "on",
+    /*
+     * Mismo parsing que createProductAction — el hidden input del
+     * toggle controlado envía "on" o "off", nunca null.
+     */
+    availability: rawAvailability === "on",
   };
 
-  /* VALIDATION */
   const result = ProductSchema.safeParse(data);
 
   if (!result.success) {
@@ -38,15 +45,13 @@ export async function updateProductAction({
     };
   }
 
-  /* API CALL */
   try {
     await updateProduct(id, result.data);
+    return redirect("/products");
   } catch {
     return {
-      errors: { general: ["An error occurred while updating the product. Please try again."] },
+      errors: { general: ["Error updating product. Please try again."] },
       values: data,
     };
   }
-
-  return redirect("/products");
 }
