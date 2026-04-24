@@ -1,16 +1,10 @@
 /* ============================================================
    PRODUCT ROUTES
    Todas las rutas mutantes tienen validación explícita.
-   Las reglas de validación se definen una sola vez y se
-   reutilizan donde corresponde (nameRule, priceRule).
-
-   PUT: validación completa (name + price obligatorios).
-   PATCH: validación opcional (solo los campos enviados).
    ============================================================ */
 
 import { Router } from "express";
 import { body } from "express-validator";
-
 import {
   getProducts,
   getProductById,
@@ -19,22 +13,19 @@ import {
   patchProduct,
   deleteProduct,
 } from "../controllers/product.controllers.js";
-
-import { validate } from "../middlewares/validation.middleware.js";
+import { validate } from "../middlewares/validation.js";
 
 const router = Router();
 
-/* ---- Reglas de validación reutilizables ------------------- */
+/* ---- Validation rules ------------------------------------- */
 
-const nameRule = body("name")
-  .notEmpty()
-  .withMessage("Product name is required");
-
+const nameRule = body("name").notEmpty().withMessage("Product name is required");
 const priceRule = body("price")
-  .notEmpty()
-  .withMessage("Price is required")
-  .isFloat({ gt: 0 })
-  .withMessage("Price must be greater than 0");
+  .notEmpty().withMessage("Price is required")
+  .isFloat({ gt: 0 }).withMessage("Price must be greater than 0");
+const stockRule = body("stock")
+  .notEmpty().withMessage("Stock is required")
+  .isInt({ min: 0 }).withMessage("Stock must be 0 or greater");
 
 /* ---- READ -------------------------------------------------- */
 
@@ -42,7 +33,7 @@ const priceRule = body("price")
  * @swagger
  * /api/products:
  *   get:
- *     summary: Get all products
+ *     summary: Get all products (includes category)
  *     tags: [Products]
  *     responses:
  *       200:
@@ -71,16 +62,8 @@ router.get("/", getProducts);
  *     responses:
  *       200:
  *         description: Product found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Product'
  *       404:
  *         description: Product not found
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
 router.get("/:id", getProductById);
 
@@ -101,27 +84,16 @@ router.get("/:id", getProductById);
  *     responses:
  *       201:
  *         description: Product created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 data:
- *                   $ref: '#/components/schemas/Product'
  *       400:
  *         description: Validation error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.post("/", [nameRule, priceRule], validate, createProduct);
+router.post("/", [nameRule, priceRule, stockRule], validate, createProduct);
 
 /**
  * @swagger
  * /api/products/{id}:
  *   put:
- *     summary: Replace a product (full update)
+ *     summary: Full replace of a product
  *     tags: [Products]
  *     parameters:
  *       - in: path
@@ -129,27 +101,14 @@ router.post("/", [nameRule, priceRule], validate, createProduct);
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ProductInput'
- *     responses:
- *       200:
- *         description: Product updated
- *       400:
- *         description: Validation error
- *       404:
- *         description: Product not found
  */
-router.put("/:id", [nameRule, priceRule], validate, updateProduct);
+router.put("/:id", [nameRule, priceRule, stockRule], validate, updateProduct);
 
 /**
  * @swagger
  * /api/products/{id}:
  *   patch:
- *     summary: Partially update a product
+ *     summary: Partial update of a product
  *     tags: [Products]
  *     parameters:
  *       - in: path
@@ -157,33 +116,15 @@ router.put("/:id", [nameRule, priceRule], validate, updateProduct);
  *         required: true
  *         schema:
  *           type: integer
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/ProductPatchInput'
- *     responses:
- *       200:
- *         description: Product patched
- *       404:
- *         description: Product not found
  */
 router.patch(
   "/:id",
   [
-    body("name")
-      .optional()
-      .notEmpty()
-      .withMessage("Product name cannot be empty"),
-    body("price")
-      .optional()
-      .isFloat({ gt: 0 })
-      .withMessage("Price must be greater than 0"),
-    body("availability")
-      .optional()
-      .isBoolean()
-      .withMessage("Availability must be a boolean"),
+    body("name").optional().notEmpty().withMessage("Name cannot be empty"),
+    body("price").optional().isFloat({ gt: 0 }).withMessage("Price must be greater than 0"),
+    body("stock").optional().isInt({ min: 0 }).withMessage("Stock must be 0 or greater"),
+    body("availability").optional().isBoolean().withMessage("Availability must be boolean"),
+    body("category_id").optional().isInt({ gt: 0 }).withMessage("Invalid category ID"),
   ],
   validate,
   patchProduct
@@ -195,17 +136,6 @@ router.patch(
  *   delete:
  *     summary: Delete a product
  *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Product deleted
- *       404:
- *         description: Product not found
  */
 router.delete("/:id", deleteProduct);
 
