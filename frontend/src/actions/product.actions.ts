@@ -18,10 +18,17 @@ export async function createProductAction({
 }: ActionFunctionArgs): Promise<Response | ActionResponse> {
   const formData = await request.formData();
 
+  const rawAvailability = formData.get("availability");
+
   const data: ProductFormData = {
     name: String(formData.get("name") ?? ""),
     price: Number(formData.get("price") ?? 0),
-    availability: formData.get("availability") === "on",
+    /*
+     * El toggle controlado envía un hidden input con "on" (available)
+     * o "off" (not available). Un checkbox nativo sin marcar no envía
+     * nada — por eso el fallback cubre ambos casos.
+     */
+    availability: rawAvailability === "on",
   };
 
   const result = ProductSchema.safeParse(data);
@@ -38,9 +45,7 @@ export async function createProductAction({
     return redirect("/products");
   } catch {
     return {
-      errors: {
-        general: ["Error creating product"],
-      },
+      errors: { general: ["Error creating product. Please try again."] },
       values: data,
     };
   }
