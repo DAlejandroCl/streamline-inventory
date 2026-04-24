@@ -1,26 +1,27 @@
 /* ============================================================
    PRODUCT SERVICE
    Única fuente de verdad para la lógica de negocio de productos.
-   Los controllers delegan aquí — nunca importan el modelo
-   Sequelize directamente.
-
-   Cada función lanza AppError con el status HTTP correcto
-   para que el global error handler produzca respuestas
-   consistentes sin try-catch en los controllers.
+   Los controllers delegan aquí — nunca importan el modelo directo.
    ============================================================ */
 
 import Product from "../models/Product.model.js";
+import Category from "../models/Category.model.js";
 import { AppError } from "../types/AppError.js";
 import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js";
 
 /* ---- READ -------------------------------------------------- */
 
 export const getAllProducts = async (): Promise<Product[]> => {
-  return Product.findAll();
+  return Product.findAll({
+    include: [{ model: Category, attributes: ["id", "name", "color"] }],
+    order: [["createdAt", "DESC"]],
+  });
 };
 
 export const getProductById = async (id: number): Promise<Product> => {
-  const product = await Product.findByPk(id);
+  const product = await Product.findByPk(id, {
+    include: [{ model: Category, attributes: ["id", "name", "color"] }],
+  });
 
   if (!product) {
     throw new AppError("Product not found", 404);
@@ -35,12 +36,6 @@ export const createProduct = async (data: CreateProductDTO): Promise<Product> =>
   return Product.create({ ...data });
 };
 
-/*
- * Usada tanto por PUT (reemplazo completo) como por PATCH
- * (actualización parcial). Sequelize solo actualiza los campos
- * presentes en data, por lo que ambas semánticas son correctas
- * dependiendo de lo que el controller envíe.
- */
 export const updateProduct = async (
   id: number,
   data: UpdateProductDTO
@@ -54,8 +49,6 @@ export const updateProduct = async (
   await product.update(data);
   return product;
 };
-
-/* ---- DELETE ------------------------------------------------ */
 
 export const deleteProduct = async (id: number): Promise<void> => {
   const product = await Product.findByPk(id);
