@@ -1,8 +1,8 @@
 /* ============================================================
    APP ERROR
-   Clase de error operacional con status HTTP explícito.
-   El global error handler la detecta con instanceof y produce
-   respuestas tipadas sin comparaciones de strings frágiles.
+   Error operacional tipado con status HTTP explícito.
+   El global error handler lo detecta con instanceof para
+   producir respuestas consistentes sin comparar strings.
    ============================================================ */
 
 export class AppError extends Error {
@@ -12,11 +12,6 @@ export class AppError extends Error {
     super(message);
     this.name = "AppError";
     this.statusCode = statusCode;
-
-    /*
-     * Restaura la cadena de prototipos correcta al extender
-     * clases nativas de JavaScript con TypeScript.
-     */
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
