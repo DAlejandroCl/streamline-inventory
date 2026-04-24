@@ -1,11 +1,8 @@
 /* ============================================================
    PRODUCT CONTROLLERS
-   Handlers HTTP delgados. Cada función delega completamente
-   al service layer y nunca toca el modelo Sequelize.
-
-   Express 5: las promesas rechazadas se propagan automáticamente
-   al global error handler — no se necesitan bloques try-catch.
-   Las respuestas de error las maneja error.middleware.ts.
+   Handlers HTTP delgados. Delegan toda lógica al service.
+   Express 5: promesas rechazadas se propagan automáticamente
+   al errorHandler — no se necesitan bloques try-catch.
    ============================================================ */
 
 import { Request, Response } from "express";
