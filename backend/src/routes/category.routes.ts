@@ -11,15 +11,22 @@ import {
   updateCategory,
   deleteCategory,
 } from "../controllers/category.controllers.js";
-import { validate } from "../middlewares/validation.js";
+import { validate } from "../middlewares/validation.middleware.js";
 
 const router = Router();
 
-const nameRule = body("name").notEmpty().withMessage("Category name is required");
+/* ---- Validation rules ------------------------------------- */
+
+const nameRule = body("name")
+  .notEmpty()
+  .withMessage("Category name is required");
+
 const colorRule = body("color")
   .optional()
   .matches(/^#[0-9A-Fa-f]{6}$/)
   .withMessage("Color must be a valid hex code (e.g. #6366f1)");
+
+/* ---- READ -------------------------------------------------- */
 
 /**
  * @swagger
@@ -39,8 +46,21 @@ router.get("/", getCategories);
  *   get:
  *     summary: Get a category by ID
  *     tags: [Categories]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Category found
+ *       404:
+ *         description: Category not found
  */
 router.get("/:id", getCategoryById);
+
+/* ---- WRITE ------------------------------------------------- */
 
 /**
  * @swagger
