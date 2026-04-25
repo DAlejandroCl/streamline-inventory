@@ -1,6 +1,11 @@
 /* ============================================================
    PRODUCT ROUTES
    Todas las rutas mutantes tienen validación explícita.
+   Las reglas de validación se definen una sola vez y se
+   reutilizan donde corresponde (nameRule, priceRule, stockRule).
+
+   PUT: validación completa (name + price + stock obligatorios).
+   PATCH: validación opcional (solo los campos enviados).
    ============================================================ */
 
 import { Router } from "express";
@@ -13,19 +18,33 @@ import {
   patchProduct,
   deleteProduct,
 } from "../controllers/product.controllers.js";
-import { validate } from "../middlewares/validation.js";
+
+/*
+ * NodeNext ESM requiere la extensión .js en los imports aunque
+ * el archivo fuente sea .ts. El nombre base debe coincidir
+ * exactamente con el nombre real del archivo en disco.
+ */
+import { validate } from "../middlewares/validation.middleware.js";
 
 const router = Router();
 
-/* ---- Validation rules ------------------------------------- */
+/* ---- Validation rules reutilizables ----------------------- */
 
-const nameRule = body("name").notEmpty().withMessage("Product name is required");
+const nameRule = body("name")
+  .notEmpty()
+  .withMessage("Product name is required");
+
 const priceRule = body("price")
-  .notEmpty().withMessage("Price is required")
-  .isFloat({ gt: 0 }).withMessage("Price must be greater than 0");
+  .notEmpty()
+  .withMessage("Price is required")
+  .isFloat({ gt: 0 })
+  .withMessage("Price must be greater than 0");
+
 const stockRule = body("stock")
-  .notEmpty().withMessage("Stock is required")
-  .isInt({ min: 0 }).withMessage("Stock must be 0 or greater");
+  .notEmpty()
+  .withMessage("Stock is required")
+  .isInt({ min: 0 })
+  .withMessage("Stock must be 0 or greater");
 
 /* ---- READ -------------------------------------------------- */
 
@@ -38,12 +57,6 @@ const stockRule = body("stock")
  *     responses:
  *       200:
  *         description: List of products
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Product'
  */
 router.get("/", getProducts);
 
@@ -95,12 +108,6 @@ router.post("/", [nameRule, priceRule, stockRule], validate, createProduct);
  *   put:
  *     summary: Full replace of a product
  *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
  */
 router.put("/:id", [nameRule, priceRule, stockRule], validate, updateProduct);
 
@@ -110,21 +117,27 @@ router.put("/:id", [nameRule, priceRule, stockRule], validate, updateProduct);
  *   patch:
  *     summary: Partial update of a product
  *     tags: [Products]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
  */
 router.patch(
   "/:id",
   [
     body("name").optional().notEmpty().withMessage("Name cannot be empty"),
-    body("price").optional().isFloat({ gt: 0 }).withMessage("Price must be greater than 0"),
-    body("stock").optional().isInt({ min: 0 }).withMessage("Stock must be 0 or greater"),
-    body("availability").optional().isBoolean().withMessage("Availability must be boolean"),
-    body("category_id").optional().isInt({ gt: 0 }).withMessage("Invalid category ID"),
+    body("price")
+      .optional()
+      .isFloat({ gt: 0 })
+      .withMessage("Price must be greater than 0"),
+    body("stock")
+      .optional()
+      .isInt({ min: 0 })
+      .withMessage("Stock must be 0 or greater"),
+    body("availability")
+      .optional()
+      .isBoolean()
+      .withMessage("Availability must be a boolean"),
+    body("category_id")
+      .optional()
+      .isInt({ gt: 0 })
+      .withMessage("Invalid category ID"),
   ],
   validate,
   patchProduct
