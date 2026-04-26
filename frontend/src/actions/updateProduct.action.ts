@@ -6,7 +6,12 @@ import type { ProductFormData } from "../features/products/types/products";
 type ActionResponse = {
   errors?: {
     name?: string[];
+    sku?: string[];
+    description?: string[];
+    category_id?: string[];
     price?: string[];
+    cost?: string[];
+    stock?: string[];
     availability?: string[];
     general?: string[];
   };
@@ -24,15 +29,19 @@ export async function updateProductAction({
   }
 
   const formData = await request.formData();
-  const rawAvailability = formData.get("availability");
 
-  const data = {
+  const rawAvailability = formData.get("availability");
+  const rawCategoryId = formData.get("category_id");
+  const rawCost = formData.get("cost");
+
+  const data: Partial<ProductFormData> = {
     name: String(formData.get("name") ?? ""),
+    sku: String(formData.get("sku") ?? "").trim() || undefined,
+    description: String(formData.get("description") ?? "").trim() || undefined,
+    category_id: rawCategoryId ? Number(rawCategoryId) : null,
     price: Number(formData.get("price") ?? 0),
-    /*
-     * Mismo parsing que createProductAction — el hidden input del
-     * toggle controlado envía "on" o "off", nunca null.
-     */
+    cost: rawCost ? Number(rawCost) : undefined,
+    stock: Number(formData.get("stock") ?? 0),
     availability: rawAvailability === "on",
   };
 
