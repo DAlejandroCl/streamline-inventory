@@ -9,6 +9,7 @@ import ErrorPage from "../../pages/ErrorPage";
 
 import {
   productsLoader,
+  newProductLoader,
   productByIdLoader,
 } from "../../features/products/loaders/products.loader";
 
@@ -36,11 +37,20 @@ export const router = createBrowserRouter([
       {
         path: "products/new",
         element: <NewProductPage />,
+        /*
+         * newProductLoader devuelve { categories } para poblar
+         * el selector de categorías en el formulario.
+         */
+        loader: newProductLoader,
         action: createProductAction,
       },
       {
         path: "products/:id/edit",
         element: <EditProductPage />,
+        /*
+         * productByIdLoader devuelve { product, categories }
+         * para precargar el formulario con todos los campos.
+         */
         loader: productByIdLoader,
         action: updateProductAction,
         errorElement: <ErrorPage />,
