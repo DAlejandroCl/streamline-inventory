@@ -5,6 +5,7 @@ import DashboardPage from "../../pages/DashboardPage";
 import ProductsPage from "../../pages/ProductsPage";
 import NewProductPage from "../../pages/NewProductPage";
 import EditProductPage from "../../pages/EditProductPage";
+import SettingsPage from "../../pages/SettingsPage";
 import ErrorPage from "../../pages/ErrorPage";
 
 import {
@@ -37,20 +38,12 @@ export const router = createBrowserRouter([
       {
         path: "products/new",
         element: <NewProductPage />,
-        /*
-         * newProductLoader devuelve { categories } para poblar
-         * el selector de categorías en el formulario.
-         */
         loader: newProductLoader,
         action: createProductAction,
       },
       {
         path: "products/:id/edit",
         element: <EditProductPage />,
-        /*
-         * productByIdLoader devuelve { product, categories }
-         * para precargar el formulario con todos los campos.
-         */
         loader: productByIdLoader,
         action: updateProductAction,
         errorElement: <ErrorPage />,
@@ -62,6 +55,10 @@ export const router = createBrowserRouter([
       {
         path: "products/toggle",
         action: toggleAvailabilityAction,
+      },
+      {
+        path: "settings",
+        element: <SettingsPage />,
       },
     ],
   },
