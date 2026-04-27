@@ -15,16 +15,23 @@ const accents: Record<Accent, string> = {
   none:      "",
 };
 
-export default function Card({ children, className = "", accent = "none", hover = false }: Props) {
+export default function Card({
+  children,
+  className = "",
+  accent = "none",
+  hover = false,
+}: Props) {
   return (
     <div
       className={[
-        "bg-[var(--color-surface) rounded-2xl p-6 shadow-card",
-        "border border-[var(--color-border)/40",
+        "bg-[var(--color-surface)] rounded-2xl p-6 shadow-card",
+        "border border-[var(--color-border)]/40",
         hover && "transition-all duration-200 hover:shadow-lifted hover:-translate-y-0.5 cursor-pointer",
         accents[accent],
         className,
-      ].filter(Boolean).join(" ")}
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
       {children}
     </div>
