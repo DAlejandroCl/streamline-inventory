@@ -1,5 +1,11 @@
 import { NavLink, Link } from "react-router-dom";
-import { LayoutDashboard, Package, Plus, ChevronRight } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  Settings,
+  Plus,
+  ChevronRight,
+} from "lucide-react";
 
 type NavItem = {
   to: string;
@@ -9,8 +15,9 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/",         label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/products", label: "Inventory", icon: Package },
+  { to: "/settings", label: "Settings",  icon: Settings },
 ];
 
 export default function Sidebar() {
@@ -20,7 +27,7 @@ export default function Sidebar() {
       style={{ background: "var(--color-sidebar-bg)" }}
     >
       {/* BRAND */}
-      <div className="px-6 pt-7 pb-6 border-b border-white/8">
+      <div className="px-6 pt-7 pb-6 border-b border-white/[0.08]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 btn-gradient rounded-lg flex items-center justify-center shadow-lifted shrink-0">
             <Package size={16} className="text-white" strokeWidth={2.5} />
@@ -51,18 +58,28 @@ export default function Sidebar() {
                 "relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold",
                 "transition-all duration-200 group",
                 isActive
-                  ? "sidebar-active bg-white/8 text-white"
-                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200 hover:translate-x-0.5",
+                  ? "sidebar-active bg-white/[0.08] text-white"
+                  : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200 hover:translate-x-0.5",
               ].join(" ")
             }
           >
             {({ isActive }) => (
               <>
-                <span className={["p-1.5 rounded-lg transition-colors", isActive ? "bg-[var(--color-primary)/30" : "group-hover:bg-white/5"].join(" ")}>
+                <span
+                  className={[
+                    "p-1.5 rounded-lg transition-colors",
+                    /* FIX: era "bg-[var(--color-primary)/30" sin cerrar el ) */
+                    isActive
+                      ? "bg-[var(--color-primary)]/30"
+                      : "group-hover:bg-white/[0.05]",
+                  ].join(" ")}
+                >
                   <Icon size={15} strokeWidth={isActive ? 2.5 : 2} />
                 </span>
                 <span className="flex-1">{label}</span>
-                {isActive && <ChevronRight size={13} className="opacity-60" />}
+                {isActive && (
+                  <ChevronRight size={13} className="opacity-60" />
+                )}
               </>
             )}
           </NavLink>
@@ -70,7 +87,7 @@ export default function Sidebar() {
       </nav>
 
       {/* FOOTER */}
-      <div className="px-3 pb-5 space-y-3 border-t border-white/8 pt-4">
+      <div className="px-3 pb-5 space-y-3 border-t border-white/[0.08] pt-4">
         <div className="flex items-center gap-3 px-2">
           <div className="w-8 h-8 btn-gradient rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-card">
             A
