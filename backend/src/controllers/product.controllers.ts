@@ -3,6 +3,10 @@
    Handlers HTTP delgados. Delegan toda lógica al service.
    Express 5: promesas rechazadas se propagan automáticamente
    al errorHandler — no se necesitan bloques try-catch.
+
+   createProduct / updateProduct: Multer procesa el archivo
+   antes de que el handler se ejecute. Si se subió una imagen,
+   req.file existe y construimos el path relativo para guardar.
    ============================================================ */
 
 import { Request, Response } from "express";
@@ -35,7 +39,18 @@ export const createProduct = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const product = await ProductService.createProduct(req.body as CreateProductDTO);
+  const body = req.body as CreateProductDTO;
+
+  /*
+   * Multer deposita el archivo en /public/uploads/products/
+   * Guardamos el path relativo para que el frontend pueda
+   * construir la URL: BASE_URL + image_url
+   */
+  if (req.file) {
+    body.image_url = `/uploads/products/${req.file.filename}`;
+  }
+
+  const product = await ProductService.createProduct(body);
   res.status(201).json({ data: product });
 };
 
@@ -45,9 +60,15 @@ export const updateProduct = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const body = req.body as UpdateProductDTO;
+
+  if (req.file) {
+    body.image_url = `/uploads/products/${req.file.filename}`;
+  }
+
   const product = await ProductService.updateProduct(
     Number(req.params.id),
-    req.body as UpdateProductDTO
+    body
   );
   res.json({ message: "Product updated", data: product });
 };
@@ -58,9 +79,15 @@ export const patchProduct = async (
   req: Request,
   res: Response
 ): Promise<void> => {
+  const body = req.body as UpdateProductDTO;
+
+  if (req.file) {
+    body.image_url = `/uploads/products/${req.file.filename}`;
+  }
+
   const product = await ProductService.updateProduct(
     Number(req.params.id),
-    req.body as UpdateProductDTO
+    body
   );
   res.json({ message: "Product patched", data: product });
 };
