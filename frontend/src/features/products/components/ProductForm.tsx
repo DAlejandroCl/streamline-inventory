@@ -1,10 +1,24 @@
+/* ============================================================
+   PRODUCT FORM
+   Usado tanto en NewProductPage como en EditProductPage.
+   encType="multipart/form-data" es necesario para que el
+   browser incluya el archivo en el body del POST/PUT.
+
+   Multer en el backend lee el campo "image" del multipart body.
+   El resto de campos llegan como texto — los actions los parsean.
+   ============================================================ */
+
 import { useState } from "react";
 import { Form, useActionData, useNavigation } from "react-router-dom";
-import { Tag, DollarSign, Save, Plus, Hash, Package, AlignLeft, Layers, TrendingDown } from "lucide-react";
+import {
+  Tag, DollarSign, Save, Plus, Hash, Package,
+  AlignLeft, Layers, TrendingDown,
+} from "lucide-react";
 import type { ProductFormData, Category } from "../types/products";
-import Button from "../../../components/ui/Button";
-import Input from "../../../components/ui/Input";
-import Label from "../../../components/ui/Label";
+import Button       from "../../../components/ui/Button";
+import Input        from "../../../components/ui/Input";
+import Label        from "../../../components/ui/Label";
+import ImageUpload  from "../../../components/ui/ImageUpload";
 
 type ActionErrors = {
   errors?: {
@@ -22,7 +36,7 @@ type ActionErrors = {
 };
 
 type Props = {
-  defaultValues?: ProductFormData;
+  defaultValues?: ProductFormData & { image_url?: string | null };
   isEditing?: boolean;
   categories?: Category[];
 };
@@ -32,8 +46,8 @@ export default function ProductForm({
   isEditing = false,
   categories = [],
 }: Props) {
-  const actionData = useActionData() as ActionErrors | undefined;
-  const navigation = useNavigation();
+  const actionData   = useActionData() as ActionErrors | undefined;
+  const navigation   = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 
   const [available, setAvailable] = useState<boolean>(
@@ -43,8 +57,12 @@ export default function ProductForm({
   return (
     <Form
       method="post"
+      encType="multipart/form-data"
       className="bg-[var(--color-surface)] rounded-2xl p-8 shadow-card border border-[var(--color-border)]/40 space-y-6"
     >
+      {/* IMAGE UPLOAD */}
+      <ImageUpload currentImageUrl={defaultValues?.image_url} />
+
       {/* ROW 1 — Name + SKU */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
@@ -87,18 +105,22 @@ export default function ProductForm({
             name="description"
             placeholder="Optional product description..."
             rows={3}
-            defaultValue={actionData?.values?.description ?? defaultValues?.description ?? ""}
+            defaultValue={
+              actionData?.values?.description ?? defaultValues?.description ?? ""
+            }
             className={[
               "w-full pl-10 pr-4 py-2.5 text-sm rounded-xl resize-none",
               "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
               "text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 focus:border-[var(--color-primary)] focus:bg-white",
-              "transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15",
+              "focus:border-[var(--color-primary)] transition-all duration-200",
             ].join(" ")}
           />
         </div>
         {actionData?.errors?.description && (
-          <p className="text-xs text-[var(--color-error)]">{actionData.errors.description[0]}</p>
+          <p className="text-xs text-[var(--color-error)]">
+            {actionData.errors.description[0]}
+          </p>
         )}
       </div>
 
@@ -114,13 +136,15 @@ export default function ProductForm({
           <select
             id="category_id"
             name="category_id"
-            defaultValue={actionData?.values?.category_id ?? defaultValues?.category_id ?? ""}
+            defaultValue={
+              actionData?.values?.category_id ?? defaultValues?.category_id ?? ""
+            }
             className={[
               "w-full pl-10 pr-4 py-2.5 text-sm rounded-xl appearance-none",
               "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
               "text-[var(--color-text-primary)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 focus:border-[var(--color-primary)]",
-              "transition-all duration-200",
+              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15",
+              "focus:border-[var(--color-primary)] transition-all duration-200",
             ].join(" ")}
           >
             <option value="">No category</option>
@@ -176,22 +200,21 @@ export default function ProductForm({
         />
       </div>
 
-      {/* AVAILABILITY TOGGLE — controlled */}
+      {/* AVAILABILITY TOGGLE */}
       <div>
         <Label>Availability</Label>
         <input type="hidden" name="availability" value={available ? "on" : "off"} />
-
         <button
           type="button"
           role="switch"
           aria-checked={available}
           aria-label="Toggle product availability"
           onClick={() => setAvailable((prev) => !prev)}
-          className="flex items-center gap-3 cursor-pointer group w-fit rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
+          className="flex items-center gap-3 cursor-pointer w-fit rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
         >
           <div
             className={[
-              "relative w-11 h-6 rounded-full transition-colors duration-300 ease-in-out shrink-0",
+              "relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0",
               available
                 ? "bg-[var(--color-primary)]"
                 : "bg-[var(--color-surface-high)] border border-[var(--color-border)]",
@@ -200,7 +223,7 @@ export default function ProductForm({
             <div
               className={[
                 "absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md",
-                "transition-transform duration-300 ease-in-out",
+                "transition-transform duration-300",
                 available ? "translate-x-5" : "translate-x-0.5",
               ].join(" ")}
             />
