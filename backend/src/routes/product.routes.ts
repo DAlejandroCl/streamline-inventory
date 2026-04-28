@@ -1,10 +1,9 @@
 /* ============================================================
    PRODUCT ROUTES
-   All routes are protected — requireAuth validates the
-   httpOnly cookie before any controller executes.
-
-   Validation rules are defined once and reused across
-   POST and PUT (full replace) endpoints.
+   Todas las rutas protegidas por requireAuth.
+   Multer se aplica como middleware en las rutas de escritura:
+   - upload.single("image"): procesa un archivo del campo "image"
+   - Si no se adjunta archivo, req.file queda undefined (OK)
    ============================================================ */
 
 import { Router } from "express";
@@ -17,17 +16,17 @@ import {
   patchProduct,
   deleteProduct,
 } from "../controllers/product.controllers.js";
-import { validate } from "../middlewares/validation.middleware.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { validate }      from "../middlewares/validation.middleware.js";
+import { requireAuth }   from "../middlewares/auth.middleware.js";
+import { upload }        from "../config/multer.js";
 
 const router = Router();
 
-/* All product routes require authentication */
 router.use(requireAuth);
 
-/* ---- Reusable validation rules --------------------------- */
+/* ---- Validation rules ------------------------------------- */
 
-const nameRule = body("name").notEmpty().withMessage("Product name is required");
+const nameRule  = body("name").notEmpty().withMessage("Product name is required");
 const priceRule = body("price")
   .notEmpty().withMessage("Price is required")
   .isFloat({ gt: 0 }).withMessage("Price must be greater than 0");
@@ -35,17 +34,32 @@ const stockRule = body("stock")
   .notEmpty().withMessage("Stock is required")
   .isInt({ min: 0 }).withMessage("Stock must be 0 or greater");
 
-/* ---- READ ------------------------------------------------ */
+/* ---- READ -------------------------------------------------- */
 
-router.get("/", getProducts);
+router.get("/",    getProducts);
 router.get("/:id", getProductById);
 
-/* ---- WRITE ----------------------------------------------- */
+/* ---- WRITE (Multer antes del validate) --------------------- */
 
-router.post("/", [nameRule, priceRule, stockRule], validate, createProduct);
-router.put("/:id", [nameRule, priceRule, stockRule], validate, updateProduct);
+router.post(
+  "/",
+  upload.single("image"),
+  [nameRule, priceRule, stockRule],
+  validate,
+  createProduct
+);
+
+router.put(
+  "/:id",
+  upload.single("image"),
+  [nameRule, priceRule, stockRule],
+  validate,
+  updateProduct
+);
+
 router.patch(
   "/:id",
+  upload.single("image"),
   [
     body("name").optional().notEmpty().withMessage("Name cannot be empty"),
     body("price").optional().isFloat({ gt: 0 }).withMessage("Price must be > 0"),
@@ -56,6 +70,7 @@ router.patch(
   validate,
   patchProduct
 );
+
 router.delete("/:id", deleteProduct);
 
 export default router;
