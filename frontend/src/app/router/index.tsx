@@ -1,31 +1,51 @@
 /* ============================================================
    ROUTER
+   Lazy loading strategy:
+   - LandingPage + LoginPage: síncronos (livianos, públicos,
+     necesarios en el primer render sin autenticación)
+   - Todo bajo /app/*: lazy (el usuario ya pasó authLoader,
+     el chunk se descarga en paralelo con los datos del loader)
+
+   React Router 7 ejecuta el loader y carga el chunk al mismo
+   tiempo — no hay waterfall. El Suspense fallback solo se
+   muestra si el chunk tarda más que los datos (raro en prod).
+
    Route structure:
-   /           → LandingPage (public)
-   /login      → LoginPage (public, redirects to /app if authed)
-   /app/*      → AppLayout (protected via authLoader)
-     /app            → DashboardPage
-     /app/products   → ProductsPage
+   /           → LandingPage (sync)
+   /login      → LoginPage (sync)
+   /app/*      → AppLayout lazy, protegido por authLoader
+     /app            → DashboardPage (lazy)
+     /app/products   → ProductsPage (lazy)
      /app/products/new
      /app/products/:id/edit
      /app/settings
-     /app/logout     → logoutAction (action-only route, no element)
-
-   The authLoader on the /app layout is the single enforcement
-   point. Every child route inherits the auth check.
+     /app/logout     → action-only, no element
    ============================================================ */
 
 import { createBrowserRouter, Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
 
-import LandingPage    from "../../pages/LandingPage";
-import LoginPage      from "../../pages/LoginPage";
-import AppLayout      from "../../layouts/AppLayout";
-import DashboardPage  from "../../pages/DashboardPage";
-import ProductsPage   from "../../pages/ProductsPage";
-import NewProductPage from "../../pages/NewProductPage";
-import EditProductPage from "../../pages/EditProductPage";
-import SettingsPage   from "../../pages/SettingsPage";
-import ErrorPage      from "../../pages/ErrorPage";
+import LandingPage from "../../pages/LandingPage";
+import LoginPage   from "../../pages/LoginPage";
+import ErrorPage   from "../../pages/ErrorPage";
+import PageLoader  from "../../components/ui/PageLoader";
+
+/* ---- Lazy chunks — cada import() genera un JS chunk separado */
+
+const AppLayout      = lazy(() => import("../../layouts/AppLayout"));
+const DashboardPage  = lazy(() => import("../../pages/DashboardPage"));
+const ProductsPage   = lazy(() => import("../../pages/ProductsPage"));
+const NewProductPage = lazy(() => import("../../pages/NewProductPage"));
+const EditProductPage = lazy(() => import("../../pages/EditProductPage"));
+const SettingsPage   = lazy(() => import("../../pages/SettingsPage"));
+
+/* ---- Wrapper: envuelve cada lazy element con Suspense ------ */
+
+function Lazy({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
+}
+
+/* ---- Loaders ---------------------------------------------- */
 
 import { authLoader }   from "../../features/auth/loaders/auth.loader";
 import { loginAction }  from "../../features/auth/actions/login.action";
@@ -37,10 +57,12 @@ import {
   productByIdLoader,
 } from "../../features/products/loaders/products.loader";
 
-import { createProductAction }    from "../../actions/product.actions";
-import { deleteProductAction }    from "../../actions/deleteProduct.action";
+import { createProductAction }      from "../../actions/product.actions";
+import { deleteProductAction }      from "../../actions/deleteProduct.action";
 import { toggleAvailabilityAction } from "../../actions/toggleAvailability.action";
-import { updateProductAction }    from "../../actions/updateProduct.action";
+import { updateProductAction }      from "../../actions/updateProduct.action";
+
+/* ---- Router definition ------------------------------------ */
 
 export const router = createBrowserRouter([
   /* ---- PUBLIC ROUTES ------------------------------------ */
@@ -59,29 +81,29 @@ export const router = createBrowserRouter([
   /* ---- PROTECTED ROUTES --------------------------------- */
   {
     path: "/app",
-    element: <AppLayout />,
+    element: <Lazy><AppLayout /></Lazy>,
     loader: authLoader,
     errorElement: <ErrorPage />,
     children: [
       {
         index: true,
-        element: <DashboardPage />,
+        element: <Lazy><DashboardPage /></Lazy>,
         loader: productsLoader,
       },
       {
         path: "products",
-        element: <ProductsPage />,
+        element: <Lazy><ProductsPage /></Lazy>,
         loader: productsLoader,
       },
       {
         path: "products/new",
-        element: <NewProductPage />,
+        element: <Lazy><NewProductPage /></Lazy>,
         loader: newProductLoader,
         action: createProductAction,
       },
       {
         path: "products/:id/edit",
-        element: <EditProductPage />,
+        element: <Lazy><EditProductPage /></Lazy>,
         loader: productByIdLoader,
         action: updateProductAction,
         errorElement: <ErrorPage />,
@@ -96,10 +118,9 @@ export const router = createBrowserRouter([
       },
       {
         path: "settings",
-        element: <SettingsPage />,
+        element: <Lazy><SettingsPage /></Lazy>,
       },
       {
-        /* Action-only route — clears cookie and redirects */
         path: "logout",
         action: logoutAction,
       },
