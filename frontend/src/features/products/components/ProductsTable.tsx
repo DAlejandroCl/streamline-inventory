@@ -33,8 +33,16 @@ export default function ProductsTable({ products }: Props) {
                 {/* PRODUCT */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-[var(--color-primary-container)] flex items-center justify-center shrink-0">
-                      <Package size={15} className="text-[var(--color-primary)]" strokeWidth={2} />
+                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-[var(--color-primary-container)] flex items-center justify-center shrink-0">
+                      {p.image_url ? (
+                        <img
+                          src={`${import.meta.env.VITE_API_URL}${p.image_url}`}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Package size={15} className="text-[var(--color-primary)]" strokeWidth={2} />
+                      )}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-[var(--color-text-primary)]">{p.name}</p>
@@ -70,7 +78,7 @@ export default function ProductsTable({ products }: Props) {
 
                 {/* STATUS */}
                 <td className="px-6 py-4">
-                  <Form method="post" action="/products/toggle">
+                  <Form method="post" action="/app/products/toggle">
                     <input type="hidden" name="id" value={p.id} />
                     <input type="hidden" name="availability" value={String(p.availability)} />
                     <button
@@ -100,7 +108,7 @@ export default function ProductsTable({ products }: Props) {
                     <Link to={`/products/${p.id}/edit`}>
                       <Button variant="ghost" size="sm" icon={Edit2}>Edit</Button>
                     </Link>
-                    <Form method="post" action="/products/delete">
+                    <Form method="post" action="/app/products/delete">
                       <input type="hidden" name="id" value={p.id} />
                       <Button variant="danger" size="sm" icon={Trash2} type="submit">
                         Delete
