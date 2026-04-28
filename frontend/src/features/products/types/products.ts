@@ -1,3 +1,9 @@
+/* ============================================================
+   PRODUCT TYPES
+   image_url: path relativo devuelto por el backend.
+   El frontend construye la URL completa: VITE_API_URL + image_url
+   ============================================================ */
+
 export type Category = {
   id: number;
   name: string;
@@ -15,6 +21,7 @@ export type Product = {
   cost: number | null;
   stock: number;
   availability: boolean;
+  image_url: string | null;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -28,4 +35,5 @@ export type ProductFormData = {
   cost?: number;
   stock: number;
   availability?: boolean;
+  image_url?: string | null;
 };
