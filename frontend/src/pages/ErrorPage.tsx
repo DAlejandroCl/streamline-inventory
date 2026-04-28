@@ -1,3 +1,8 @@
+/* ============================================================
+   ERROR PAGE — Route-level error boundary
+   Handles 404, 400, and generic 500 states.
+   ============================================================ */
+
 import { isRouteErrorResponse, useRouteError, Link } from "react-router-dom";
 import { SearchX, CloudOff, AlertOctagon, LayoutDashboard, Package } from "lucide-react";
 import Button from "../components/ui/Button";
@@ -36,13 +41,17 @@ export default function ErrorPage() {
           <div
             className={[
               "w-24 h-24 rounded-3xl flex items-center justify-center shadow-card",
-              is404 ? "bg-[var(--color-primary-container)" : "bg-[var(--color-error-container)",
+              is404
+                ? "bg-[var(--color-primary-container)]"
+                : "bg-[var(--color-error-container)]",
             ].join(" ")}
           >
             <Icon
               size={44}
               strokeWidth={1.5}
-              className={is404 ? "text-[var(--color-primary)" : "text-[var(--color-error)"}
+              className={
+                is404 ? "text-[var(--color-primary)]" : "text-[var(--color-error)]"
+              }
             />
           </div>
         </div>
@@ -52,15 +61,15 @@ export default function ErrorPage() {
           <p
             className={[
               "text-8xl font-extrabold font-headline tracking-tight",
-              is404 ? "gradient-text" : "text-[var(--color-error)",
+              is404 ? "gradient-text" : "text-[var(--color-error)]",
             ].join(" ")}
           >
             {status}
           </p>
-          <h1 className="text-2xl font-bold font-headline text-[var(--color-text-primary)">
+          <h1 className="text-2xl font-bold font-headline text-[var(--color-text-primary)]">
             {title}
           </h1>
-          <p className="text-sm text-[var(--color-text-secondary) leading-relaxed max-w-xs mx-auto">
+          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-xs mx-auto">
             {description}
           </p>
         </div>
@@ -75,7 +84,7 @@ export default function ErrorPage() {
           </Link>
         </div>
 
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
           Streamline — Operational Ledger
         </p>
       </div>
