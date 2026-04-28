@@ -1,6 +1,13 @@
+/* ============================================================
+   UPDATE PRODUCT ACTION
+   Igual que createProductAction — enviamos el FormData crudo
+   para que el archivo "image" llegue a Multer en el backend.
+   Si no se seleccionó imagen, el campo "image" no existe en
+   el FormData y Multer lo ignora (req.file queda undefined).
+   ============================================================ */
+
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
-import { updateProduct } from "../lib/api/products";
 import type { ProductFormData } from "../features/products/types/products";
 
 type ActionResponse = {
@@ -23,43 +30,52 @@ export async function updateProductAction({
   params,
 }: ActionFunctionArgs): Promise<Response | ActionResponse> {
   const id = params.id;
-
-  if (!id) {
-    throw new Response("Product ID is required", { status: 400 });
-  }
+  if (!id) throw new Response("Product ID is required", { status: 400 });
 
   const formData = await request.formData();
 
   const rawAvailability = formData.get("availability");
-  const rawCategoryId = formData.get("category_id");
-  const rawCost = formData.get("cost");
+  const rawCategoryId   = formData.get("category_id");
+  const rawCost         = formData.get("cost");
 
   const data: Partial<ProductFormData> = {
-    name: String(formData.get("name") ?? ""),
-    sku: String(formData.get("sku") ?? "").trim() || undefined,
+    name:        String(formData.get("name") ?? ""),
+    sku:         String(formData.get("sku") ?? "").trim() || undefined,
     description: String(formData.get("description") ?? "").trim() || undefined,
     category_id: rawCategoryId ? Number(rawCategoryId) : null,
-    price: Number(formData.get("price") ?? 0),
-    cost: rawCost ? Number(rawCost) : undefined,
-    stock: Number(formData.get("stock") ?? 0),
+    price:       Number(formData.get("price") ?? 0),
+    cost:        rawCost ? Number(rawCost) : undefined,
+    stock:       Number(formData.get("stock") ?? 0),
     availability: rawAvailability === "on",
   };
 
   const result = ProductSchema.safeParse(data);
-
   if (!result.success) {
-    return {
-      errors: result.error.flatten().fieldErrors,
-      values: data,
-    };
+    return { errors: result.error.flatten().fieldErrors, values: data };
   }
 
   try {
-    await updateProduct(id, result.data);
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        body: formData,
+      }
+    );
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { message?: string };
+      return {
+        errors: { general: [body.message ?? "Error updating product."] },
+        values: data,
+      };
+    }
+
     return redirect("/app/products");
   } catch {
     return {
-      errors: { general: ["Error updating product. Please try again."] },
+      errors: { general: ["Network error. Please try again."] },
       values: data,
     };
   }
