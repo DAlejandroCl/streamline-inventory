@@ -1,13 +1,11 @@
 /* ============================================================
    PRODUCT LOADERS
-   Delegan al API client centralizado.
-   Ningún loader construye fetch calls directamente.
+   Delegate to the centralized API client.
+   No loader builds fetch calls directly.
 
-   productByIdLoader: devuelve { product, categories } para
-   que EditProductPage pueda mostrar el selector de categorías.
-
-   newProductLoader: devuelve { categories } para que
-   NewProductPage pueda mostrar el selector de categorías.
+   productsLoader: returns Product[] with coerced numeric fields.
+   newProductLoader: returns { categories } for the new product form.
+   productByIdLoader: returns { product, categories } for edit form.
    ============================================================ */
 
 import { type LoaderFunctionArgs } from "react-router-dom";
@@ -18,10 +16,26 @@ import {
   getCategories,
 } from "../../../lib/api/products";
 
+/* ============================================================
+   Postgres returns numeric columns as strings over JSON in
+   some driver configurations. Coerce them here so every
+   consumer receives proper JS numbers and avoids $NaN renders.
+   ============================================================ */
+
+function normalizeProduct(p: Product): Product {
+  return {
+    ...p,
+    price: parseFloat(String(p.price)) || 0,
+    cost:  p.cost != null ? parseFloat(String(p.cost)) : null,
+    stock: parseInt(String(p.stock), 10) || 0,
+  };
+}
+
 /* ---- GET ALL ---------------------------------------------- */
 
 export async function productsLoader(): Promise<Product[]> {
-  return getProducts();
+  const products = await getProducts();
+  return products.map(normalizeProduct);
 }
 
 /* ---- NEW PRODUCT — needs categories for the selector ------ */
@@ -45,5 +59,5 @@ export async function productByIdLoader({
     getCategories(),
   ]);
 
-  return { product, categories };
+  return { product: normalizeProduct(product), categories };
 }
