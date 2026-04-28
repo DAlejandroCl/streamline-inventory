@@ -56,7 +56,7 @@ export async function updateProductAction({
 
   try {
     await updateProduct(id, result.data);
-    return redirect("/products");
+    return redirect("/app/products");
   } catch {
     return {
       errors: { general: ["Error updating product. Please try again."] },

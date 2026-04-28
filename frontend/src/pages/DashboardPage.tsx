@@ -190,7 +190,7 @@ export default function DashboardPage() {
         title="Dashboard Overview"
         description="Real-time status of the operational ledger."
         action={
-          <Link to="/products/new">
+          <Link to="/app/products/new">
             <Button icon={Plus} size="lg">Create New Product</Button>
           </Link>
         }
@@ -243,7 +243,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <Link
-              to="/products"
+              to="/app/products"
               className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors"
             >
               View all <ArrowRight size={12} strokeWidth={2.5} />
@@ -261,7 +261,7 @@ export default function DashboardPage() {
                 <p className="text-sm text-[var(--color-text-muted)]">
                   No products yet.{" "}
                   <Link
-                    to="/products/new"
+                    to="/app/products/new"
                     className="text-[var(--color-primary)] font-semibold hover:underline"
                   >
                     Create one

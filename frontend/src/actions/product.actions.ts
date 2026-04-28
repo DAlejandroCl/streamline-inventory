@@ -60,7 +60,7 @@ export async function createProductAction({
 
   try {
     await createProduct(result.data);
-    return redirect("/products");
+    return redirect("/app/products");
   } catch {
     return {
       errors: { general: ["Error creating product. Please try again."] },

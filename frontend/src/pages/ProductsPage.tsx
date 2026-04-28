@@ -68,9 +68,9 @@ export default function ProductsPage() {
         <PageHeader
           title="Inventory Ledger"
           description="Manage and monitor your product inventory."
-          breadcrumbs={[{ label: "Dashboard", to: "/" }]}
+          breadcrumbs={[{ label: "Dashboard", to: "/app" }]}
           action={
-            <Link to="/products/new">
+            <Link to="/app/products/new">
               <Button icon={Plus} size="lg">Add Product</Button>
             </Link>
           }
@@ -80,7 +80,7 @@ export default function ProductsPage() {
           description="Your inventory ledger is empty. Create your first product to get started."
           icon={PackageX}
           action={
-            <Link to="/products/new">
+            <Link to="/app/products/new">
               <Button icon={Plus} size="lg">Create First Product</Button>
             </Link>
           }
@@ -94,7 +94,7 @@ export default function ProductsPage() {
       <PageHeader
         title="Inventory Ledger"
         description="Manage and monitor high-precision inventory with real-time signals."
-        breadcrumbs={[{ label: "Dashboard", to: "/" }]}
+        breadcrumbs={[{ label: "Dashboard", to: "/app" }]}
         action={
           <div className="flex items-center gap-3">
             <Button
@@ -105,7 +105,7 @@ export default function ProductsPage() {
             >
               Export CSV
             </Button>
-            <Link to="/products/new">
+            <Link to="/app/products/new">
               <Button icon={Plus} size="lg">Add Product</Button>
             </Link>
           </div>

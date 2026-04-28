@@ -79,7 +79,7 @@ export default function ErrorPage() {
           <Link to="/">
             <Button variant="secondary" icon={LayoutDashboard}>Dashboard</Button>
           </Link>
-          <Link to="/products">
+          <Link to="/app/products">
             <Button icon={Package}>View Inventory</Button>
           </Link>
         </div>
