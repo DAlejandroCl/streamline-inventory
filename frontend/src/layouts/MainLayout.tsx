@@ -1,11 +1,15 @@
+/* ============================================================
+   MAIN LAYOUT — App shell: sidebar + navbar + page outlet
+   Toaster is mounted in main.tsx to avoid duplicate instances.
+   ============================================================ */
+
 import { Outlet } from "react-router-dom";
-import { Toaster } from "sonner";
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
 
 export default function MainLayout() {
   return (
-    <div className="flex h-screen bg-[var(--color-background) overflow-hidden">
+    <div className="flex h-screen bg-[var(--color-background)] overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col ml-64 overflow-hidden">
         <Navbar />
@@ -15,16 +19,6 @@ export default function MainLayout() {
           </div>
         </main>
       </div>
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          style: {
-            fontFamily: "Inter, sans-serif",
-            borderRadius: "12px",
-            fontSize: "13px",
-          },
-        }}
-      />
     </div>
   );
 }
