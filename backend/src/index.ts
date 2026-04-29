@@ -1,9 +1,14 @@
 /* ============================================================
    APP BOOTSTRAP
-   Connects the database, seeds the default admin account,
-   then starts the HTTP server.
-   If any step fails, the process exits with code 1.
+   dotenv.config() debe ser la primera línea ejecutable,
+   antes de cualquier import que lea process.env.
+   
+   El problema original: auth.service.ts lee JWT_SECRET a
+   nivel de módulo (const JWT_SECRET = process.env.JWT_SECRET)
+   — si dotenv no cargó primero, JWT_SECRET es undefined.
    ============================================================ */
+
+import "dotenv/config";
 
 import server from "./server.js";
 import { connectDB } from "./config/db.js";
@@ -14,12 +19,6 @@ const startServer = async (): Promise<void> => {
   try {
     await connectDB();
 
-    /*
-     * Seed a default admin on first run so the app is
-     * immediately usable after deployment.
-     * Credentials: admin@streamline.app / admin123
-     * (Change via Settings → Security in production)
-     */
     await seedAdminUser();
     console.log(colors.green.bold("✔ Admin user seeded"));
 
