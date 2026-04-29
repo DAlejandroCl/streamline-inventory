@@ -1,103 +1,100 @@
 /* ============================================================
    PRODUCT CONTROLLERS
-   Handlers HTTP delgados. Delegan toda lógica al service.
-   Express 5: promesas rechazadas se propagan automáticamente
-   al errorHandler — no se necesitan bloques try-catch.
+   Con multipart/form-data todos los campos llegan como strings.
+   parseMultipartBody sanitiza y convierte tipos antes del service.
 
-   createProduct / updateProduct: Multer procesa el archivo
-   antes de que el handler se ejecute. Si se subió una imagen,
-   req.file existe y construimos el path relativo para guardar.
+   image_url se guarda como /public/uploads/products/filename
+   para que el frontend pueda construir la URL completa:
+   VITE_API_URL + image_url → http://localhost:3000/public/uploads/products/filename
    ============================================================ */
 
 import { Request, Response } from "express";
 import * as ProductService from "../services/product.service.js";
 import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js";
 
+function parseMultipartBody(body: Record<string, unknown>): UpdateProductDTO {
+  const raw = body as Record<string, string | undefined>;
+
+  const rawCategoryId = raw.category_id;
+  const category_id =
+    rawCategoryId && rawCategoryId !== "" && Number(rawCategoryId) > 0
+      ? Number(rawCategoryId)
+      : null;
+
+  const rawCost = raw.cost;
+  const cost = rawCost && rawCost !== "" ? parseFloat(rawCost) : undefined;
+
+  const rawAvailability = raw.availability;
+  const availability = rawAvailability === "on" || rawAvailability === "true";
+
+  return {
+    name:        raw.name?.trim() ?? "",
+    sku:         raw.sku?.trim() || undefined,
+    description: raw.description?.trim() || undefined,
+    category_id,
+    price:       parseFloat(raw.price ?? "0"),
+    cost,
+    stock:       parseInt(raw.stock ?? "0", 10),
+    availability,
+  };
+}
+
 /* ---- GET ALL ---------------------------------------------- */
 
-export const getProducts = async (
-  _req: Request,
-  res: Response
-): Promise<void> => {
+export const getProducts = async (_req: Request, res: Response): Promise<void> => {
   const products = await ProductService.getAllProducts();
   res.json(products);
 };
 
 /* ---- GET BY ID -------------------------------------------- */
 
-export const getProductById = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const getProductById = async (req: Request, res: Response): Promise<void> => {
   const product = await ProductService.getProductById(Number(req.params.id));
   res.json(product);
 };
 
 /* ---- CREATE ----------------------------------------------- */
 
-export const createProduct = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const body = req.body as CreateProductDTO;
+export const createProduct = async (req: Request, res: Response): Promise<void> => {
+  const dto: CreateProductDTO = parseMultipartBody(req.body as Record<string, unknown>);
 
-  /*
-   * Multer deposita el archivo en /public/uploads/products/
-   * Guardamos el path relativo para que el frontend pueda
-   * construir la URL: BASE_URL + image_url
-   */
   if (req.file) {
-    body.image_url = `/uploads/products/${req.file.filename}`;
+    dto.image_url = `/public/uploads/products/${req.file.filename}`;
   }
 
-  const product = await ProductService.createProduct(body);
+  const product = await ProductService.createProduct(dto);
   res.status(201).json({ data: product });
 };
 
-/* ---- UPDATE (PUT — reemplazo completo) -------------------- */
+/* ---- UPDATE ----------------------------------------------- */
 
-export const updateProduct = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const body = req.body as UpdateProductDTO;
+export const updateProduct = async (req: Request, res: Response): Promise<void> => {
+  const dto: UpdateProductDTO = parseMultipartBody(req.body as Record<string, unknown>);
 
   if (req.file) {
-    body.image_url = `/uploads/products/${req.file.filename}`;
+    dto.image_url = `/public/uploads/products/${req.file.filename}`;
   }
 
-  const product = await ProductService.updateProduct(
-    Number(req.params.id),
-    body
-  );
+  const product = await ProductService.updateProduct(Number(req.params.id), dto);
   res.json({ message: "Product updated", data: product });
 };
 
-/* ---- PATCH (actualización parcial) ------------------------ */
+/* ---- PATCH ------------------------------------------------ */
 
-export const patchProduct = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const body = req.body as UpdateProductDTO;
+export const patchProduct = async (req: Request, res: Response): Promise<void> => {
+  const dto: UpdateProductDTO = parseMultipartBody(req.body as Record<string, unknown>);
 
   if (req.file) {
-    body.image_url = `/uploads/products/${req.file.filename}`;
+    dto.image_url = `/public/uploads/products/${req.file.filename}`;
   }
 
-  const product = await ProductService.updateProduct(
-    Number(req.params.id),
-    body
-  );
+  const product = await ProductService.updateProduct(Number(req.params.id), dto);
   res.json({ message: "Product patched", data: product });
 };
 
 /* ---- DELETE ----------------------------------------------- */
 
-export const deleteProduct = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
   await ProductService.deleteProduct(Number(req.params.id));
   res.json({ message: "Product deleted" });
 };
