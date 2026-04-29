@@ -1,16 +1,13 @@
 /* ============================================================
    TOGGLE AVAILABILITY ACTION
-   Recibe id y el valor actual de availability desde el
-   FormData. Delega al API client que aplica la inversión.
+   redirect al referer o a /app/products para que React Router
+   no quede en la ruta action-only con outlet vacío.
    ============================================================ */
 
+import { redirect } from "react-router-dom";
 import { toggleAvailability } from "../lib/api/products";
 
-export async function toggleAvailabilityAction({
-  request,
-}: {
-  request: Request;
-}) {
+export async function toggleAvailabilityAction({ request }: { request: Request }) {
   const formData = await request.formData();
   const id = formData.get("id") as string;
   const currentAvailability = formData.get("availability") === "true";
@@ -21,5 +18,7 @@ export async function toggleAvailabilityAction({
     throw new Response("Failed to toggle availability", { status: 500 });
   }
 
-  return null;
+  /* Redirect back to the page that submitted the form */
+  const referer = request.headers.get("Referer");
+  return redirect(referer ?? "/app/products");
 }
