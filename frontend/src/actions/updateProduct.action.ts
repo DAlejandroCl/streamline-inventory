@@ -1,9 +1,6 @@
 /* ============================================================
    UPDATE PRODUCT ACTION
-   Igual que createProductAction — enviamos el FormData crudo
-   para que el archivo "image" llegue a Multer en el backend.
-   Si no se seleccionó imagen, el campo "image" no existe en
-   el FormData y Multer lo ignora (req.file queda undefined).
+   Envía FormData crudo — Multer en el backend procesa la imagen.
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
@@ -13,13 +10,9 @@ import type { ProductFormData } from "../features/products/types/products";
 type ActionResponse = {
   errors?: {
     name?: string[];
-    sku?: string[];
-    description?: string[];
-    category_id?: string[];
     price?: string[];
     cost?: string[];
     stock?: string[];
-    availability?: string[];
     general?: string[];
   };
   values?: Partial<ProductFormData>;
@@ -34,19 +27,18 @@ export async function updateProductAction({
 
   const formData = await request.formData();
 
-  const rawAvailability = formData.get("availability");
-  const rawCategoryId   = formData.get("category_id");
-  const rawCost         = formData.get("cost");
+  const rawCategoryId = formData.get("category_id");
+  const rawCost       = formData.get("cost");
 
   const data: Partial<ProductFormData> = {
-    name:        String(formData.get("name") ?? ""),
-    sku:         String(formData.get("sku") ?? "").trim() || undefined,
-    description: String(formData.get("description") ?? "").trim() || undefined,
-    category_id: rawCategoryId ? Number(rawCategoryId) : null,
-    price:       Number(formData.get("price") ?? 0),
-    cost:        rawCost ? Number(rawCost) : undefined,
-    stock:       Number(formData.get("stock") ?? 0),
-    availability: rawAvailability === "on",
+    name:         String(formData.get("name") ?? ""),
+    sku:          String(formData.get("sku") ?? "").trim() || undefined,
+    description:  String(formData.get("description") ?? "").trim() || undefined,
+    category_id:  rawCategoryId && String(rawCategoryId) !== "" ? Number(rawCategoryId) : null,
+    price:        Number(formData.get("price") ?? 0),
+    cost:         rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
+    stock:        Number(formData.get("stock") ?? 0),
+    availability: formData.get("availability") === "on",
   };
 
   const result = ProductSchema.safeParse(data);
@@ -57,11 +49,7 @@ export async function updateProductAction({
   try {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/products/${id}`,
-      {
-        method: "PATCH",
-        credentials: "include",
-        body: formData,
-      }
+      { method: "PATCH", credentials: "include", body: formData }
     );
 
     if (!res.ok) {
