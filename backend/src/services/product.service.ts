@@ -1,10 +1,8 @@
 /* ============================================================
    PRODUCT SERVICE
    Única fuente de verdad para la lógica de negocio de productos.
-   Los controllers delegan aquí — nunca importan el modelo directo.
-
-   deleteProduct: elimina también el archivo de imagen del disco
-   para evitar acumulación de archivos huérfanos.
+   Incluye validación básica de negocio para compensar la
+   ausencia de express-validator en rutas multipart.
    ============================================================ */
 
 import path from "path";
@@ -20,12 +18,28 @@ const __dirname  = path.dirname(__filename);
 
 /* ---- Helpers ---------------------------------------------- */
 
-function deleteImageFile(imageUrl: string | null): void {
+function deleteImageFile(imageUrl: string | null | undefined): void {
   if (!imageUrl) return;
   const filePath = path.join(__dirname, "../../public", imageUrl);
-  fs.unlink(filePath, () => {
-    /* Silently ignore — file may have been deleted manually */
-  });
+  fs.unlink(filePath, () => { /* silently ignore */ });
+}
+
+function validateProductData(data: UpdateProductDTO): void {
+  if (!data.name || data.name.trim().length === 0) {
+    throw new AppError("Product name is required", 400);
+  }
+  if (data.price === undefined || data.price === null || isNaN(data.price)) {
+    throw new AppError("Price is required", 400);
+  }
+  if (data.price <= 0) {
+    throw new AppError("Price must be greater than 0", 400);
+  }
+  if (data.stock === undefined || data.stock === null || isNaN(data.stock)) {
+    throw new AppError("Stock is required", 400);
+  }
+  if (data.stock < 0) {
+    throw new AppError("Stock must be 0 or greater", 400);
+  }
 }
 
 /* ---- READ -------------------------------------------------- */
@@ -41,7 +55,6 @@ export const getProductById = async (id: number): Promise<Product> => {
   const product = await Product.findByPk(id, {
     include: [{ model: Category, attributes: ["id", "name", "color"] }],
   });
-
   if (!product) throw new AppError("Product not found", 404);
   return product;
 };
@@ -49,6 +62,7 @@ export const getProductById = async (id: number): Promise<Product> => {
 /* ---- WRITE ------------------------------------------------- */
 
 export const createProduct = async (data: CreateProductDTO): Promise<Product> => {
+  validateProductData(data);
   return Product.create({ ...data });
 };
 
@@ -59,10 +73,6 @@ export const updateProduct = async (
   const product = await Product.findByPk(id);
   if (!product) throw new AppError("Product not found", 404);
 
-  /*
-   * Si se sube una imagen nueva y el producto ya tenía una,
-   * eliminamos el archivo anterior del disco.
-   */
   if (data.image_url && product.image_url && data.image_url !== product.image_url) {
     deleteImageFile(product.image_url);
   }
@@ -74,7 +84,6 @@ export const updateProduct = async (
 export const deleteProduct = async (id: number): Promise<void> => {
   const product = await Product.findByPk(id);
   if (!product) throw new AppError("Product not found", 404);
-
   deleteImageFile(product.image_url);
   await product.destroy();
 };
