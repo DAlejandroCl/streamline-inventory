@@ -1,10 +1,12 @@
 /* ============================================================
    UPDATE PRODUCT ACTION
-   Envía FormData crudo — Multer en el backend procesa la imagen.
+   Notificación detallada incluye: nombre del producto,
+   qué campos cambiaron visiblemente (disponibilidad, stock).
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
+import { dispatchNotification } from "../lib/notificationBus";
 import type { ProductFormData } from "../features/products/types/products";
 
 type ActionResponse = {
@@ -27,18 +29,21 @@ export async function updateProductAction({
 
   const formData = await request.formData();
 
-  const rawCategoryId = formData.get("category_id");
-  const rawCost       = formData.get("cost");
+  const rawCategoryId  = formData.get("category_id");
+  const rawCost        = formData.get("cost");
+  const productName    = String(formData.get("name") ?? "").trim();
+  const stock          = Number(formData.get("stock") ?? 0);
+  const availability   = formData.get("availability") === "on";
 
   const data: Partial<ProductFormData> = {
-    name:         String(formData.get("name") ?? ""),
+    name:         productName,
     sku:          String(formData.get("sku") ?? "").trim() || undefined,
     description:  String(formData.get("description") ?? "").trim() || undefined,
     category_id:  rawCategoryId && String(rawCategoryId) !== "" ? Number(rawCategoryId) : null,
     price:        Number(formData.get("price") ?? 0),
     cost:         rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
-    stock:        Number(formData.get("stock") ?? 0),
-    availability: formData.get("availability") === "on",
+    stock,
+    availability,
   };
 
   const result = ProductSchema.safeParse(data);
@@ -54,17 +59,33 @@ export async function updateProductAction({
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({})) as { message?: string };
-      return {
-        errors: { general: [body.message ?? "Error updating product."] },
-        values: data,
-      };
+      const msg  = body.message ?? "Error updating product.";
+
+      dispatchNotification({
+        type:        "error",
+        title:       "Update failed",
+        description: `Could not update "${productName}". ${msg}`,
+      });
+
+      return { errors: { general: [msg] }, values: data };
     }
+
+    /* Descripción detallada con los cambios más relevantes */
+    const statusLabel = availability ? "Available" : "Out of stock";
+    dispatchNotification({
+      type:        "success",
+      title:       "Product updated",
+      description: `"${productName}" — Status: ${statusLabel} · Stock: ${stock} units.`,
+    });
 
     return redirect("/app/products");
   } catch {
-    return {
-      errors: { general: ["Network error. Please try again."] },
-      values: data,
-    };
+    const msg = "Network error. Please try again.";
+    dispatchNotification({
+      type:        "error",
+      title:       "Connection error",
+      description: msg,
+    });
+    return { errors: { general: [msg] }, values: data };
   }
 }
