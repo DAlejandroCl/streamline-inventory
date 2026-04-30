@@ -1,17 +1,18 @@
 /* ============================================================
    PRODUCTS + CATEGORIES API CLIENT
-   Single source of truth for all HTTP calls.
-   credentials: "include" is required on every request so the
-   browser sends the httpOnly auth cookie to the protected API.
+   getProducts: ahora acepta opciones de paginación y búsqueda.
+   getAllProducts: llama a /api/products/all (sin paginación)
+   — usado por el Dashboard para métricas completas.
    ============================================================ */
 
 import type {
   Product,
   Category,
   ProductFormData,
+  PaginatedProducts,
 } from "../../features/products/types/products";
 
-const BASE = import.meta.env.VITE_API_URL;
+const BASE          = import.meta.env.VITE_API_URL;
 const PRODUCTS_URL   = `${BASE}/api/products`;
 const CATEGORIES_URL = `${BASE}/api/categories`;
 
@@ -28,11 +29,6 @@ async function apiFetch(url: string, init: RequestInit = {}): Promise<Response> 
   });
 
   if (res.status === 401) {
-    /*
-     * Session expired or cookie missing — redirect to login.
-     * This handles the edge case where the cookie expires while
-     * the user is actively using the app (e.g. 7-day window passes).
-     */
     window.location.href = "/login";
     throw new Error("Session expired");
   }
@@ -40,10 +36,36 @@ async function apiFetch(url: string, init: RequestInit = {}): Promise<Response> 
   return res;
 }
 
+/* ---- Pagination options ----------------------------------- */
+
+export type ProductQueryOptions = {
+  page?:   number;
+  limit?:  number;
+  search?: string;
+};
+
 /* ---- PRODUCTS — READ -------------------------------------- */
 
-export async function getProducts(): Promise<Product[]> {
-  const res = await apiFetch(PRODUCTS_URL);
+export async function getProducts(
+  opts: ProductQueryOptions = {}
+): Promise<PaginatedProducts> {
+  const params = new URLSearchParams();
+  if (opts.page)   params.set("page",   String(opts.page));
+  if (opts.limit)  params.set("limit",  String(opts.limit));
+  if (opts.search) params.set("search", opts.search);
+
+  const url = params.toString()
+    ? `${PRODUCTS_URL}?${params.toString()}`
+    : PRODUCTS_URL;
+
+  const res = await apiFetch(url);
+  if (!res.ok) throw new Error("Error fetching products");
+  return res.json();
+}
+
+/* Sin paginación — Dashboard métricas */
+export async function getAllProducts(): Promise<Product[]> {
+  const res = await apiFetch(`${PRODUCTS_URL}/all`);
   if (!res.ok) throw new Error("Error fetching products");
   return res.json();
 }
@@ -111,21 +133,4 @@ export async function createCategory(data: {
   });
   if (!res.ok) throw new Error("Error creating category");
   return res.json();
-}
-
-export async function updateCategory(
-  id: number,
-  data: { name?: string; color?: string }
-): Promise<Category> {
-  const res = await apiFetch(`${CATEGORIES_URL}/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Error updating category");
-  return res.json();
-}
-
-export async function deleteCategory(id: number): Promise<void> {
-  const res = await apiFetch(`${CATEGORIES_URL}/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error("Error deleting category");
 }
