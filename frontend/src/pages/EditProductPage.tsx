@@ -1,17 +1,23 @@
+/* ============================================================
+   EDIT PRODUCT PAGE
+   Bug fixes:
+   1. Breadcrumb links usaban /products — corregido a /app/products
+   2. image_url no se pasaba a defaultValues — el ImageUpload
+      no mostraba la imagen existente al editar
+   3. "Back to Inventory" link corregido a /app/products
+   ============================================================ */
+
 import { useLoaderData, Link } from "react-router-dom";
-import { Tag, DollarSign, ToggleRight, Clock, Package, Hash, ArrowLeft } from "lucide-react";
+import {
+  Tag, DollarSign, ToggleRight, Clock, Package, Hash, ArrowLeft,
+} from "lucide-react";
 import type { Product, Category } from "../features/products/types/products";
-import ProductForm from "../features/products/components/ProductForm";
-import PageHeader from "../components/layout/PageHeader";
-import Button from "../components/ui/Button";
-import Badge from "../components/ui/Badge";
+import ProductForm  from "../features/products/components/ProductForm";
+import PageHeader   from "../components/layout/PageHeader";
+import Button       from "../components/ui/Button";
+import Badge        from "../components/ui/Badge";
 import { formatCurrency } from "../lib/utils/formatCurrency";
 
-/*
- * El loader de esta ruta devuelve { product, categories }
- * para que el formulario pueda mostrar el selector de categorías
- * precargado con las opciones disponibles.
- */
 type LoaderData = {
   product: Product;
   categories: Category[];
@@ -33,8 +39,8 @@ export default function EditProductPage() {
         title="Edit Product"
         description="Update an existing entry in the operational ledger."
         breadcrumbs={[
-          { label: "Dashboard", to: "/" },
-          { label: "Inventory", to: "/products" },
+          { label: "Dashboard", to: "/app" },
+          { label: "Inventory", to: "/app/products" },
         ]}
       />
 
@@ -42,14 +48,15 @@ export default function EditProductPage() {
         <div className="lg:col-span-2">
           <ProductForm
             defaultValues={{
-              name: product.name,
-              sku: product.sku ?? undefined,
-              description: product.description ?? undefined,
-              category_id: product.category_id,
-              price: product.price,
-              cost: product.cost ?? undefined,
-              stock: product.stock,
+              name:         product.name,
+              sku:          product.sku ?? undefined,
+              description:  product.description ?? undefined,
+              category_id:  product.category_id,
+              price:        product.price,
+              cost:         product.cost ?? undefined,
+              stock:        product.stock,
               availability: product.availability,
+              image_url:    product.image_url,
             }}
             categories={categories}
             isEditing
@@ -70,11 +77,19 @@ export default function EditProductPage() {
             {FIELDS.map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
-                  <Icon size={14} className="text-[var(--color-text-secondary)]" strokeWidth={2} />
+                  <Icon
+                    size={14}
+                    className="text-[var(--color-text-secondary)]"
+                    strokeWidth={2}
+                  />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">{label}</p>
-                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">{value}</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                    {label}
+                  </p>
+                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">
+                    {value}
+                  </p>
                 </div>
               </div>
             ))}
@@ -88,18 +103,28 @@ export default function EditProductPage() {
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">Category</p>
-                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">{product.category.name}</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                    Category
+                  </p>
+                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">
+                    {product.category.name}
+                  </p>
                 </div>
               </div>
             )}
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
-                <ToggleRight size={14} className="text-[var(--color-text-secondary)]" strokeWidth={2} />
+                <ToggleRight
+                  size={14}
+                  className="text-[var(--color-text-secondary)]"
+                  strokeWidth={2}
+                />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)] mb-1">Status</p>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)] mb-1">
+                  Status
+                </p>
                 <Badge variant={product.availability ? "success" : "danger"}>
                   {product.availability ? "Available" : "Out of stock"}
                 </Badge>
@@ -109,13 +134,22 @@ export default function EditProductPage() {
             {product.updatedAt && (
               <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border)]/40">
                 <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
-                  <Clock size={13} className="text-[var(--color-text-muted)]" strokeWidth={2} />
+                  <Clock
+                    size={13}
+                    className="text-[var(--color-text-muted)]"
+                    strokeWidth={2}
+                  />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">Last Updated</p>
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                    Last Updated
+                  </p>
                   <p className="text-xs text-[var(--color-text-secondary)] font-semibold mt-0.5">
                     {new Date(product.updatedAt).toLocaleDateString("en-US", {
-                      weekday: "short", month: "short", day: "numeric", year: "numeric",
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
                     })}
                   </p>
                 </div>
@@ -124,7 +158,7 @@ export default function EditProductPage() {
           </div>
 
           <div className="pt-2 border-t border-[var(--color-border)]/40">
-            <Link to="/products">
+            <Link to="/app/products">
               <Button variant="secondary" icon={ArrowLeft} className="w-full justify-center">
                 Back to Inventory
               </Button>
