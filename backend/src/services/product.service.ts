@@ -1,14 +1,21 @@
 /* ============================================================
    PRODUCT SERVICE
-   Única fuente de verdad para la lógica de negocio de productos.
-   Incluye validación básica de negocio para compensar la
-   ausencia de express-validator en rutas multipart.
+   Fix: deleteImageFile construía el path incorrectamente.
+   image_url = "/public/uploads/products/filename.jpg"
+   __dirname  = "backend/src/services"
+
+   ANTES (bug): path.join(__dirname, "../../public", imageUrl)
+   → "backend/src/services/../../public/public/uploads/..." ❌
+
+   AHORA (fix): path.join(__dirname, "../..", imageUrl)
+   → "backend/src/services/../../public/uploads/..." ✓
+   → "backend/public/uploads/products/filename.jpg" ✓
    ============================================================ */
 
 import path from "path";
-import fs from "fs";
+import fs   from "fs";
 import { fileURLToPath } from "url";
-import Product from "../models/Product.model.js";
+import Product  from "../models/Product.model.js";
 import Category from "../models/Category.model.js";
 import { AppError } from "../types/AppError.js";
 import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js";
@@ -20,8 +27,14 @@ const __dirname  = path.dirname(__filename);
 
 function deleteImageFile(imageUrl: string | null | undefined): void {
   if (!imageUrl) return;
-  const filePath = path.join(__dirname, "../../public", imageUrl);
-  fs.unlink(filePath, () => { /* silently ignore */ });
+  /*
+   * imageUrl = "/public/uploads/products/uuid.jpg"
+   * __dirname = ".../backend/src/services"
+   * ../.. → ".../backend"
+   * Resultado: ".../backend/public/uploads/products/uuid.jpg"
+   */
+  const filePath = path.join(__dirname, "../..", imageUrl);
+  fs.unlink(filePath, () => { /* silently ignore if file missing */ });
 }
 
 function validateProductData(data: UpdateProductDTO): void {
@@ -73,8 +86,21 @@ export const updateProduct = async (
   const product = await Product.findByPk(id);
   if (!product) throw new AppError("Product not found", 404);
 
+  /*
+   * Solo eliminar imagen anterior si se sube una nueva diferente.
+   * Si no se sube imagen nueva (data.image_url === undefined),
+   * conservar la existente pasando el valor actual.
+   */
   if (data.image_url && product.image_url && data.image_url !== product.image_url) {
     deleteImageFile(product.image_url);
+  }
+
+  /*
+   * Si no viene image_url en el body (no se subió imagen),
+   * no sobreescribir la existente — la eliminamos del DTO.
+   */
+  if (data.image_url === undefined) {
+    delete data.image_url;
   }
 
   await product.update(data);
