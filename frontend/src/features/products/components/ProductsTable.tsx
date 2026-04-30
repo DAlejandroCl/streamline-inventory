@@ -1,12 +1,10 @@
 /* ============================================================
    PRODUCTS TABLE
-   Bug fix: Edit link usaba /products/:id/edit sin prefijo /app/
-   — React Router no encontraba la ruta y caía en el catch-all
-   que redirige a / (home).
-
-   Toggle y Delete usan Form con action absoluta /app/... para
-   que los actions se ejecuten aunque la tabla esté en cualquier
-   sub-ruta del layout /app.
+   Cambios respecto a versión anterior:
+   - Delete Form incluye campo hidden "name" para la notificación
+   - Toggle Form incluye campo hidden "name" para la notificación
+   - Edit link usa /app/products/:id/edit (fix anterior)
+   - onError en img para fallback limpio sin icono roto
    ============================================================ */
 
 import { Link, Form } from "react-router-dom";
@@ -53,17 +51,20 @@ export default function ProductsTable({ products }: Props) {
                           alt={p.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            /* Fallback si la imagen no carga */
-                            (e.target as HTMLImageElement).style.display = "none";
+                            const target = e.currentTarget;
+                            target.style.display = "none";
+                            target.nextElementSibling?.classList.remove("hidden");
                           }}
                         />
-                      ) : (
-                        <Package
-                          size={15}
-                          className="text-[var(--color-primary)]"
-                          strokeWidth={2}
-                        />
-                      )}
+                      ) : null}
+                      <Package
+                        size={15}
+                        className={[
+                          "text-[var(--color-primary)]",
+                          p.image_url ? "hidden" : "",
+                        ].join(" ")}
+                        strokeWidth={2}
+                      />
                     </div>
                     <div>
                       <p className="text-sm font-bold text-[var(--color-text-primary)]">
@@ -99,10 +100,11 @@ export default function ProductsTable({ products }: Props) {
                   </span>
                 </td>
 
-                {/* STATUS — toggle via form action */}
+                {/* STATUS — toggle via form con nombre incluido */}
                 <td className="px-6 py-4">
                   <Form method="post" action="/app/products/toggle">
                     <input type="hidden" name="id"           value={p.id} />
+                    <input type="hidden" name="name"         value={p.name} />
                     <input type="hidden" name="availability" value={String(p.availability)} />
                     <button
                       type="submit"
@@ -127,15 +129,15 @@ export default function ProductsTable({ products }: Props) {
                     : "—"}
                 </td>
 
-                {/* ACTIONS */}
+                {/* ACTIONS — delete con nombre incluido */}
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity duration-150">
-                    {/* FIX: /app/products/:id/edit — prefijo /app/ era el bug */}
                     <Link to={`/app/products/${p.id}/edit`}>
                       <Button variant="ghost" size="sm" icon={Edit2}>Edit</Button>
                     </Link>
                     <Form method="post" action="/app/products/delete">
-                      <input type="hidden" name="id" value={p.id} />
+                      <input type="hidden" name="id"   value={p.id} />
+                      <input type="hidden" name="name" value={p.name} />
                       <Button variant="danger" size="sm" icon={Trash2} type="submit">
                         Delete
                       </Button>
