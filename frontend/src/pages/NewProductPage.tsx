@@ -1,9 +1,15 @@
+/* ============================================================
+   NEW PRODUCT PAGE
+   Fix: breadcrumbs y "Back to Inventory" link usaban paths
+   sin prefijo /app/ — corregidos.
+   ============================================================ */
+
 import { useLoaderData, Link } from "react-router-dom";
 import { Tag, DollarSign, ToggleRight, CheckCircle, ArrowLeft } from "lucide-react";
 import type { Category } from "../features/products/types/products";
 import ProductForm from "../features/products/components/ProductForm";
-import PageHeader from "../components/layout/PageHeader";
-import Button from "../components/ui/Button";
+import PageHeader  from "../components/layout/PageHeader";
+import Button      from "../components/ui/Button";
 
 const TIPS = [
   { icon: Tag,         text: "Product name must be at least 1 character." },
@@ -12,13 +18,7 @@ const TIPS = [
   { icon: CheckCircle, text: "Products are available by default when created." },
 ];
 
-/*
- * El loader de esta ruta devuelve { categories } para poblar
- * el selector de categorías en el formulario.
- */
-type LoaderData = {
-  categories: Category[];
-};
+type LoaderData = { categories: Category[] };
 
 export default function NewProductPage() {
   const { categories } = useLoaderData() as LoaderData;
@@ -29,8 +29,8 @@ export default function NewProductPage() {
         title="New Product Entry"
         description="Add a new item to the operational ledger."
         breadcrumbs={[
-          { label: "Dashboard", to: "/" },
-          { label: "Inventory", to: "/products" },
+          { label: "Dashboard", to: "/app" },
+          { label: "Inventory", to: "/app/products" },
         ]}
       />
 
@@ -61,7 +61,7 @@ export default function NewProductPage() {
           </ul>
 
           <div className="pt-2 border-t border-[var(--color-border)]/40">
-            <Link to="/products">
+            <Link to="/app/products">
               <Button variant="secondary" icon={ArrowLeft} className="w-full justify-center">
                 Back to Inventory
               </Button>
