@@ -1,27 +1,35 @@
 /* ============================================================
    PRODUCTS PAGE — Inventory Ledger
-   Filter tabs, stats bar, sortable table.
-   All CSS custom property references are fully closed.
+   Paginación server-side: los controles de página y búsqueda
+   actualizan los searchParams de la URL, lo que dispara el
+   loader automáticamente (React Router revalida en navegación).
+
+   La búsqueda usa un debounce manual con useEffect para no
+   disparar el loader en cada keystroke.
    ============================================================ */
 
-import { useLoaderData, useNavigation, Link } from "react-router-dom";
-import { useState } from "react";
-import { Plus, Download, PackageX, SlidersHorizontal } from "lucide-react";
-import type { Product } from "../features/products/types/products";
-import Button from "../components/ui/Button";
-import EmptyState from "../components/ui/EmptyState";
+import {
+  useLoaderData, useNavigation, Link,
+  useSearchParams, useSubmit,
+} from "react-router-dom";
+import { useState, useEffect } from "react";
+import {
+  Plus, Download, PackageX, SlidersHorizontal,
+  ChevronLeft, ChevronRight, Search,
+} from "lucide-react";
+import type { PaginatedProducts } from "../features/products/types/products";
+import Button               from "../components/ui/Button";
+import EmptyState           from "../components/ui/EmptyState";
 import ProductsTableSkeleton from "../components/ui/ProductsTableSkeleton";
-import ProductsTable from "../features/products/components/ProductsTable";
-import PageHeader from "../components/layout/PageHeader";
-import { formatCurrency } from "../lib/utils/formatCurrency";
+import ProductsTable        from "../features/products/components/ProductsTable";
+import PageHeader           from "../components/layout/PageHeader";
+import { formatCurrency }   from "../lib/utils/formatCurrency";
 
-type FilterKey = "all" | "available" | "out";
+/* ---- CSV export ------------------------------------------ */
 
-/* ---- Export helper --------------------------------------- */
-
-function exportCSV(products: Product[]) {
+function exportCSV(result: PaginatedProducts) {
   const headers = ["ID", "Name", "SKU", "Price", "Cost", "Stock", "Status", "Created"];
-  const rows = products.map((p) => [
+  const rows = result.data.map((p) => [
     p.id,
     `"${p.name}"`,
     p.sku ?? "",
@@ -31,11 +39,11 @@ function exportCSV(products: Product[]) {
     p.availability ? "Available" : "Out of stock",
     p.createdAt ? new Date(p.createdAt).toLocaleDateString() : "",
   ]);
-  const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+  const csv  = [headers, ...rows].map((r) => r.join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
   a.download = `streamline-inventory-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
@@ -44,25 +52,50 @@ function exportCSV(products: Product[]) {
 /* ---- Page ------------------------------------------------ */
 
 export default function ProductsPage() {
-  const products = useLoaderData() as Product[];
+  const result     = useLoaderData() as PaginatedProducts;
   const navigation = useNavigation();
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const submit = useSubmit();
+
+  const [searchInput, setSearchInput] = useState(
+    searchParams.get("search") ?? ""
+  );
+
+  /* Debounce search — espera 400ms después del último keystroke */
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const current = searchParams.get("search") ?? "";
+      if (searchInput !== current) {
+        const next = new URLSearchParams(searchParams);
+        if (searchInput) {
+          next.set("search", searchInput);
+        } else {
+          next.delete("search");
+        }
+        next.set("page", "1");
+        setSearchParams(next, { replace: true });
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput, searchParams, setSearchParams]);
 
   if (navigation.state === "loading") {
     return <ProductsTableSkeleton />;
   }
 
-  const total      = products.length;
+  const { data: products, total, page, totalPages, hasNext, hasPrev } = result;
+
   const available  = products.filter((p) => p.availability).length;
-  const outOfStock = total - available;
+  const outOfStock = products.filter((p) => !p.availability).length;
   const totalValue = products.reduce((s, p) => s + p.price, 0);
 
-  const filtered =
-    filter === "available" ? products.filter((p) => p.availability) :
-    filter === "out"       ? products.filter((p) => !p.availability) :
-    products;
+  function goToPage(p: number) {
+    const next = new URLSearchParams(searchParams);
+    next.set("page", String(p));
+    setSearchParams(next);
+  }
 
-  if (!total) {
+  if (total === 0 && !searchParams.get("search")) {
     return (
       <div className="space-y-8">
         <PageHeader
@@ -101,7 +134,7 @@ export default function ProductsPage() {
               variant="secondary"
               icon={Download}
               size="lg"
-              onClick={() => exportCSV(products)}
+              onClick={() => exportCSV(result)}
             >
               Export CSV
             </Button>
@@ -133,7 +166,7 @@ export default function ProductsPage() {
               : "text-[var(--color-text-muted)]",
           },
           {
-            label: "Total Value",
+            label: "Page Value",
             value: formatCurrency(totalValue),
             color: "text-[var(--color-text-primary)]",
           },
@@ -152,46 +185,128 @@ export default function ProductsPage() {
         ))}
       </div>
 
-      {/* FILTER TABS */}
-      <div className="flex items-center gap-3">
-        <SlidersHorizontal
-          size={14}
-          className="text-[var(--color-text-muted)]"
-          strokeWidth={2}
-        />
-        <div className="bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 p-1 rounded-xl inline-flex gap-1">
-          {(
-            [
-              { key: "all",       label: `All (${total})` },
-              { key: "available", label: `Available (${available})` },
-              { key: "out",       label: `Out of stock (${outOfStock})` },
-            ] as { key: FilterKey; label: string }[]
-          ).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={[
-                "px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200",
-                filter === tab.key
-                  ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-card"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]",
-              ].join(" ")}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {/* SEARCH + FILTER BAR */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative">
+          <Search
+            size={14}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+            strokeWidth={2}
+          />
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search by name or SKU..."
+            className="pl-9 pr-4 py-2 text-sm rounded-xl w-64 bg-[var(--color-surface)] border border-[var(--color-border)] placeholder:text-[var(--color-text-muted)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+          />
         </div>
+
+        {searchParams.get("search") && (
+          <button
+            onClick={() => {
+              setSearchInput("");
+              const next = new URLSearchParams(searchParams);
+              next.delete("search");
+              next.set("page", "1");
+              setSearchParams(next, { replace: true });
+            }}
+            className="text-xs font-semibold text-[var(--color-primary)] hover:underline"
+          >
+            Clear search
+          </button>
+        )}
+
+        <span className="text-xs text-[var(--color-text-muted)] ml-auto">
+          {total} product{total !== 1 ? "s" : ""}
+          {searchParams.get("search") && ` matching "${searchParams.get("search")}"`}
+        </span>
       </div>
 
       {/* TABLE */}
-      {filtered.length > 0 ? (
-        <ProductsTable products={filtered} />
+      {products.length > 0 ? (
+        <ProductsTable products={products} />
       ) : (
         <EmptyState
-          title="No matching products"
-          description="Try a different filter to find what you're looking for."
+          title="No products found"
+          description={`No results for "${searchParams.get("search")}". Try a different search term.`}
           icon={SlidersHorizontal}
+          action={
+            <button
+              onClick={() => {
+                setSearchInput("");
+                setSearchParams({});
+              }}
+              className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
+            >
+              Clear search
+            </button>
+          }
         />
+      )}
+
+      {/* PAGINATION CONTROLS */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between py-2">
+          <p className="text-xs text-[var(--color-text-muted)] font-medium">
+            Page{" "}
+            <span className="font-bold text-[var(--color-text-primary)]">{page}</span>
+            {" "}of{" "}
+            <span className="font-bold text-[var(--color-text-primary)]">{totalPages}</span>
+          </p>
+
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={ChevronLeft}
+              onClick={() => goToPage(page - 1)}
+              disabled={!hasPrev}
+            >
+              Prev
+            </Button>
+
+            {/* Page number pills */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let p: number;
+                if (totalPages <= 5) {
+                  p = i + 1;
+                } else if (page <= 3) {
+                  p = i + 1;
+                } else if (page >= totalPages - 2) {
+                  p = totalPages - 4 + i;
+                } else {
+                  p = page - 2 + i;
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => goToPage(p)}
+                    className={[
+                      "w-8 h-8 rounded-lg text-xs font-bold transition-all",
+                      p === page
+                        ? "bg-[var(--color-primary)] text-white shadow-card"
+                        : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-low)] hover:text-[var(--color-text-primary)]",
+                    ].join(" ")}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
+
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={ChevronRight}
+              onClick={() => goToPage(page + 1)}
+              disabled={!hasNext}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
