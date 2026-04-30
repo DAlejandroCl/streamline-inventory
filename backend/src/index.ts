@@ -1,19 +1,25 @@
 /* ============================================================
    APP BOOTSTRAP
-   dotenv.config() debe ser la primera línea ejecutable,
-   antes de cualquier import que lea process.env.
-   
-   El problema original: auth.service.ts lee JWT_SECRET a
-   nivel de módulo (const JWT_SECRET = process.env.JWT_SECRET)
-   — si dotenv no cargó primero, JWT_SECRET es undefined.
+   Orden de inicialización crítico:
+   1. dotenv/config   — carga .env en process.env
+   2. validateEnv()   — falla inmediatamente si faltan vars
+   3. connectDB()     — conecta a Postgres
+   4. seedAdminUser() — crea admin por defecto si no existe
+   5. server.listen() — acepta conexiones
+
+   Si cualquier paso falla, process.exit(1) detiene el boot.
+   Esto garantiza que NUNCA arranca un servidor mal configurado.
    ============================================================ */
 
 import "dotenv/config";
 
-import server from "./server.js";
-import { connectDB } from "./config/db.js";
-import { seedAdminUser } from "./services/auth.service.js";
-import colors from "colors";
+import { validateEnv }    from "./config/env.js";
+import server             from "./server.js";
+import { connectDB }      from "./config/db.js";
+import { seedAdminUser }  from "./services/auth.service.js";
+import colors             from "colors";
+
+validateEnv();
 
 const startServer = async (): Promise<void> => {
   try {
