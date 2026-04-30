@@ -1,20 +1,21 @@
 /* ============================================================
    PRODUCT SERVICE
-   Fix: deleteImageFile construía el path incorrectamente.
-   image_url = "/public/uploads/products/filename.jpg"
-   __dirname  = "backend/src/services"
+   getAllProducts ahora soporta paginación server-side.
 
-   ANTES (bug): path.join(__dirname, "../../public", imageUrl)
-   → "backend/src/services/../../public/public/uploads/..." ❌
+   PAGINACIÓN:
+   - page:  número de página (1-indexed, default: 1)
+   - limit: items por página (default: 20, max: 100)
+   - Devuelve { data, total, page, totalPages } para que el
+     frontend pueda renderizar controles de navegación.
 
-   AHORA (fix): path.join(__dirname, "../..", imageUrl)
-   → "backend/src/services/../../public/uploads/..." ✓
-   → "backend/public/uploads/products/filename.jpg" ✓
+   Sin paginación (page=0 o limit=0): devuelve todos los
+   productos. Usado internamente por el Dashboard.
    ============================================================ */
 
 import path from "path";
 import fs   from "fs";
 import { fileURLToPath } from "url";
+import { Op } from "sequelize";
 import Product  from "../models/Product.model.js";
 import Category from "../models/Category.model.js";
 import { AppError } from "../types/AppError.js";
@@ -23,18 +24,29 @@ import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
+/* ---- Types ----------------------------------------------- */
+
+export type PaginationOptions = {
+  page:   number;
+  limit:  number;
+  search?: string;
+};
+
+export type PaginatedProducts = {
+  data:        Product[];
+  total:       number;
+  page:        number;
+  totalPages:  number;
+  hasNext:     boolean;
+  hasPrev:     boolean;
+};
+
 /* ---- Helpers ---------------------------------------------- */
 
 function deleteImageFile(imageUrl: string | null | undefined): void {
   if (!imageUrl) return;
-  /*
-   * imageUrl = "/public/uploads/products/uuid.jpg"
-   * __dirname = ".../backend/src/services"
-   * ../.. → ".../backend"
-   * Resultado: ".../backend/public/uploads/products/uuid.jpg"
-   */
   const filePath = path.join(__dirname, "../..", imageUrl);
-  fs.unlink(filePath, () => { /* silently ignore if file missing */ });
+  fs.unlink(filePath, () => { /* silently ignore */ });
 }
 
 function validateProductData(data: UpdateProductDTO): void {
@@ -55,18 +67,61 @@ function validateProductData(data: UpdateProductDTO): void {
   }
 }
 
+const INCLUDE_CATEGORY = [
+  { model: Category, attributes: ["id", "name", "color"] },
+];
+
 /* ---- READ -------------------------------------------------- */
 
-export const getAllProducts = async (): Promise<Product[]> => {
+export const getAllProducts = async (
+  opts: PaginationOptions = { page: 1, limit: 20 }
+): Promise<PaginatedProducts> => {
+  const MAX_LIMIT = 100;
+  const limit     = Math.min(Math.max(1, opts.limit), MAX_LIMIT);
+  const page      = Math.max(1, opts.page);
+  const offset    = (page - 1) * limit;
+
+  /* Search filter — case insensitive, matches name or SKU */
+  const where = opts.search
+    ? {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${opts.search}%` } },
+          { sku:  { [Op.iLike]: `%${opts.search}%` } },
+        ],
+      }
+    : {};
+
+  const { count, rows } = await Product.findAndCountAll({
+    where,
+    include: INCLUDE_CATEGORY,
+    order:   [["createdAt", "DESC"]],
+    limit,
+    offset,
+  });
+
+  const totalPages = Math.ceil(count / limit);
+
+  return {
+    data:       rows,
+    total:      count,
+    page,
+    totalPages,
+    hasNext:    page < totalPages,
+    hasPrev:    page > 1,
+  };
+};
+
+/* Sin paginación — usado por el Dashboard para métricas */
+export const getAllProductsUnpaginated = async (): Promise<Product[]> => {
   return Product.findAll({
-    include: [{ model: Category, attributes: ["id", "name", "color"] }],
-    order: [["createdAt", "DESC"]],
+    include: INCLUDE_CATEGORY,
+    order:   [["createdAt", "DESC"]],
   });
 };
 
 export const getProductById = async (id: number): Promise<Product> => {
   const product = await Product.findByPk(id, {
-    include: [{ model: Category, attributes: ["id", "name", "color"] }],
+    include: INCLUDE_CATEGORY,
   });
   if (!product) throw new AppError("Product not found", 404);
   return product;
@@ -86,19 +141,10 @@ export const updateProduct = async (
   const product = await Product.findByPk(id);
   if (!product) throw new AppError("Product not found", 404);
 
-  /*
-   * Solo eliminar imagen anterior si se sube una nueva diferente.
-   * Si no se sube imagen nueva (data.image_url === undefined),
-   * conservar la existente pasando el valor actual.
-   */
   if (data.image_url && product.image_url && data.image_url !== product.image_url) {
     deleteImageFile(product.image_url);
   }
 
-  /*
-   * Si no viene image_url en el body (no se subió imagen),
-   * no sobreescribir la existente — la eliminamos del DTO.
-   */
   if (data.image_url === undefined) {
     delete data.image_url;
   }
