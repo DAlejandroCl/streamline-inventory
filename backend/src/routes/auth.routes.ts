@@ -1,18 +1,20 @@
 /* ============================================================
    AUTH ROUTES
-   POST /api/auth/login   — exchange credentials for cookie
-   POST /api/auth/logout  — clear the session cookie
-   GET  /api/auth/me      — return the current user (protected)
+   authRateLimiter se aplica SOLO en /login:
+   - 10 intentos fallidos / 15min por IP
+   - skipSuccessfulRequests: true (login OK no penaliza)
+   - Mensaje genérico para evitar user enumeration
    ============================================================ */
 
 import { Router } from "express";
-import * as authController from "../controllers/auth.controllers.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import * as authController  from "../controllers/auth.controllers.js";
+import { requireAuth }      from "../middlewares/auth.middleware.js";
+import { authRateLimiter }  from "../config/security.js";
 
 const authRouter = Router();
 
-authRouter.post("/login", authController.login);
+authRouter.post("/login",  authRateLimiter, authController.login);
 authRouter.post("/logout", authController.logout);
-authRouter.get("/me", requireAuth, authController.me);
+authRouter.get("/me",      requireAuth, authController.me);
 
 export default authRouter;
