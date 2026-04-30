@@ -1,11 +1,11 @@
 /* ============================================================
    PRODUCT FORM
-   Usado tanto en NewProductPage como en EditProductPage.
-   encType="multipart/form-data" es necesario para que el
-   browser incluya el archivo en el body del POST/PUT.
+   Fix: Label para Availability no tenía htmlFor — error TS2741.
+   La API de Label requiere htmlFor obligatorio. Para el toggle
+   que no tiene un input asociado real, usamos un div+span
+   en lugar de Label para evitar el error semántico.
 
-   Multer en el backend lee el campo "image" del multipart body.
-   El resto de campos llegan como texto — los actions los parsean.
+   encType="multipart/form-data" necesario para imagen.
    ============================================================ */
 
 import { useState } from "react";
@@ -15,10 +15,10 @@ import {
   AlignLeft, Layers, TrendingDown,
 } from "lucide-react";
 import type { ProductFormData, Category } from "../types/products";
-import Button       from "../../../components/ui/Button";
-import Input        from "../../../components/ui/Input";
-import Label        from "../../../components/ui/Label";
-import ImageUpload  from "../../../components/ui/ImageUpload";
+import Button      from "../../../components/ui/Button";
+import Input       from "../../../components/ui/Input";
+import Label       from "../../../components/ui/Label";
+import ImageUpload from "../../../components/ui/ImageUpload";
 
 type ActionErrors = {
   errors?: {
@@ -58,12 +58,12 @@ export default function ProductForm({
     <Form
       method="post"
       encType="multipart/form-data"
-      className="bg-[var(--color-surface)] rounded-2xl p-8 shadow-card border border-[var(--color-border)]/40 space-y-6"
+      className="bg-(--color-surface) rounded-2xl p-8 shadow-card border border-(--color-border)/40 space-y-6"
     >
       {/* IMAGE UPLOAD */}
       <ImageUpload currentImageUrl={defaultValues?.image_url} />
 
-      {/* ROW 1 — Name + SKU */}
+      {/* NAME + SKU */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="md:col-span-2">
           <Input
@@ -97,7 +97,7 @@ export default function ProductForm({
         <div className="relative">
           <AlignLeft
             size={15}
-            className="absolute left-3.5 top-3 text-[var(--color-text-muted)] pointer-events-none"
+            className="absolute left-3.5 top-3 text-(--color-text-muted) pointer-events-none"
             strokeWidth={2}
           />
           <textarea
@@ -110,15 +110,15 @@ export default function ProductForm({
             }
             className={[
               "w-full pl-10 pr-4 py-2.5 text-sm rounded-xl resize-none",
-              "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
-              "text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15",
-              "focus:border-[var(--color-primary)] transition-all duration-200",
+              "bg-(--color-surface-low) border border-(--color-border)",
+              "text-(--color-text-primary) placeholder:text-(--color-text-muted)",
+              "focus:outline-none focus:ring-2 focus:ring-primary/15",
+              "focus:border-primary transition-all duration-200",
             ].join(" ")}
           />
         </div>
         {actionData?.errors?.description && (
-          <p className="text-xs text-[var(--color-error)]">
+          <p className="text-xs text-error">
             {actionData.errors.description[0]}
           </p>
         )}
@@ -130,21 +130,21 @@ export default function ProductForm({
         <div className="relative">
           <Layers
             size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--color-text-muted) pointer-events-none"
             strokeWidth={2}
           />
           <select
             id="category_id"
             name="category_id"
             defaultValue={
-              actionData?.values?.category_id ?? defaultValues?.category_id ?? ""
+              String(actionData?.values?.category_id ?? defaultValues?.category_id ?? "")
             }
             className={[
               "w-full pl-10 pr-4 py-2.5 text-sm rounded-xl appearance-none",
-              "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
-              "text-[var(--color-text-primary)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15",
-              "focus:border-[var(--color-primary)] transition-all duration-200",
+              "bg-(--color-surface-low) border border-(--color-border)",
+              "text-(--color-text-primary)",
+              "focus:outline-none focus:ring-2 focus:ring-primary/15",
+              "focus:border-primary transition-all duration-200",
             ].join(" ")}
           >
             <option value="">No category</option>
@@ -157,7 +157,7 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* ROW 2 — Price + Cost + Stock */}
+      {/* PRICE + COST + STOCK */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Input
           id="price"
@@ -200,9 +200,14 @@ export default function ProductForm({
         />
       </div>
 
-      {/* AVAILABILITY TOGGLE */}
-      <div>
-        <Label>Availability</Label>
+      {/* AVAILABILITY TOGGLE
+          Usamos un div+span en lugar de <Label htmlFor> porque
+          no hay un input[id] asociado — el toggle es un <button>.
+          Esto evita el error TS2741 (htmlFor requerido en Label). */}
+      <div className="space-y-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-(--color-text-secondary)">
+          Availability
+        </p>
         <input type="hidden" name="availability" value={available ? "on" : "off"} />
         <button
           type="button"
@@ -210,14 +215,14 @@ export default function ProductForm({
           aria-checked={available}
           aria-label="Toggle product availability"
           onClick={() => setAvailable((prev) => !prev)}
-          className="flex items-center gap-3 cursor-pointer w-fit rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 focus-visible:ring-offset-2"
+          className="flex items-center gap-3 cursor-pointer w-fit rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
         >
           <div
             className={[
               "relative w-11 h-6 rounded-full transition-colors duration-300 shrink-0",
               available
-                ? "bg-[var(--color-primary)]"
-                : "bg-[var(--color-surface-high)] border border-[var(--color-border)]",
+                ? "bg-primary"
+                : "bg-(--color-surface-high) border border-(--color-border)",
             ].join(" ")}
           >
             <div
@@ -232,8 +237,8 @@ export default function ProductForm({
             className={[
               "text-sm font-semibold transition-colors duration-200 select-none",
               available
-                ? "text-[var(--color-primary)]"
-                : "text-[var(--color-text-muted)]",
+                ? "text-primary"
+                : "text-(--color-text-muted)",
             ].join(" ")}
           >
             {available ? "Available for sale" : "Not available"}
@@ -243,8 +248,8 @@ export default function ProductForm({
 
       {/* GENERAL ERROR */}
       {actionData?.errors?.general && (
-        <div className="flex items-start gap-3 px-4 py-3 bg-[var(--color-error-container)]/40 rounded-xl border-l-4 border-[var(--color-error)]">
-          <p className="text-sm text-[var(--color-on-error-container)] font-medium">
+        <div className="flex items-start gap-3 px-4 py-3 bg-error-container/40 rounded-xl border-l-4 border-error">
+          <p className="text-sm text-on-error-container font-medium">
             {actionData.errors.general[0]}
           </p>
         </div>
@@ -260,8 +265,12 @@ export default function ProductForm({
           className="w-full sm:w-auto"
         >
           {isSubmitting
-            ? isEditing ? "Saving changes..." : "Creating product..."
-            : isEditing ? "Save changes" : "Create product"}
+            ? isEditing
+              ? "Saving changes..."
+              : "Creating product..."
+            : isEditing
+            ? "Save changes"
+            : "Create product"}
         </Button>
       </div>
     </Form>
