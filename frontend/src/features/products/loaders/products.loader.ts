@@ -1,27 +1,20 @@
 /* ============================================================
    PRODUCT LOADERS
-   Delegate to the centralized API client.
-   No loader builds fetch calls directly.
+   productsLoader: carga la página paginada de productos.
+   Lee ?page y ?search de los searchParams de la URL.
 
-   productsLoader: returns Product[] with coerced numeric fields.
-   newProductLoader: returns { categories } for the new product form.
-   productByIdLoader: returns { product, categories } for edit form.
+   dashboardLoader: carga TODOS los productos sin paginación
+   para calcular métricas del Dashboard (valor total, stock, etc.)
+
+   productByIdLoader: carga un producto por ID para el Edit form.
+   newProductLoader: carga categorías para el formulario de creación.
    ============================================================ */
 
-import { type LoaderFunctionArgs } from "react-router-dom";
-import type { Product, Category } from "../types/products";
-import {
-  getProducts,
-  getProductById,
-  getCategories,
-} from "../../../lib/api/products";
+import { type LoaderFunctionArgs, redirect } from "react-router-dom";
+import type { Product, Category, PaginatedProducts } from "../types/products";
+import { getProducts, getAllProducts, getProductById, getCategories } from "../../../lib/api/products";
 
-/* ============================================================
-   Postgres returns numeric columns as strings over JSON in
-   some driver configurations. Coerce them here so every
-   consumer receives proper JS numbers and avoids $NaN renders.
-   ============================================================ */
-
+/* Normaliza campos numéricos que Postgres puede devolver como string */
 function normalizeProduct(p: Product): Product {
   return {
     ...p,
@@ -31,21 +24,39 @@ function normalizeProduct(p: Product): Product {
   };
 }
 
-/* ---- GET ALL ---------------------------------------------- */
+/* ---- PRODUCTS (paginado) ---------------------------------- */
 
-export async function productsLoader(): Promise<Product[]> {
-  const products = await getProducts();
+export async function productsLoader({
+  request,
+}: LoaderFunctionArgs): Promise<PaginatedProducts> {
+  const url    = new URL(request.url);
+  const page   = parseInt(url.searchParams.get("page")   ?? "1",  10) || 1;
+  const limit  = parseInt(url.searchParams.get("limit")  ?? "20", 10) || 20;
+  const search = url.searchParams.get("search") ?? undefined;
+
+  const result = await getProducts({ page, limit, search });
+
+  return {
+    ...result,
+    data: result.data.map(normalizeProduct),
+  };
+}
+
+/* ---- DASHBOARD (sin paginación — métricas completas) ------ */
+
+export async function dashboardLoader(): Promise<Product[]> {
+  const products = await getAllProducts();
   return products.map(normalizeProduct);
 }
 
-/* ---- NEW PRODUCT — needs categories for the selector ------ */
+/* ---- NEW PRODUCT ------------------------------------------ */
 
 export async function newProductLoader(): Promise<{ categories: Category[] }> {
   const categories = await getCategories();
   return { categories };
 }
 
-/* ---- GET BY ID + categories for the edit form ------------- */
+/* ---- EDIT PRODUCT ----------------------------------------- */
 
 export async function productByIdLoader({
   params,
