@@ -53,6 +53,7 @@ import { logoutAction } from "../../features/auth/actions/logout.action";
 
 import {
   productsLoader,
+  dashboardLoader,
   newProductLoader,
   productByIdLoader,
 } from "../../features/products/loaders/products.loader";
@@ -88,7 +89,7 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Lazy><DashboardPage /></Lazy>,
-        loader: productsLoader,
+        loader: dashboardLoader,
       },
       {
         path: "products",
