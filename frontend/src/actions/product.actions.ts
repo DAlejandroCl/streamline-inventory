@@ -1,12 +1,12 @@
 /* ============================================================
    CREATE PRODUCT ACTION
-   Envía FormData crudo para preservar el archivo de imagen.
-   No hay Content-Type manual — el browser lo setea con el
-   boundary correcto para multipart/form-data.
+   Al crear con éxito dispara una notificación con el nombre
+   del producto creado. Si falla, dispara notificación de error.
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
 import { ProductSchema } from "../schemas/product.schema";
+import { dispatchNotification } from "../lib/notificationBus";
 import type { ProductFormData } from "../features/products/types/products";
 
 type ActionResponse = {
@@ -27,9 +27,10 @@ export async function createProductAction({
 
   const rawCategoryId = formData.get("category_id");
   const rawCost       = formData.get("cost");
+  const productName   = String(formData.get("name") ?? "").trim();
 
   const data: ProductFormData = {
-    name:         String(formData.get("name") ?? ""),
+    name:         productName,
     sku:          String(formData.get("sku") ?? "").trim() || undefined,
     description:  String(formData.get("description") ?? "").trim() || undefined,
     category_id:  rawCategoryId && String(rawCategoryId) !== "" ? Number(rawCategoryId) : null,
@@ -53,17 +54,31 @@ export async function createProductAction({
 
     if (!res.ok) {
       const body = await res.json().catch(() => ({})) as { message?: string };
-      return {
-        errors: { general: [body.message ?? "Error creating product."] },
-        values: data,
-      };
+      const msg  = body.message ?? "Error creating product.";
+
+      dispatchNotification({
+        type:        "error",
+        title:       "Product creation failed",
+        description: msg,
+      });
+
+      return { errors: { general: [msg] }, values: data };
     }
+
+    dispatchNotification({
+      type:        "success",
+      title:       "Product created",
+      description: `"${productName}" was added to the inventory ledger.`,
+    });
 
     return redirect("/app/products");
   } catch {
-    return {
-      errors: { general: ["Network error. Please try again."] },
-      values: data,
-    };
+    const msg = "Network error. Please try again.";
+    dispatchNotification({
+      type:        "error",
+      title:       "Connection error",
+      description: msg,
+    });
+    return { errors: { general: [msg] }, values: data };
   }
 }
