@@ -1,25 +1,35 @@
 /* ============================================================
    NOTIFICATIONS CONTEXT
-   Historial de notificaciones en memoria (se limpia al recargar).
-   Cada notificación tiene: id, tipo, título, descripción, timestamp.
+   Historial de notificaciones en memoria de la sesión actual.
 
-   useNotifications() expone:
-   - notifications: lista ordenada por tiempo (más reciente primero)
-   - unreadCount: número de no leídas (badge en campanita)
-   - addNotification(n): agrega y muestra el toast de Sonner
-   - markAllRead(): marca todas como leídas
-   - clearAll(): vacía la lista
+   INTEGRACIÓN CON ACTIONS:
+   Los actions de React Router corren fuera del árbol React y no
+   pueden usar hooks. El puente es el notificationBus:
+     action → dispatchNotification() → CustomEvent del DOM
+                                              ↓
+                              useEffect aquí escucha el evento
+                                              ↓
+                              addNotification() → estado + toast
 
-   addNotification se exporta también como función standalone
-   notifySuccess/notifyError/notifyInfo para usar desde actions
-   sin necesidad de tener el contexto disponible.
+   ESTRUCTURA DE NOTIFICACIÓN:
+   - type:        "success" | "error" | "warning" | "info"
+   - title:       texto principal (aparece en toast y dropdown)
+   - description: detalle adicional (solo en dropdown)
+   - timestamp:   para el "hace X minutos"
+   - read:        para el badge de no leídas
+
+   LÍMITE: 20 notificaciones máximo (FIFO — las más antiguas salen)
    ============================================================ */
 
 import {
   createContext, useContext, useState, useCallback,
-  type ReactNode,
+  useEffect, type ReactNode,
 } from "react";
 import { toast } from "sonner";
+import {
+  NOTIFICATION_EVENT,
+  type NotificationPayload,
+} from "../lib/notificationBus";
 
 export type NotificationType = "success" | "error" | "warning" | "info";
 
@@ -60,7 +70,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         [notification, ...prev].slice(0, MAX_NOTIFICATIONS)
       );
 
-      /* Also show a Sonner toast */
+      /* Mostrar toast de Sonner simultáneamente */
       const opts = { description: n.description };
       if (n.type === "success") toast.success(n.title, opts);
       else if (n.type === "error")   toast.error(n.title, opts);
@@ -69,6 +79,21 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  /*
+   * Escuchar eventos del notificationBus.
+   * Los actions de React Router disparan CustomEvents que
+   * este useEffect captura y convierte en notificaciones.
+   */
+  useEffect(() => {
+    function handleBusEvent(e: Event) {
+      const payload = (e as CustomEvent<NotificationPayload>).detail;
+      addNotification(payload);
+    }
+
+    window.addEventListener(NOTIFICATION_EVENT, handleBusEvent);
+    return () => window.removeEventListener(NOTIFICATION_EVENT, handleBusEvent);
+  }, [addNotification]);
 
   const markAllRead = useCallback(() => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
