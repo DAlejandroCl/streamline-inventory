@@ -4,15 +4,87 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Streamline — Operational Ledger</title>
 
-    <!-- Google Fonts — preconnect first for performance -->
+    <!-- =====================================================
+         PRIMARY SEO TAGS
+         Title: keyword principal primero, marca al final.
+         Description: 150-160 chars, acción + beneficio + diferenciador.
+         ===================================================== -->
+    <title>Streamline — Inventory Management System | PERN Stack Portfolio</title>
+    <meta
+      name="description"
+      content="Streamline is a production-grade inventory management system built with Express 5, React 19, PostgreSQL and TypeScript. Full CRUD, JWT auth, image uploads and real-time metrics."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://streamline-inventory.vercel.app/" />
+
+    <!-- =====================================================
+         OPEN GRAPH — redes sociales y previews
+         ===================================================== -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:url"         content="https://streamline-inventory.vercel.app/" />
+    <meta property="og:title"       content="Streamline — Inventory Management System" />
+    <meta
+      property="og:description"
+      content="Production-grade inventory ledger built with Express 5, React 19 and PostgreSQL. Clean architecture, JWT auth, image uploads and server-side pagination."
+    />
+    <meta property="og:image"       content="https://streamline-inventory.vercel.app/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale"      content="en_US" />
+    <meta property="og:site_name"   content="Streamline" />
+
+    <!-- =====================================================
+         TWITTER CARD
+         ===================================================== -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Streamline — Inventory Management System" />
+    <meta
+      name="twitter:description"
+      content="Production-grade inventory ledger. Express 5 + React 19 + PostgreSQL. Clean architecture, JWT auth, real-time metrics."
+    />
+    <meta name="twitter:image"       content="https://streamline-inventory.vercel.app/og-image.png" />
+
+    <!-- =====================================================
+         PERFORMANCE — Google Fonts
+         preconnect antes que el stylesheet para resolver DNS
+         antes de que el parser llegue al <link> de fuentes.
+         ===================================================== -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;1,14..32,400&display=swap"
       rel="stylesheet"
     />
+
+    <!-- =====================================================
+         STRUCTURED DATA — Schema.org WebSite + SoftwareApp
+         Ayuda a Google a entender qué es la página y mejora
+         el CTR con rich results. Los LLMs también lo procesan.
+         ===================================================== -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Streamline",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Production-grade inventory management system built with Express 5, React 19, PostgreSQL and TypeScript. Features JWT authentication, image uploads, server-side pagination and real-time metrics.",
+      "url": "https://streamline-inventory.vercel.app/",
+      "author": {
+        "@type": "Person",
+        "name": "Diego Clavijo",
+        "url": "https://github.com/DAlejandroCl"
+      },
+      "programmingLanguage": ["TypeScript", "JavaScript"],
+      "codeRepository": "https://github.com/DAlejandroCl/streamline-inventory",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
