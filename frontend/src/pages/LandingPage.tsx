@@ -1,100 +1,136 @@
 /* ============================================================
-   LANDING PAGE
-   Public marketing page at "/".
-   Uses the design system tokens but with dramatic editorial
-   layout: dark hero, grid lines, feature cards, CTA.
-   No auth required — this is the first thing anyone sees.
+   LANDING PAGE — /
+   SEO: H1 con keyword principal, sin <br/> que fragmenta.
+   Contraste: texto mínimo #94a3b8 sobre oscuro → reemplazado
+   por colores que pasan WCAG AA (ratio ≥ 4.5:1).
+   Datos: solo cifras verificables del propio código del proyecto.
+   No hay métricas inventadas.
    ============================================================ */
 
 import { Link } from "react-router-dom";
 import {
   Package, BarChart3, Shield, Zap, ArrowRight,
-  CheckCircle, TrendingUp, Bell, Globe, ChevronRight,
-  Database, Lock, Layers,
+  CheckCircle, ChevronRight, Database, Bell, Layers, Lock,
 } from "lucide-react";
 
-/* ---- Feature data ---------------------------------------- */
+/* ============================================================
+   DATOS — Solo lo que el código realmente implementa.
+   Regla: si no puedes señalar la línea de código que lo respalda,
+   no va en la landing.
+   ============================================================ */
 
 const FEATURES = [
   {
-    icon: BarChart3,
-    title: "Real-time Analytics",
-    desc: "Live inventory metrics, stock trends, and value calculations updated on every action.",
-    color: "text-[var(--color-primary)]",
-    bg: "bg-[var(--color-primary-container)]",
+    icon: Shield,
+    title: "JWT + httpOnly Cookies",
+    desc: "Session tokens stored in httpOnly cookies — never exposed to JavaScript. Resistant to XSS token theft by design.",
+    accent: "text-[#818cf8]",
+    bg: "bg-[#1e1f3a]",
   },
   {
-    icon: Shield,
-    title: "Secure by Default",
-    desc: "JWT authentication via httpOnly cookies. No tokens in localStorage — XSS safe.",
-    color: "text-[var(--color-secondary)]",
-    bg: "bg-[var(--color-secondary-container)]",
+    icon: BarChart3,
+    title: "Real-time Inventory Metrics",
+    desc: "Dashboard computes total value, stock rates and availability ratios directly from the database on every load.",
+    accent: "text-[#34d399]",
+    bg: "bg-[#0d2b22]",
   },
   {
     icon: Zap,
-    title: "Instant Operations",
-    desc: "Create, update, and delete products with optimistic UI and zero-latency feedback.",
-    color: "text-[var(--color-warning)]",
-    bg: "bg-[var(--color-warning-container)]",
+    title: "Server-side Pagination & Search",
+    desc: "Products endpoint supports ?page, ?limit and ?search with PostgreSQL ILIKE filtering. Handles large catalogs without frontend bloat.",
+    accent: "text-[#fbbf24]",
+    bg: "bg-[#2b1f0a]",
   },
   {
     icon: Database,
-    title: "PostgreSQL Backed",
-    desc: "Production-grade relational database with Sequelize ORM, typed models, and decimal precision.",
-    color: "text-[var(--color-primary)]",
-    bg: "bg-[var(--color-primary-container)]",
+    title: "PostgreSQL + Sequelize ORM",
+    desc: "DECIMAL(12,2) for prices — no floating point errors. Typed models with Sequelize-TypeScript decorators.",
+    accent: "text-[#818cf8]",
+    bg: "bg-[#1e1f3a]",
   },
   {
     icon: Bell,
-    title: "Smart Notifications",
-    desc: "Toast feedback on every operation. Stock warnings, out-of-stock alerts, and system events.",
-    color: "text-[var(--color-error)]",
-    bg: "bg-[var(--color-error-container)]",
+    title: "Action Notification System",
+    desc: "A CustomEvent bus bridges React Router actions (outside the React tree) with the NotificationsContext — no external state library needed.",
+    accent: "text-[#f87171]",
+    bg: "bg-[#2b0d0d]",
   },
   {
     icon: Layers,
     title: "Clean Architecture",
-    desc: "Express 5 + React 19. Controllers → Services → Models. No shortcuts, no spaghetti.",
-    color: "text-[var(--color-secondary)]",
-    bg: "bg-[var(--color-secondary-container)]",
+    desc: "Express 5 with native async error propagation — no try-catch in controllers. Every request flows Controller → Service → Model.",
+    accent: "text-[#34d399]",
+    bg: "bg-[#0d2b22]",
   },
 ];
 
 const STACK = [
-  "Node.js + Express 5", "TypeScript 6 (strict)", "React 19 + Vite",
-  "React Router 7", "Tailwind CSS 4", "PostgreSQL + Sequelize",
-  "Zod validation", "JWT + httpOnly cookies", "Swagger / OpenAPI",
+  "Node.js + Express 5",
+  "TypeScript (strict: true)",
+  "React 19 + Vite",
+  "React Router 7",
+  "Tailwind CSS 4",
+  "PostgreSQL + Sequelize",
+  "Zod validation",
+  "JWT + httpOnly cookies",
+  "Multer + Sharp",
+  "Helmet + express-rate-limit",
+  "Swagger / OpenAPI",
+  "Sonner toasts",
 ];
 
 const CHECKLIST = [
-  "Clean Architecture — Controllers → Services → Models",
-  "JWT authentication with httpOnly cookie strategy",
-  "Role-based access (admin / viewer)",
+  "Controllers → Services → Models — no layer bypass",
+  "JWT in httpOnly cookie — XSS safe, CSRF protected with SameSite=Strict",
+  "Role-based access control (admin / viewer)",
   "Fully typed DTOs on backend and frontend",
-  "Zod validation with English-only error messages",
-  "React Router 7 loaders, actions, and typed data",
-  "Centralized API client — no inline fetch calls",
-  "Production-ready error handling with AppError class",
+  "Zod schema validation on all form inputs",
+  "React Router 7 typed loaders and actions",
+  "Centralized API client — no inline fetch() calls",
+  "Global AppError class — no string error comparisons",
+  "Rate limiting on auth routes (10 attempts / 15 min)",
+  "Image compression via sharp — WebP output, max 800×800",
 ];
 
-/* ---- Components ------------------------------------------ */
+/* The three facts below are verifiable in the codebase:
+   - bcrypt rounds: auth.service.ts const BCRYPT_ROUNDS = 12
+   - Token expiry:  auth.service.ts const JWT_EXPIRES_IN = "7d"
+   - Auth method:   auth.middleware.ts reads req.cookies?.token   */
+const AUTH_FACTS = [
+  { label: "Auth method",    val: "httpOnly cookie" },
+  { label: "Token expiry",   val: "7 days" },
+  { label: "Bcrypt rounds",  val: "12" },
+];
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
 
 function NavBar() {
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass shadow-navbar">
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 border-b"
+      style={{
+        background: "rgba(8, 13, 24, 0.85)",
+        backdropFilter: "blur(12px)",
+        borderColor: "rgba(255,255,255,0.08)",
+      }}
+      aria-label="Main navigation"
+    >
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 btn-gradient rounded-lg flex items-center justify-center shadow-lifted">
+          <div className="w-8 h-8 btn-gradient rounded-lg flex items-center justify-center shadow-lifted" aria-hidden="true">
             <Package size={16} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-[15px] font-extrabold font-headline text-[var(--color-text-primary)]">
+          <span className="text-[15px] font-extrabold font-headline text-white">
             Streamline
           </span>
         </div>
         <div className="flex items-center gap-3">
           <Link
             to="/login"
-            className="text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-xl hover:bg-[var(--color-primary-container)]"
+            className="text-sm font-semibold transition-colors px-4 py-2 rounded-xl"
+            style={{ color: "#c9d1d9" }}
           >
             Sign in
           </Link>
@@ -114,74 +150,93 @@ function HeroSection() {
   return (
     <section
       className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16"
-      style={{ background: "var(--color-sidebar-bg)" }}
+      style={{ background: "#080d18" }}
+      aria-labelledby="hero-heading"
     >
-      {/* Grid lines background */}
+      {/* Subtle grid */}
       <div
-        className="absolute inset-0 opacity-[0.04]"
+        className="absolute inset-0 opacity-[0.035]"
         style={{
-          backgroundImage: `
-            linear-gradient(var(--color-primary) 1px, transparent 1px),
-            linear-gradient(90deg, var(--color-primary) 1px, transparent 1px)
-          `,
+          backgroundImage:
+            "linear-gradient(#818cf8 1px, transparent 1px), linear-gradient(90deg, #818cf8 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
+        aria-hidden="true"
       />
-
-      {/* Gradient orbs */}
+      {/* Glow orbs */}
       <div
-        className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl"
-        style={{ background: "var(--color-primary)" }}
+        className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full blur-3xl"
+        style={{ background: "#818cf8", opacity: 0.07 }}
+        aria-hidden="true"
       />
       <div
-        className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-8 blur-3xl"
-        style={{ background: "var(--color-secondary)" }}
+        className="absolute bottom-1/4 right-1/4 w-72 h-72 rounded-full blur-3xl"
+        style={{ background: "#34d399", opacity: 0.05 }}
+        aria-hidden="true"
       />
 
       <div className="relative max-w-4xl mx-auto px-6 text-center space-y-8">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border border-white/10 bg-white/5 text-slate-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-secondary)] animate-pulse" />
-          Portfolio · Production-grade PERN stack
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border"
+          style={{ borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.04)", color: "#c9d1d9" }}
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-[#34d399] animate-pulse" aria-hidden="true" />
+          Portfolio · Full-stack PERN project
         </div>
 
-        {/* Headline */}
-        <h1 className="text-6xl md:text-7xl font-extrabold font-headline text-white leading-none tracking-tight">
-          Inventory
-          <br />
-          <span className="gradient-text">reimagined.</span>
+        {/*
+          H1 SIN <br/> — los saltos de línea fragmentan la keyword
+          para los crawlers. El gradiente es CSS puro, invisible
+          para Google pero visible para el usuario.
+        */}
+        <h1
+          id="hero-heading"
+          className="text-6xl md:text-7xl font-extrabold font-headline leading-none tracking-tight"
+          style={{ color: "#e6edf3" }}
+        >
+          Inventory management{" "}
+          <span className="gradient-text">reimagined</span>
         </h1>
 
-        {/* Sub */}
-        <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed font-medium">
-          A production-grade operational ledger built with Express 5, React 19,
-          and TypeScript 6. Clean architecture. Real auth. Zero compromises.
+        <p
+          className="text-xl max-w-2xl mx-auto leading-relaxed font-medium"
+          style={{ color: "#c9d1d9" }}
+        >
+          A production-grade operational ledger built with Express 5, React 19
+          and PostgreSQL. Clean architecture, real authentication, image
+          processing and server-side pagination.
         </p>
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
             to="/login"
-            className="inline-flex items-center gap-2.5 px-8 py-4 btn-gradient text-white font-bold rounded-2xl shadow-lifted hover:shadow-lifted transition-all text-base active:scale-95"
+            className="inline-flex items-center gap-2.5 px-8 py-4 btn-gradient text-white font-bold rounded-2xl shadow-lifted text-base active:scale-95"
+            aria-label="Launch the Streamline demo app"
           >
             Launch app <ArrowRight size={18} strokeWidth={2.5} />
           </Link>
           <a
-            href="http://localhost:3000/docs"
+            href="https://github.com/DAlejandroCl/streamline-inventory"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/[0.06] border border-white/10 text-white font-bold rounded-2xl hover:bg-white/[0.10] transition-all text-base"
+            className="inline-flex items-center gap-2.5 px-8 py-4 border text-white font-bold rounded-2xl transition-all text-base"
+            style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)" }}
+            aria-label="View Streamline source code on GitHub"
           >
-            View API docs <ChevronRight size={18} strokeWidth={2.5} />
+            View on GitHub <ChevronRight size={18} strokeWidth={2.5} />
           </a>
         </div>
 
         {/* Stack pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+        <div className="flex flex-wrap items-center justify-center gap-2 pt-4" role="list" aria-label="Technology stack">
           {STACK.map((s) => (
             <span
               key={s}
-              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/[0.06] border border-white/[0.08] text-slate-400"
+              role="listitem"
+              className="px-3 py-1.5 rounded-full text-xs font-semibold border"
+              style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)", color: "#c9d1d9" }}
             >
               {s}
             </span>
@@ -194,39 +249,53 @@ function HeroSection() {
 
 function FeaturesSection() {
   return (
-    <section className="py-32 px-6 bg-[var(--color-background)]">
+    <section
+      className="py-32 px-6"
+      style={{ background: "#0d1117" }}
+      aria-labelledby="features-heading"
+    >
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 space-y-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">
-            Capabilities
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#818cf8" }}>
+            What's implemented
           </p>
-          <h2 className="text-4xl font-extrabold font-headline text-[var(--color-text-primary)]">
-            Built for engineers,
-            <br />
-            <span className="gradient-text">designed for users.</span>
+          <h2
+            id="features-heading"
+            className="text-4xl font-extrabold font-headline"
+            style={{ color: "#e6edf3" }}
+          >
+            Every feature backed by code
           </h2>
-          <p className="text-[var(--color-text-secondary)] max-w-xl mx-auto text-lg leading-relaxed">
-            Every feature is intentional. Every decision is documented.
-            This is what production-ready looks like.
+          <p className="max-w-xl mx-auto text-lg leading-relaxed" style={{ color: "#c9d1d9" }}>
+            No mock data, no placeholder metrics. Every card below describes a
+            pattern you can trace to a specific file in the repository.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f) => (
-            <div
+            <article
               key={f.title}
-              className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-card border border-[var(--color-border)]/40 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200 group"
+              className="rounded-2xl p-6 border hover:-translate-y-0.5 transition-all duration-200"
+              style={{ background: "#161b27", borderColor: "rgba(255,255,255,0.07)" }}
             >
-              <div className={["w-11 h-11 rounded-xl flex items-center justify-center mb-4", f.bg].join(" ")}>
-                <f.icon size={20} className={f.color} strokeWidth={2} />
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: f.bg }}
+                aria-hidden="true"
+              >
+                <f.icon size={20} className={f.accent} strokeWidth={2} />
               </div>
-              <h3 className="text-base font-bold text-[var(--color-text-primary)] font-headline mb-2">
+              <h3
+                className="text-base font-bold font-headline mb-2"
+                style={{ color: "#e6edf3" }}
+              >
                 {f.title}
               </h3>
-              <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: "#c9d1d9" }}>
                 {f.desc}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </div>
@@ -238,106 +307,101 @@ function ArchitectureSection() {
   return (
     <section
       className="py-32 px-6"
-      style={{ background: "var(--color-surface)" }}
+      style={{ background: "#161b27" }}
+      aria-labelledby="arch-heading"
     >
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        {/* Left */}
         <div className="space-y-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">
-            Engineering standards
+          <p className="text-xs font-bold uppercase tracking-widest" style={{ color: "#818cf8" }}>
+            Engineering decisions
           </p>
-          <h2 className="text-4xl font-extrabold font-headline text-[var(--color-text-primary)] leading-tight">
-            No shortcuts.
-            <br />No excuses.
+          <h2
+            id="arch-heading"
+            className="text-4xl font-extrabold font-headline leading-tight"
+            style={{ color: "#e6edf3" }}
+          >
+            Patterns worth reading about
           </h2>
-          <p className="text-[var(--color-text-secondary)] text-lg leading-relaxed">
-            Streamline enforces architecture rules at every layer.
-            The backend uses Express 5's native async error propagation —
-            no try-catch in controllers. The frontend uses typed React Router
-            loaders with a centralized API client.
+          <p className="text-lg leading-relaxed" style={{ color: "#c9d1d9" }}>
+            Streamline applies patterns from production engineering — not
+            because they are trendy, but because each one solves a specific
+            problem that appears at scale.
           </p>
 
-          <ul className="space-y-3">
+          <ul className="space-y-3" role="list">
             {CHECKLIST.map((item) => (
               <li key={item} className="flex items-start gap-3">
                 <CheckCircle
                   size={16}
-                  className="text-[var(--color-secondary)] shrink-0 mt-0.5"
+                  className="shrink-0 mt-0.5"
+                  style={{ color: "#34d399" }}
                   strokeWidth={2.5}
+                  aria-hidden="true"
                 />
-                <span className="text-sm text-[var(--color-text-secondary)]">{item}</span>
+                <span className="text-sm" style={{ color: "#c9d1d9" }}>{item}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Right — code-like card */}
+        {/* Code card — verifiable facts only */}
         <div
           className="rounded-2xl p-8 font-mono text-sm space-y-3 shadow-lifted"
-          style={{ background: "var(--color-sidebar-bg)" }}
+          style={{ background: "#080d18" }}
+          aria-label="Code example: auth.middleware.ts"
         >
-          <p className="text-slate-500 text-xs mb-4">// auth.middleware.ts</p>
-          {[
-            { c: "text-purple-400", t: "export async function " },
-            { c: "text-blue-400",   t: "requireAuth" },
-            { c: "text-slate-300",  t: "(req, res, next) {" },
-          ].map((l, i) => (
-            <span key={i} className={l.c}>{l.t}</span>
-          ))}
-          <div className="space-y-2 pl-4">
-            <p><span className="text-slate-500">const </span><span className="text-green-400">token</span><span className="text-slate-400"> = req.cookies?.token;</span></p>
-            <p><span className="text-purple-400">if </span><span className="text-slate-300">(!token)</span><span className="text-slate-500"> throw </span><span className="text-red-400">new AppError(401);</span></p>
-            <p><span className="text-slate-500">const </span><span className="text-green-400">payload</span><span className="text-slate-400"> = verifyToken(token);</span></p>
-            <p><span className="text-blue-400">res.locals.user </span><span className="text-slate-400">= payload;</span></p>
-            <p><span className="text-blue-400">next</span><span className="text-slate-400">();</span></p>
+          <p className="text-xs mb-4" style={{ color: "#6e7681" }}>
+            {/* The filename is a real file in this project */}
+            {`// src/middlewares/auth.middleware.ts`}
+          </p>
+          <div>
+            <span style={{ color: "#c678dd" }}>export async function </span>
+            <span style={{ color: "#61afef" }}>requireAuth</span>
+            <span style={{ color: "#abb2bf" }}>(req, res, next) {"{"}</span>
           </div>
-          <p className="text-slate-300">{"}"}</p>
-          <div className="pt-4 border-t border-white/[0.06] space-y-2">
-            {[
-              { label: "Auth method", val: "httpOnly cookie" },
-              { label: "Token expiry", val: "7 days" },
-              { label: "Hashing", val: "bcrypt · 12 rounds" },
-            ].map((r) => (
+          <div className="pl-4 space-y-1.5">
+            <p>
+              <span style={{ color: "#6e7681" }}>const </span>
+              <span style={{ color: "#98c379" }}>token</span>
+              <span style={{ color: "#abb2bf" }}> = req.cookies?.token;</span>
+            </p>
+            <p>
+              <span style={{ color: "#c678dd" }}>if </span>
+              <span style={{ color: "#abb2bf" }}>(!token) </span>
+              <span style={{ color: "#6e7681" }}>throw </span>
+              <span style={{ color: "#e06c75" }}>new AppError(401);</span>
+            </p>
+            <p>
+              <span style={{ color: "#6e7681" }}>const </span>
+              <span style={{ color: "#98c379" }}>payload</span>
+              <span style={{ color: "#abb2bf" }}> = verifyToken(token);</span>
+            </p>
+            <p>
+              <span style={{ color: "#61afef" }}>res.locals.user</span>
+              <span style={{ color: "#abb2bf" }}> = payload;</span>
+            </p>
+            <p>
+              <span style={{ color: "#61afef" }}>next</span>
+              <span style={{ color: "#abb2bf" }}>();</span>
+            </p>
+          </div>
+          <p style={{ color: "#abb2bf" }}>{"}"}</p>
+
+          {/* Auth facts — each one traceable to a const in the codebase */}
+          <div
+            className="pt-4 border-t space-y-2"
+            style={{ borderColor: "rgba(255,255,255,0.06)" }}
+          >
+            <p className="text-xs mb-3" style={{ color: "#6e7681" }}>
+              {`// auth.service.ts — verified constants`}
+            </p>
+            {AUTH_FACTS.map((r) => (
               <div key={r.label} className="flex justify-between">
-                <span className="text-slate-500 text-xs">{r.label}</span>
-                <span className="text-green-400 text-xs font-bold">{r.val}</span>
+                <span className="text-xs" style={{ color: "#6e7681" }}>{r.label}</span>
+                <span className="text-xs font-bold" style={{ color: "#98c379" }}>{r.val}</span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MetricsSection() {
-  const METRICS = [
-    { icon: TrendingUp, value: "< 50ms", label: "Avg API response", color: "text-[var(--color-primary)]", bg: "bg-[var(--color-primary-container)]" },
-    { icon: Lock,       value: "100%",   label: "Routes protected", color: "text-[var(--color-secondary)]", bg: "bg-[var(--color-secondary-container)]" },
-    { icon: Globe,      value: "REST",   label: "API standard",     color: "text-[var(--color-warning)]",   bg: "bg-[var(--color-warning-container)]" },
-    { icon: Database,   value: "∞",      label: "Products capacity",color: "text-[var(--color-primary)]",   bg: "bg-[var(--color-primary-container)]" },
-  ];
-
-  return (
-    <section className="py-24 px-6 bg-[var(--color-background)]">
-      <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-          {METRICS.map((m) => (
-            <div
-              key={m.label}
-              className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-card border border-[var(--color-border)]/40 text-center"
-            >
-              <div className={["w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4", m.bg].join(" ")}>
-                <m.icon size={22} className={m.color} strokeWidth={2} />
-              </div>
-              <p className={["text-3xl font-extrabold font-headline tabular", m.color].join(" ")}>
-                {m.value}
-              </p>
-              <p className="text-xs text-[var(--color-text-muted)] font-medium mt-1.5 uppercase tracking-widest">
-                {m.label}
-              </p>
-            </div>
-          ))}
         </div>
       </div>
     </section>
@@ -348,22 +412,29 @@ function CTASection() {
   return (
     <section
       className="py-32 px-6 relative overflow-hidden"
-      style={{ background: "var(--color-sidebar-bg)" }}
+      style={{ background: "#080d18" }}
+      aria-labelledby="cta-heading"
     >
       <div
-        className="absolute inset-0 opacity-[0.03]"
+        className="absolute inset-0 opacity-[0.025]"
         style={{
-          backgroundImage: "linear-gradient(var(--color-primary) 1px, transparent 1px), linear-gradient(90deg, var(--color-primary) 1px, transparent 1px)",
+          backgroundImage:
+            "linear-gradient(#818cf8 1px, transparent 1px), linear-gradient(90deg, #818cf8 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
+        aria-hidden="true"
       />
       <div className="relative max-w-2xl mx-auto text-center space-y-8">
-        <h2 className="text-5xl font-extrabold font-headline text-white leading-tight">
-          Ready to explore?
+        <h2
+          id="cta-heading"
+          className="text-5xl font-extrabold font-headline leading-tight"
+          style={{ color: "#e6edf3" }}
+        >
+          Explore the demo
         </h2>
-        <p className="text-xl text-slate-400 leading-relaxed">
-          Sign in with the demo credentials and take Streamline for a spin.
-          No setup required.
+        <p className="text-xl leading-relaxed" style={{ color: "#c9d1d9" }}>
+          Sign in with the pre-filled demo credentials and walk through the full
+          inventory workflow — create, edit, filter, search and delete products.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
@@ -376,13 +447,14 @@ function CTASection() {
             href="https://github.com/DAlejandroCl/streamline-inventory"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/[0.06] border border-white/10 text-white font-bold rounded-2xl hover:bg-white/[0.10] transition-all text-base"
+            className="inline-flex items-center gap-2.5 px-8 py-4 border text-white font-bold rounded-2xl transition-all text-base"
+            style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.12)" }}
           >
-            View on GitHub <ChevronRight size={18} strokeWidth={2.5} />
+            View source <ChevronRight size={18} strokeWidth={2.5} />
           </a>
         </div>
-        <p className="text-slate-600 text-xs">
-          Demo: admin@streamline.app · admin123
+        <p className="text-xs" style={{ color: "#6e7681" }}>
+          Demo credentials are pre-filled on the login page.
         </p>
       </div>
     </section>
@@ -390,46 +462,66 @@ function CTASection() {
 }
 
 function Footer() {
+  const YEAR = new Date().getFullYear();
   return (
     <footer
       className="py-10 px-6 border-t"
-      style={{
-        background: "var(--color-sidebar-bg)",
-        borderColor: "rgba(255,255,255,0.06)",
-      }}
+      style={{ background: "#080d18", borderColor: "rgba(255,255,255,0.06)" }}
     >
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 btn-gradient rounded-lg flex items-center justify-center">
+          <div className="w-7 h-7 btn-gradient rounded-lg flex items-center justify-center" aria-hidden="true">
             <Package size={13} className="text-white" strokeWidth={2.5} />
           </div>
           <span className="text-sm font-bold text-white font-headline">Streamline</span>
         </div>
-        <p className="text-xs text-slate-600">
-          © {new Date().getFullYear()} Streamline — Portfolio Project by Diego Clavijo
+
+        <p className="text-xs" style={{ color: "#8b949e" }}>
+          © {YEAR} Streamline — Portfolio project by Diego Clavijo
         </p>
-        <div className="flex items-center gap-4 text-xs text-slate-600">
-          <Link to="/login" className="hover:text-slate-400 transition-colors">Sign in</Link>
-          <a href="http://localhost:3000/docs" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">API Docs</a>
-          <a href="https://github.com/DAlejandroCl/streamline-inventory" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">GitHub</a>
-        </div>
+
+        <nav aria-label="Footer navigation">
+          <div className="flex items-center gap-4 text-xs" style={{ color: "#8b949e" }}>
+            <Link
+              to="/login"
+              className="hover:text-white transition-colors"
+            >
+              Sign in
+            </Link>
+            <a
+              href="https://github.com/DAlejandroCl/streamline-inventory"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
+        </nav>
       </div>
     </footer>
   );
 }
 
-/* ---- Page export ----------------------------------------- */
-
 export default function LandingPage() {
   return (
-    <div className="font-body">
-      <NavBar />
-      <HeroSection />
-      <FeaturesSection />
-      <ArchitectureSection />
-      <MetricsSection />
-      <CTASection />
-      <Footer />
-    </div>
+    <>
+      {/*
+        La LandingPage vive en "/" — fuera del AppLayout,
+        sin el sidebar. El fondo oscuro es intencional:
+        contrasta con el app (claro por defecto) y da identidad
+        visual propia a la página pública.
+      */}
+      <div className="font-body">
+        <NavBar />
+        <main>
+          <HeroSection />
+          <FeaturesSection />
+          <ArchitectureSection />
+          <CTASection />
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 }
