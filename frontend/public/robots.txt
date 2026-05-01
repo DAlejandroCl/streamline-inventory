@@ -1,0 +1,6 @@
+# Streamline — robots.txt
+User-agent: *
+Allow: /
+Allow: /login
+Disallow: /app/
+Sitemap: https://streamline-inventory.vercel.app/sitemap.xml
