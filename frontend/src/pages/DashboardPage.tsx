@@ -17,7 +17,7 @@ import Badge from "../components/ui/Badge";
 import Button from "../components/ui/Button";
 import PageHeader from "../components/layout/PageHeader";
 import ProductCard from "../features/products/components/ProductCard";
-import { formatCurrency } from "../lib/utils/formatCurrency";
+import { useCurrency } from "../lib/utils/formatCurrency";
 
 /* ---- Animated counter hook -------------------------------- */
 
@@ -144,6 +144,7 @@ function StockBar({ label, count, total, color, dotColor }: {
 
 export default function DashboardPage() {
   const products = useLoaderData() as Product[];
+  const { format: formatCurrency } = useCurrency();
   const { total, available, outOfStock, totalValue, avgPrice, stockRate } = useMetrics(products);
 
   const animatedTotal = useCountUp(total);
