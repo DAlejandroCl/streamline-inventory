@@ -23,7 +23,7 @@ import EmptyState           from "../components/ui/EmptyState";
 import ProductsTableSkeleton from "../components/ui/ProductsTableSkeleton";
 import ProductsTable        from "../features/products/components/ProductsTable";
 import PageHeader           from "../components/layout/PageHeader";
-import { formatCurrency }   from "../lib/utils/formatCurrency";
+import { useCurrency } from "../lib/utils/formatCurrency";
 
 /* ---- CSV export ------------------------------------------ */
 
@@ -53,6 +53,7 @@ function exportCSV(result: PaginatedProducts) {
 
 export default function ProductsPage() {
   const result     = useLoaderData() as PaginatedProducts;
+  const { format: formatCurrency } = useCurrency();
   const navigation = useNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
