@@ -1,10 +1,9 @@
 /* ============================================================
    PRODUCTS TABLE
-   Cambios respecto a versión anterior:
-   - Delete Form incluye campo hidden "name" para la notificación
-   - Toggle Form incluye campo hidden "name" para la notificación
-   - Edit link usa /app/products/:id/edit (fix anterior)
-   - onError en img para fallback limpio sin icono roto
+   Consume SettingsContext a través de hooks:
+   - useCurrency() → respeta currency seleccionada en Settings
+   - useDate()     → respeta dateFormat seleccionado en Settings
+   - useSettings() → respeta compactMode y showCostPrice
    ============================================================ */
 
 import { Link, Form } from "react-router-dom";
@@ -12,20 +11,37 @@ import { Edit2, Trash2, Package } from "lucide-react";
 import type { Product } from "../types/products";
 import Badge  from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
-import { formatCurrency } from "../../../lib/utils/formatCurrency";
+import { useCurrency } from "../../../lib/utils/formatCurrency";
+import { useDate }     from "../../../lib/utils/formatDate";
+import { useSettings } from "../../../context/SettingsContext";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
 
 type Props = { products: Product[] };
 
 export default function ProductsTable({ products }: Props) {
+  const { format: formatPrice }    = useCurrency();
+  const { format: formatDateStr }  = useDate();
+  const { settings }               = useSettings();
+  const { compactMode, showCostPrice } = settings.display;
+
+  const rowPy = compactMode ? "py-2" : "py-4";
+
   return (
     <div className="bg-[var(--color-surface)] rounded-2xl shadow-card overflow-hidden border border-[var(--color-border)]/40">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="bg-[var(--color-surface-low)] border-b border-[var(--color-border)]/50">
-              {["Product", "Price", "Stock", "Status", "Added", "Actions"].map((h) => (
+              {[
+                "Product",
+                "Price",
+                ...(showCostPrice ? ["Cost"] : []),
+                "Stock",
+                "Status",
+                "Added",
+                "Actions",
+              ].map((h) => (
                 <th
                   key={h}
                   className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]"
@@ -39,10 +55,10 @@ export default function ProductsTable({ products }: Props) {
             {products.map((p) => (
               <tr
                 key={p.id}
-                className="border-b border-[var(--color-border)]/20 hover:bg-[var(--color-surface-low)]/60 transition-colors duration-100 group"
+                className={`border-b border-[var(--color-border)]/20 hover:bg-[var(--color-surface-low)]/60 transition-colors duration-100 group`}
               >
                 {/* PRODUCT */}
-                <td className="px-6 py-4">
+                <td className={`px-6 ${rowPy}`}>
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl overflow-hidden bg-[var(--color-primary-container)] flex items-center justify-center shrink-0">
                       {p.image_url ? (
@@ -51,18 +67,15 @@ export default function ProductsTable({ products }: Props) {
                           alt={p.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            const target = e.currentTarget;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove("hidden");
+                            const t = e.currentTarget;
+                            t.style.display = "none";
+                            t.nextElementSibling?.classList.remove("hidden");
                           }}
                         />
                       ) : null}
                       <Package
                         size={15}
-                        className={[
-                          "text-[var(--color-primary)]",
-                          p.image_url ? "hidden" : "",
-                        ].join(" ")}
+                        className={["text-[var(--color-primary)]", p.image_url ? "hidden" : ""].join(" ")}
                         strokeWidth={2}
                       />
                     </div>
@@ -77,15 +90,24 @@ export default function ProductsTable({ products }: Props) {
                   </div>
                 </td>
 
-                {/* PRICE */}
-                <td className="px-6 py-4">
+                {/* PRICE — respeta currency del contexto */}
+                <td className={`px-6 ${rowPy}`}>
                   <span className="text-sm font-bold text-[var(--color-text-primary)] tabular">
-                    {formatCurrency(p.price)}
+                    {formatPrice(p.price)}
                   </span>
                 </td>
 
+                {/* COST — solo si showCostPrice está activo */}
+                {showCostPrice && (
+                  <td className={`px-6 ${rowPy}`}>
+                    <span className="text-sm text-[var(--color-text-muted)] tabular">
+                      {p.cost != null ? formatPrice(p.cost) : "—"}
+                    </span>
+                  </td>
+                )}
+
                 {/* STOCK */}
-                <td className="px-6 py-4">
+                <td className={`px-6 ${rowPy}`}>
                   <span
                     className={[
                       "text-sm font-bold tabular",
@@ -100,8 +122,8 @@ export default function ProductsTable({ products }: Props) {
                   </span>
                 </td>
 
-                {/* STATUS — toggle via form con nombre incluido */}
-                <td className="px-6 py-4">
+                {/* STATUS */}
+                <td className={`px-6 ${rowPy}`}>
                   <Form method="post" action="/app/products/toggle">
                     <input type="hidden" name="id"           value={p.id} />
                     <input type="hidden" name="name"         value={p.name} />
@@ -118,19 +140,13 @@ export default function ProductsTable({ products }: Props) {
                   </Form>
                 </td>
 
-                {/* ADDED */}
-                <td className="px-6 py-4 text-xs text-[var(--color-text-muted)] font-medium tabular">
-                  {p.createdAt
-                    ? new Date(p.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—"}
+                {/* ADDED — respeta dateFormat del contexto */}
+                <td className={`px-6 ${rowPy} text-xs text-[var(--color-text-muted)] font-medium tabular`}>
+                  {formatDateStr(p.createdAt)}
                 </td>
 
-                {/* ACTIONS — delete con nombre incluido */}
-                <td className="px-6 py-4">
+                {/* ACTIONS */}
+                <td className={`px-6 ${rowPy}`}>
                   <div className="flex items-center gap-1.5 opacity-40 group-hover:opacity-100 transition-opacity duration-150">
                     <Link to={`/app/products/${p.id}/edit`}>
                       <Button variant="ghost" size="sm" icon={Edit2}>Edit</Button>
