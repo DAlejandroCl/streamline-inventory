@@ -1,31 +1,51 @@
 /* ============================================================
    ERROR PAGE — Route-level error boundary
-   Handles 404, 400, and generic 500 states.
+   
+   Botones según el contexto del error:
+   - Si el error ocurre dentro de /app/* (ruta protegida):
+     · "Go to Dashboard" → /app (dentro de la app)
+     · "Try again"       → window.location.reload()
+   - Si el error ocurre en rutas públicas (/ o /login):
+     · "Back to home"    → /
+     · "Sign in"         → /login
+   
+   La detección se hace leyendo window.location.pathname
+   porque useLocation() no está disponible fuera del router
+   cuando el errorElement es el propio componente raíz.
    ============================================================ */
 
-import { isRouteErrorResponse, useRouteError, Link } from "react-router-dom";
-import { SearchX, CloudOff, AlertOctagon, LayoutDashboard, Package } from "lucide-react";
+import { isRouteErrorResponse, useRouteError, Link, useNavigate } from "react-router-dom";
+import { SearchX, CloudOff, AlertOctagon, LayoutDashboard, RefreshCw, Home, LogIn } from "lucide-react";
 import Button from "../components/ui/Button";
 
 export default function ErrorPage() {
-  const error = useRouteError();
+  const error    = useRouteError();
+  const navigate = useNavigate();
 
-  let status = 500;
-  let title = "System Error";
+  /* Detectar si el error ocurrió dentro de la app protegida */
+  const isInsideApp = window.location.pathname.startsWith("/app");
+
+  let status      = 500;
+  let title       = "System Error";
   let description = "An unexpected error interrupted the ledger. Please try again.";
-  let Icon = CloudOff;
+  let Icon        = CloudOff;
 
   if (isRouteErrorResponse(error)) {
     status = error.status;
     if (status === 404) {
-      title = "Record Not Found";
+      title       = "Record Not Found";
       description = "The entry you're looking for doesn't exist in the ledger or has been removed.";
-      Icon = SearchX;
+      Icon        = SearchX;
     } else if (status === 400) {
-      title = "Invalid Request";
+      title       = "Invalid Request";
       description = "The request could not be processed. Please check the data and try again.";
-      Icon = AlertOctagon;
+      Icon        = AlertOctagon;
     }
+  }
+
+  /* Log en consola para debugging — solo en dev */
+  if (import.meta.env.DEV) {
+    console.error("[ErrorPage]", error);
   }
 
   const is404 = status === 404;
@@ -36,6 +56,7 @@ export default function ErrorPage() {
       style={{ background: "var(--color-background)" }}
     >
       <div className="max-w-md w-full text-center space-y-8">
+
         {/* ICON */}
         <div className="flex justify-center">
           <div
@@ -76,12 +97,36 @@ export default function ErrorPage() {
 
         {/* ACTIONS */}
         <div className="flex items-center justify-center gap-3">
-          <Link to="/">
-            <Button variant="secondary" icon={LayoutDashboard}>Dashboard</Button>
-          </Link>
-          <Link to="/app/products">
-            <Button icon={Package}>View Inventory</Button>
-          </Link>
+          {isInsideApp ? (
+            <>
+              {/* Dentro de /app: ir al dashboard o reintentar */}
+              <Link to="/app">
+                <Button variant="secondary" icon={LayoutDashboard}>
+                  Dashboard
+                </Button>
+              </Link>
+              <Button
+                icon={RefreshCw}
+                onClick={() => window.location.reload()}
+              >
+                Try again
+              </Button>
+            </>
+          ) : (
+            <>
+              {/* Fuera de /app: ir al landing o al login */}
+              <Link to="/">
+                <Button variant="secondary" icon={Home}>
+                  Back to home
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button icon={LogIn}>
+                  Sign in
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
