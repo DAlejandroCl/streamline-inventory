@@ -1,25 +1,12 @@
 /* ============================================================
    ROUTER
-   Lazy loading strategy:
-   - LandingPage + LoginPage: síncronos (livianos, públicos,
-     necesarios en el primer render sin autenticación)
-   - Todo bajo /app/*: lazy (el usuario ya pasó authLoader,
-     el chunk se descarga en paralelo con los datos del loader)
-
-   React Router 7 ejecuta el loader y carga el chunk al mismo
-   tiempo — no hay waterfall. El Suspense fallback solo se
-   muestra si el chunk tarda más que los datos (raro en prod).
-
-   Route structure:
-   /           → LandingPage (sync)
-   /login      → LoginPage (sync)
-   /app/*      → AppLayout lazy, protegido por authLoader
-     /app            → DashboardPage (lazy)
-     /app/products   → ProductsPage (lazy)
-     /app/products/new
-     /app/products/:id/edit
-     /app/settings
-     /app/logout     → action-only, no element
+   FIXES:
+   1. AppLayout NO es lazy — es el shell de la app, siempre
+      se necesita. Lazy en el shell causaba que el errorElement
+      capturara errores del Suspense boundary mezclados con
+      errores reales del render.
+   2. Los children siguen siendo lazy — se cargan en paralelo
+      con sus loaders como estaba diseñado.
    ============================================================ */
 
 import { createBrowserRouter, Navigate } from "react-router-dom";
@@ -29,23 +16,21 @@ import LandingPage from "../../pages/LandingPage";
 import LoginPage   from "../../pages/LoginPage";
 import ErrorPage   from "../../pages/ErrorPage";
 import PageLoader  from "../../components/ui/PageLoader";
+import AppLayout   from "../../layouts/AppLayout";
 
-/* ---- Lazy chunks — cada import() genera un JS chunk separado */
+/* ---- Lazy chunks — solo las páginas, no el layout --------- */
 
-const AppLayout      = lazy(() => import("../../layouts/AppLayout"));
-const DashboardPage  = lazy(() => import("../../pages/DashboardPage"));
-const ProductsPage   = lazy(() => import("../../pages/ProductsPage"));
-const NewProductPage = lazy(() => import("../../pages/NewProductPage"));
+const DashboardPage   = lazy(() => import("../../pages/DashboardPage"));
+const ProductsPage    = lazy(() => import("../../pages/ProductsPage"));
+const NewProductPage  = lazy(() => import("../../pages/NewProductPage"));
 const EditProductPage = lazy(() => import("../../pages/EditProductPage"));
-const SettingsPage   = lazy(() => import("../../pages/SettingsPage"));
-
-/* ---- Wrapper: envuelve cada lazy element con Suspense ------ */
+const SettingsPage    = lazy(() => import("../../pages/SettingsPage"));
 
 function Lazy({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>;
 }
 
-/* ---- Loaders ---------------------------------------------- */
+/* ---- Loaders & Actions ------------------------------------ */
 
 import { authLoader }   from "../../features/auth/loaders/auth.loader";
 import { loginAction }  from "../../features/auth/actions/login.action";
@@ -63,10 +48,8 @@ import { deleteProductAction }      from "../../actions/deleteProduct.action";
 import { toggleAvailabilityAction } from "../../actions/toggleAvailability.action";
 import { updateProductAction }      from "../../actions/updateProduct.action";
 
-/* ---- Router definition ------------------------------------ */
-
 export const router = createBrowserRouter([
-  /* ---- PUBLIC ROUTES ------------------------------------ */
+  /* ---- PUBLIC ------------------------------------------- */
   {
     path: "/",
     element: <LandingPage />,
@@ -79,10 +62,10 @@ export const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
 
-  /* ---- PROTECTED ROUTES --------------------------------- */
+  /* ---- PROTECTED ---------------------------------------- */
   {
     path: "/app",
-    element: <Lazy><AppLayout /></Lazy>,
+    element: <AppLayout />,
     loader: authLoader,
     errorElement: <ErrorPage />,
     children: [
