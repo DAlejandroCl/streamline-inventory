@@ -11,11 +11,13 @@ import Badge from "../../../components/ui/Badge";
 import { useCurrency } from "../../../lib/utils/formatCurrency";
 
 const API_BASE = import.meta.env.VITE_API_URL as string;
-  const { format: formatCurrency } = useCurrency();
 
 type Props = { product: Product };
 
 export default function ProductCard({ product }: Props) {
+  /* Hook correctamente dentro del componente */
+  const { format: formatCurrency } = useCurrency();
+
   const imageUrl = product.image_url ? `${API_BASE}${product.image_url}` : null;
 
   return (
@@ -27,6 +29,9 @@ export default function ProductCard({ product }: Props) {
             src={imageUrl}
             alt={product.name}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
           />
         ) : (
           <Package size={16} className="text-[var(--color-primary)]" strokeWidth={2} />
