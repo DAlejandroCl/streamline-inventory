@@ -10,8 +10,11 @@
     "dev": "nodemon --watch src --exec tsx src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "cross-env NODE_ENV=test node --test --import tsx src/tests/**/*.test.ts",
-    "coverage": "c8 npm run test"
+    "test": "cross-env NODE_ENV=test node --test --import tsx/esm src/tests/integration/**/*.test.ts src/tests/unit/**/*.test.ts",
+    "coverage": "cross-env NODE_ENV=test c8 --reporter=text --reporter=html node --test --import tsx src/tests/**/*.test.ts",
+    "test:integration": "cross-env NODE_ENV=test node --test --import tsx/esm src/tests/integration/**/*.test.ts",
+    "test:unit": "cross-env NODE_ENV=test node --test --import tsx/esm src/tests/unit/**/*.test.ts",
+    "test:watch": "cross-env NODE_ENV=test node --test --watch --import tsx/esm src/tests/**/*.test.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -27,12 +30,13 @@
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
-    "tsx": "^4.21.0",
+    "tsx": "^4.19.2",
     "typescript": "^6.0.2"
   },
   "dependencies": {
     "@types/multer": "^2.1.0",
     "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.10.0",
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
