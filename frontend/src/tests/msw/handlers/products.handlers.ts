@@ -7,6 +7,11 @@
    Handlers por defecto → happy path.
    Los tests que necesiten error states usan server.use(...)
    dentro del propio test para sobreescribir temporalmente.
+
+   NOTA: El POST handler NO lee el body de la request porque
+   el FormData incluye un campo de imagen vacío (ImageUpload)
+   que puede causar que MSW se cuelgue intentando parsear
+   un File/Blob vacío en el entorno jsdom/Node.js.
    ============================================================ */
 
 import { http, HttpResponse } from "msw";
@@ -14,7 +19,7 @@ import type { Product, Category, PaginatedProducts } from "../../../features/pro
 
 const BASE_URL = "http://localhost:3000/api";
 
-/* ---- Fixtures inline —base data para handlers ------------- */
+/* ---- Fixtures inline — base data para handlers ----------- */
 
 export const mockCategory: Category = {
   id:    1,
@@ -119,28 +124,54 @@ export const productsHandlers = [
     return HttpResponse.json(product);
   }),
 
-  /* ---- POST /api/products -------------------------------- */
-  http.post(`${BASE_URL}/products`, async ({ request }) => {
-    const body = await request.formData().catch(() => null) ?? await request.json().catch(() => ({}));
-    const name = body instanceof FormData ? body.get("name") : (body as Record<string, unknown>).name;
-
+  /* ---- POST /api/products --------------------------------
+     No leemos el body porque el FormData contiene un campo
+     de imagen vacío (ImageUpload) que puede colgar el parsing
+     en el entorno de test. Retornamos el mock directamente.  */
+  http.post(`${BASE_URL}/products`, () => {
     const newProduct: Product = {
       id:           mockProducts.length + 1,
       sku:          null,
-      name:         String(name ?? "New Product"),
+      name:         "New Product",
       description:  null,
       category_id:  null,
       category:     null,
-      price:        Number((body instanceof FormData ? body.get("price") : (body as Record<string, unknown>).price) ?? 0),
+      price:        0,
       cost:         null,
-      stock:        Number((body instanceof FormData ? body.get("stock") : (body as Record<string, unknown>).stock) ?? 0),
-      availability: true,
+      stock:        0,
+      availability: false,
       image_url:    null,
       createdAt:    new Date().toISOString(),
       updatedAt:    new Date().toISOString(),
     };
 
     return HttpResponse.json({ data: newProduct }, { status: 201 });
+  }),
+
+  /* ---- PUT /api/products/:id ----------------------------- */
+  http.put(`${BASE_URL}/products/:id`, async ({ params, request }) => {
+    const id      = Number(params.id);
+    const product = mockProducts.find((p) => p.id === id);
+
+    if (!product) {
+      return HttpResponse.json({ message: "Product not found" }, { status: 404 });
+    }
+
+    // Intentar leer el body — puede ser FormData o JSON
+    let updated = { ...product };
+    try {
+      const body = await request.formData();
+      if (body.get("name")) updated.name = String(body.get("name"));
+      if (body.get("price")) updated.price = Number(body.get("price"));
+      if (body.get("stock")) updated.stock = Number(body.get("stock"));
+    } catch {
+      try {
+        const body = await request.json() as Partial<Product>;
+        updated = { ...product, ...body };
+      } catch { /* ignore */ }
+    }
+
+    return HttpResponse.json({ message: "Product updated", data: updated });
   }),
 
   /* ---- PATCH /api/products/:id --------------------------- */
