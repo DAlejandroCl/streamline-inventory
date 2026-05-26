@@ -10,10 +10,14 @@ import "@testing-library/jest-dom";
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { server } from "../msw/server";
+import { expect } from "vitest";
+import * as vitestAxe from "vitest-axe/matchers";
+
+/* ---- Accessibility matchers (toHaveNoViolations) ---------- */
+expect.extend(vitestAxe);
 
 /* ---- Mocks de browser APIs ausentes en jsdom -------------- */
 
-// matchMedia — jsdom no lo implementa, necesario para ThemeContext y media queries
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
@@ -28,7 +32,6 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
-// ResizeObserver — usado por algunos componentes de layout
 global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
