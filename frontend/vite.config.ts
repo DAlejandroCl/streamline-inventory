@@ -29,6 +29,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/*.config.*',
+      '**/e2e/**',          // Playwright tests — corren con playwright test, no vitest
     ],
 
     coverage: {
