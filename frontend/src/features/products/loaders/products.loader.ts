@@ -10,7 +10,7 @@
    newProductLoader: carga categorías para el formulario de creación.
    ============================================================ */
 
-import { type LoaderFunctionArgs, redirect } from "react-router-dom";
+import { type LoaderFunctionArgs } from "react-router-dom";
 import type { Product, Category, PaginatedProducts } from "../types/products";
 import { getProducts, getAllProducts, getProductById, getCategories } from "../../../lib/api/products";
 
