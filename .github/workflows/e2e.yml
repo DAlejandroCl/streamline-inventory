@@ -1,0 +1,156 @@
+# ============================================================
+# E2E PIPELINE — Streamline
+# Runs Playwright tests after CI passes on merge to main.
+#
+# Requiere:
+#   - Secrets: JWT_SECRET, DATABASE_URL_TEST, VITE_API_URL
+#   - El backend se levanta en el runner antes de correr los tests
+#   - El frontend se levanta en preview mode (vite preview)
+#
+# Si el backend no está disponible (staging env), usar:
+#   E2E_BASE_URL: URL del frontend en staging
+#   BACKEND_URL: URL del backend en staging
+# ============================================================
+
+name: E2E
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:            # Trigger manual desde GitHub Actions UI
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'local'
+        type: choice
+        options:
+          - local
+          - staging
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: ${{ secrets.DATABASE_URL_TEST || 'sqlite::memory:' }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-secret-key-min-32-chars-long' }}
+      VITE_API_URL: http://localhost:3000
+      FRONTEND_URL: http://localhost:4173
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # ---- Backend setup ----------------------------------
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci --ignore-scripts
+
+      - name: Build sqlite3 for E2E
+        working-directory: backend
+        run: |
+          node_modules/.bin/node-gyp rebuild \
+            --directory node_modules/sqlite3 \
+            --nodedir /usr \
+          2>/dev/null || npm rebuild sqlite3 2>/dev/null || true
+
+      - name: Start backend server
+        working-directory: backend
+        run: |
+          npx tsx src/index.ts &
+          # Wait for backend to be ready
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/categories > /dev/null 2>&1; then
+              echo "Backend ready after ${i}s"
+              break
+            fi
+            echo "Waiting for backend... (${i}s)"
+            sleep 1
+          done
+          # Verify it's actually up
+          curl -sf http://localhost:3000/api/categories || (echo "Backend failed to start" && exit 1)
+
+      # ---- Frontend setup ---------------------------------
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:3000
+
+      - name: Start frontend preview server
+        working-directory: frontend
+        run: |
+          npx vite preview --port 4173 &
+          # Wait for frontend to be ready
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:4173 > /dev/null 2>&1; then
+              echo "Frontend ready after ${i}s"
+              break
+            fi
+            echo "Waiting for frontend... (${i}s)"
+            sleep 1
+          done
+          curl -sf http://localhost:4173 || (echo "Frontend failed to start" && exit 1)
+
+      # ---- Playwright -----------------------------------------
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        working-directory: frontend
+        run: npx playwright test e2e/smoke.spec.ts --reporter=list
+        env:
+          FRONTEND_URL: http://localhost:4173
+
+      - name: Run auth E2E tests
+        working-directory: frontend
+        run: npx playwright test e2e/auth.spec.ts --reporter=list
+        env:
+          FRONTEND_URL: http://localhost:4173
+
+      - name: Run inventory E2E tests
+        working-directory: frontend
+        run: npx playwright test e2e/inventory.spec.ts --reporter=list
+        env:
+          FRONTEND_URL: http://localhost:4173
+
+      # ---- Artifacts ------------------------------------------
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 14
+
+      - name: Upload Playwright traces (on failure)
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: frontend/test-results/
+          retention-days: 7
