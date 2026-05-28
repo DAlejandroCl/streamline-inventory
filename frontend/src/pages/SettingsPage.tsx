@@ -1,9 +1,9 @@
 import { useState } from "react";
 import {
   User, Palette, Globe, Bell, Monitor, Save, RotateCcw,
-  Building2, Mail, Shield, Clock, Hash, Eye, EyeOff,
-  Package, AlertTriangle, CheckCircle, ChevronRight,
-  LayoutGrid, List, Rows3, Info, ExternalLink,
+  Building2, Mail, Shield, Eye, EyeOff,
+  AlertTriangle, CheckCircle, ChevronRight,
+  LayoutGrid, List, Info, ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 import PageHeader from "../components/layout/PageHeader";
