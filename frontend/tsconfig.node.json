@@ -7,18 +7,21 @@
     "types": ["node"],
     "skipLibCheck": true,
 
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts"
+    // vitest.config.ts se excluye aquí intencionalmente:
+    // usa tipos de vitest que no están disponibles en el contexto de producción.
+    // Vitest lo procesa con su propio resolver cuando corre los tests.
+  ]
 }
