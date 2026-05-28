@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 /**
  * Streamline — Playwright E2E Configuration
  *
@@ -19,7 +23,7 @@ import { defineConfig, devices } from "@playwright/test";
 const BASE_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./src/tests/e2e",
   fullyParallel: false,        // secuencial: los tests comparten estado de DB
   forbidOnly: !!process.env.CI,
   retries:    process.env.CI ? 2 : 0,
