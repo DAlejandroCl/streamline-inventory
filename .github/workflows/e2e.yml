@@ -126,19 +126,19 @@ jobs:
 
       - name: Run smoke tests
         working-directory: frontend
-        run: npx playwright test e2e/smoke.spec.ts --reporter=list
+        run: npx playwright test smoke.spec.ts --reporter=list
         env:
           FRONTEND_URL: http://localhost:4173
 
       - name: Run auth E2E tests
         working-directory: frontend
-        run: npx playwright test e2e/auth.spec.ts --reporter=list
+        run: npx playwright test auth.spec.ts --reporter=list
         env:
           FRONTEND_URL: http://localhost:4173
 
       - name: Run inventory E2E tests
         working-directory: frontend
-        run: npx playwright test e2e/inventory.spec.ts --reporter=list
+        run: npx playwright test inventory.spec.ts --reporter=list
         env:
           FRONTEND_URL: http://localhost:4173
 
