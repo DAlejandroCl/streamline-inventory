@@ -10,7 +10,7 @@
 
 import {
   useLoaderData, useNavigation, Link,
-  useSearchParams, useSubmit,
+  useSearchParams,
 } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -56,7 +56,6 @@ export default function ProductsPage() {
   const { format: formatCurrency } = useCurrency();
   const navigation = useNavigation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const submit = useSubmit();
 
   const [searchInput, setSearchInput] = useState(
     searchParams.get("search") ?? ""
