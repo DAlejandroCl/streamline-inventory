@@ -24,6 +24,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^25.5.2",
+    "@types/pino-http": "^5.8.4",
     "@types/sharp": "^0.31.1",
     "@types/supertest": "^7.2.0",
     "c8": "^11.0.0",
@@ -36,7 +37,6 @@
   "dependencies": {
     "@types/multer": "^2.1.0",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^12.10.0",
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -50,11 +50,14 @@
     "multer": "^2.1.1",
     "pg": "^8.20.0",
     "pg-hstore": "^2.3.4",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
     "sequelize": "^6.37.8",
     "sequelize-typescript": "^2.1.6",
     "sharp": "^0.34.5",
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "umzug": "^3.8.3"
   }
 }
