@@ -6,7 +6,7 @@
    ============================================================ */
 
 import { useSettings } from "../../context/SettingsContext";
-import type { DateFormat, TimeFormat } from "../../context/SettingsContext";
+import type { DateFormat } from "../../context/SettingsContext";
 
 export function formatDate(
   dateStr: string | Date | undefined,
