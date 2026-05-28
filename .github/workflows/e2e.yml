@@ -55,6 +55,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          # Monorepo: los package-lock.json están en backend/ y frontend/
+          # actions/setup-node necesita al menos uno para activar el cache
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
       # ---- Backend setup ----------------------------------
 
