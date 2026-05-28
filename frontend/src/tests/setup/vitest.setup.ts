@@ -16,6 +16,14 @@ import * as vitestAxe from "vitest-axe/matchers";
 /* ---- Accessibility matchers (toHaveNoViolations) ---------- */
 expect.extend(vitestAxe);
 
+// Type augmentation para toHaveNoViolations
+declare module "vitest" {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  interface Assertion<R = any> {
+    toHaveNoViolations(): R;
+  }
+}
+
 /* ---- Mocks de browser APIs ausentes en jsdom -------------- */
 
 Object.defineProperty(window, "matchMedia", {
