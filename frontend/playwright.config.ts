@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -44,10 +43,13 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
+    // Firefox solo en local — en CI solo se instala chromium para reducir tiempo
+    ...(process.env.CI ? [] : [
+      {
+        name: "firefox",
+        use: { ...devices["Desktop Firefox"] },
+      },
+    ]),
   ],
 
   /* Levantar frontend automáticamente si no está corriendo */
