@@ -71,7 +71,8 @@ test.describe("Smoke Tests — Post-Deploy", () => {
   test("ruta no existente va a la landing (catch-all)", async ({ page }) => {
     await page.goto("/esta-ruta-no-existe");
     // El catch-all redirige a /
-    await expect(page).toHaveURL(/^\//);
+    // toHaveURL compara la URL completa — usamos sufijo "/" para ser agnóstico al host
+    await expect(page).toHaveURL(/\/$/);
   });
 
 });
