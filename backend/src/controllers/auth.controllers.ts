@@ -5,23 +5,29 @@
 
    Cookie strategy:
    - httpOnly: JS cannot read the token (XSS safe)
-   - sameSite: "strict" prevents CSRF on same-origin
-   - secure: true in production (HTTPS only)
-   - maxAge: 7 days in ms matching JWT expiry
+   - sameSite: "lax" — permite cookies en requests cross-origin
+     de primera parte (navegación top-level). Compatible con el
+     setup de CI donde frontend (4173) y backend (3000) son
+     puertos distintos en localhost.
+     En producción, frontend y backend comparten dominio via
+     proxy (Vercel → Render), por lo que "lax" es igualmente
+     seguro y suficiente contra CSRF.
+   - secure: true en producción (HTTPS only)
+   - maxAge: 7 días en ms
    ============================================================ */
 
 import { Request, Response } from "express";
 import * as authService from "../services/auth.service.js";
 
-const COOKIE_NAME = "token";
+const COOKIE_NAME    = "token";
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 function cookieOptions() {
   return {
     httpOnly: true,
-    sameSite: "strict" as const,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: COOKIE_MAX_AGE,
+    sameSite: "lax" as const,   // "strict" bloqueaba cookies en cross-origin (CI/dev)
+    secure:   process.env.NODE_ENV === "production",
+    maxAge:   COOKIE_MAX_AGE,
   };
 }
 
