@@ -45,9 +45,19 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 /* ---- 4. CORS --------------------------------------------- */
+// CORS_ORIGIN puede ser una URL o una lista separada por comas:
+// "http://localhost:5173,http://localhost:4173"
+const rawOrigins = process.env.CORS_ORIGIN ?? "http://localhost:5173,http://localhost:4173";
+const allowedOrigins = rawOrigins.split(",").map((o) => o.trim());
+
 server.use(
   cors({
-    origin:      process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Permitir requests sin origin (Postman, curl, tests server-side)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
     credentials: true,
   })
 );
