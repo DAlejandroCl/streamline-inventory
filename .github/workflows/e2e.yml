@@ -45,6 +45,8 @@ jobs:
       JWT_SECRET: ${{ secrets.JWT_SECRET || 'ci-e2e-secret-key-min-32-chars-long' }}
       VITE_API_URL: http://localhost:3000
       FRONTEND_URL: http://localhost:4173
+      # Permitir requests desde el frontend en CI (vite preview corre en 4173)
+      CORS_ORIGIN: http://localhost:4173
 
     steps:
       - name: Checkout
