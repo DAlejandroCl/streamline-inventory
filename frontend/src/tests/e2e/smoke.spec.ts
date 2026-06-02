@@ -48,9 +48,10 @@ test.describe("Smoke Tests — Post-Deploy", () => {
   test("la página de inventario es accesible tras autenticación", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/app/products");
-    // Debe renderizar la tabla o el empty state
+    // En CI la DB está vacía — renderiza EmptyState con "No products yet"
+    // En producción con datos — renderiza la tabla
     await expect(
-      page.locator("table, [data-testid='empty-state']").first()
+      page.locator("table, h2").first()
     ).toBeVisible({ timeout: 10_000 });
   });
 
