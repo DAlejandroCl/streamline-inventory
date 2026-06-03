@@ -28,11 +28,11 @@ export default function ProductsTable({ products }: Props) {
   const rowPy = compactMode ? "py-2" : "py-4";
 
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl shadow-card overflow-hidden border border-[var(--color-border)]/40">
+    <div className="bg-(--color-surface) rounded-2xl shadow-card overflow-hidden border border-(--color-border)/40">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-[var(--color-surface-low)] border-b border-[var(--color-border)]/50">
+            <tr className="bg-(--color-surface-low) border-b border-(--color-border)/50">
               {[
                 "Product",
                 "Price",
@@ -44,7 +44,7 @@ export default function ProductsTable({ products }: Props) {
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]"
+                  className="px-6 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted)"
                 >
                   {h}
                 </th>
@@ -55,12 +55,12 @@ export default function ProductsTable({ products }: Props) {
             {products.map((p) => (
               <tr
                 key={p.id}
-                className={`border-b border-[var(--color-border)]/20 hover:bg-[var(--color-surface-low)]/60 transition-colors duration-100 group`}
+                className={`border-b border-(--color-border)/20 hover:bg-(--color-surface-low)/60 transition-colors duration-100 group`}
               >
                 {/* PRODUCT */}
                 <td className={`px-6 ${rowPy}`}>
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-[var(--color-primary-container)] flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-xl overflow-hidden bg-primary-container flex items-center justify-center shrink-0">
                       {p.image_url ? (
                         <img
                           src={`${API_BASE}${p.image_url}`}
@@ -75,15 +75,15 @@ export default function ProductsTable({ products }: Props) {
                       ) : null}
                       <Package
                         size={15}
-                        className={["text-[var(--color-primary)]", p.image_url ? "hidden" : ""].join(" ")}
+                        className={["text-primary", p.image_url ? "hidden" : ""].join(" ")}
                         strokeWidth={2}
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-[var(--color-text-primary)]">
+                      <p className="text-sm font-bold text-(--color-text-primary)">
                         {p.name}
                       </p>
-                      <p className="text-xs text-[var(--color-text-muted)] font-medium">
+                      <p className="text-xs text-(--color-text-muted) font-medium">
                         {p.sku ? `SKU: ${p.sku}` : `ID #${p.id}`}
                       </p>
                     </div>
@@ -92,7 +92,7 @@ export default function ProductsTable({ products }: Props) {
 
                 {/* PRICE — respeta currency del contexto */}
                 <td className={`px-6 ${rowPy}`}>
-                  <span className="text-sm font-bold text-[var(--color-text-primary)] tabular">
+                  <span className="text-sm font-bold text-(--color-text-primary) tabular">
                     {formatPrice(p.price)}
                   </span>
                 </td>
@@ -100,7 +100,7 @@ export default function ProductsTable({ products }: Props) {
                 {/* COST — solo si showCostPrice está activo */}
                 {showCostPrice && (
                   <td className={`px-6 ${rowPy}`}>
-                    <span className="text-sm text-[var(--color-text-muted)] tabular">
+                    <span className="text-sm text-(--color-text-muted) tabular">
                       {p.cost != null ? formatPrice(p.cost) : "—"}
                     </span>
                   </td>
@@ -112,10 +112,10 @@ export default function ProductsTable({ products }: Props) {
                     className={[
                       "text-sm font-bold tabular",
                       p.stock === 0
-                        ? "text-[var(--color-error)]"
+                        ? "text-error"
                         : p.stock <= 5
-                        ? "text-[var(--color-warning)]"
-                        : "text-[var(--color-text-primary)]",
+                        ? "text-warning"
+                        : "text-(--color-text-primary)",
                     ].join(" ")}
                   >
                     {p.stock}
@@ -141,7 +141,7 @@ export default function ProductsTable({ products }: Props) {
                 </td>
 
                 {/* ADDED — respeta dateFormat del contexto */}
-                <td className={`px-6 ${rowPy} text-xs text-[var(--color-text-muted)] font-medium tabular`}>
+                <td className={`px-6 ${rowPy} text-xs text-(--color-text-muted) font-medium tabular`}>
                   {formatDateStr(p.createdAt)}
                 </td>
 
@@ -166,10 +166,10 @@ export default function ProductsTable({ products }: Props) {
         </table>
       </div>
 
-      <div className="px-6 py-4 bg-[var(--color-surface-low)]/50 border-t border-[var(--color-border)]/30">
-        <p className="text-xs text-[var(--color-text-muted)] font-medium">
+      <div className="px-6 py-4 bg-(--color-surface-low)/50 border-t border-(--color-border)/30">
+        <p className="text-xs text-(--color-text-muted) font-medium">
           Showing{" "}
-          <span className="font-bold text-[var(--color-text-secondary)]">
+          <span className="font-bold text-(--color-text-secondary)">
             {products.length}
           </span>{" "}
           {products.length === 1 ? "entry" : "entries"}
