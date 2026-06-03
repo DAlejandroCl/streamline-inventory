@@ -114,7 +114,7 @@ function NavBar() {
           >
             <Package size={16} className="text-white" strokeWidth={2.5} />
           </div>
-          <span className="text-[15px] font-extrabold font-headline text-[var(--color-text-primary)]">
+          <span className="text-[15px] font-extrabold font-headline text-(--color-text-primary)">
             Streamline
           </span>
         </div>
@@ -125,7 +125,7 @@ function NavBar() {
 
           <Link
             to="/login"
-            className="text-sm font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] transition-colors px-4 py-2 rounded-xl hover:bg-[var(--color-primary-container)]"
+            className="text-sm font-semibold text-(--color-text-secondary) hover:text-primary transition-colors px-4 py-2 rounded-xl hover:bg-primary-container"
           >
             Sign in
           </Link>
@@ -177,7 +177,7 @@ function HeroSection() {
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold border border-white/10 bg-white/5"
           style={{ color: "rgba(255,255,255,0.7)" }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-secondary)] animate-pulse" aria-hidden="true" />
+          <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" aria-hidden="true" />
           Portfolio · Full-stack PERN project
         </div>
 
@@ -211,7 +211,7 @@ function HeroSection() {
             href="https://github.com/DAlejandroCl/streamline-inventory"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/[0.06] border border-white/10 text-white font-bold rounded-2xl hover:bg-white/[0.10] transition-all text-base"
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/6 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all text-base"
           >
             View on GitHub <ChevronRight size={18} strokeWidth={2.5} />
           </a>
@@ -222,7 +222,7 @@ function HeroSection() {
             <span
               key={s}
               role="listitem"
-              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/[0.06] border border-white/[0.08] text-white/70"
+              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/6 border border-white/8 text-white/70"
             >
               {s}
             </span>
@@ -240,21 +240,21 @@ function HeroSection() {
 function FeaturesSection() {
   return (
     <section
-      className="py-32 px-6 bg-[var(--color-background)]"
+      className="py-32 px-6 bg-(--color-background)"
       aria-labelledby="features-heading"
     >
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16 space-y-4">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">
             What's implemented
           </p>
           <h2
             id="features-heading"
-            className="text-4xl font-extrabold font-headline text-[var(--color-text-primary)]"
+            className="text-4xl font-extrabold font-headline text-(--color-text-primary)"
           >
             Every feature backed by code
           </h2>
-          <p className="max-w-xl mx-auto text-lg leading-relaxed text-[var(--color-text-secondary)]">
+          <p className="max-w-xl mx-auto text-lg leading-relaxed text-(--color-text-secondary)">
             No mock data, no placeholder metrics. Every card below describes a
             pattern traceable to a specific file in the repository.
           </p>
@@ -264,15 +264,15 @@ function FeaturesSection() {
           {FEATURES.map((f) => (
             <article
               key={f.title}
-              className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-card border border-[var(--color-border)]/40 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200"
+              className="bg-(--color-surface) rounded-2xl p-6 shadow-card border border-(--color-border)/40 hover:shadow-lifted hover:-translate-y-0.5 transition-all duration-200"
             >
-              <div className="w-11 h-11 rounded-xl bg-[var(--color-primary-container)] flex items-center justify-center mb-4" aria-hidden="true">
-                <f.icon size={20} className="text-[var(--color-primary)]" strokeWidth={2} />
+              <div className="w-11 h-11 rounded-xl bg-primary-container flex items-center justify-center mb-4" aria-hidden="true">
+                <f.icon size={20} className="text-primary" strokeWidth={2} />
               </div>
-              <h3 className="text-base font-bold font-headline text-[var(--color-text-primary)] mb-2">
+              <h3 className="text-base font-bold font-headline text-(--color-text-primary) mb-2">
                 {f.title}
               </h3>
-              <p className="text-sm leading-relaxed text-[var(--color-text-secondary)]">
+              <p className="text-sm leading-relaxed text-(--color-text-secondary)">
                 {f.desc}
               </p>
             </article>
@@ -290,21 +290,21 @@ function FeaturesSection() {
 function ArchitectureSection() {
   return (
     <section
-      className="py-32 px-6 bg-[var(--color-surface)]"
+      className="py-32 px-6 bg-(--color-surface)"
       aria-labelledby="arch-heading"
     >
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div className="space-y-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">
+          <p className="text-xs font-bold uppercase tracking-widest text-primary">
             Engineering decisions
           </p>
           <h2
             id="arch-heading"
-            className="text-4xl font-extrabold font-headline text-[var(--color-text-primary)] leading-tight"
+            className="text-4xl font-extrabold font-headline text-(--color-text-primary) leading-tight"
           >
             Patterns worth reading about
           </h2>
-          <p className="text-lg leading-relaxed text-[var(--color-text-secondary)]">
+          <p className="text-lg leading-relaxed text-(--color-text-secondary)">
             Streamline applies patterns from production engineering — not
             because they are trendy, but because each one solves a specific
             problem that appears at scale.
@@ -315,11 +315,11 @@ function ArchitectureSection() {
               <li key={item} className="flex items-start gap-3">
                 <CheckCircle
                   size={16}
-                  className="text-[var(--color-secondary)] shrink-0 mt-0.5"
+                  className="text-secondary shrink-0 mt-0.5"
                   strokeWidth={2.5}
                   aria-hidden="true"
                 />
-                <span className="text-sm text-[var(--color-text-secondary)]">{item}</span>
+                <span className="text-sm text-(--color-text-secondary)">{item}</span>
               </li>
             ))}
           </ul>
@@ -409,7 +409,7 @@ function CTASection() {
             href="https://github.com/DAlejandroCl/streamline-inventory"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/[0.06] border border-white/10 text-white font-bold rounded-2xl hover:bg-white/[0.10] transition-all text-base"
+            className="inline-flex items-center gap-2.5 px-8 py-4 bg-white/6 border border-white/10 text-white font-bold rounded-2xl hover:bg-white/10 transition-all text-base"
           >
             View source <ChevronRight size={18} strokeWidth={2.5} />
           </a>

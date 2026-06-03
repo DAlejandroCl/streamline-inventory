@@ -94,7 +94,7 @@ function MetricCard({ label, value, sub, icon, accent, trend }: MetricCardProps)
           <span
             className={[
               "flex items-center gap-0.5 text-xs font-bold",
-              trend.up ? "text-[var(--color-secondary)]" : "text-[var(--color-error)]",
+              trend.up ? "text-secondary" : "text-error",
             ].join(" ")}
           >
             {trend.up
@@ -104,13 +104,13 @@ function MetricCard({ label, value, sub, icon, accent, trend }: MetricCardProps)
           </span>
         )}
       </div>
-      <p className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-(--color-text-muted) mb-1">
         {label}
       </p>
       <p className={["text-3xl font-extrabold font-headline tabular", valueColors[accent]].join(" ")}>
         {value}
       </p>
-      <p className="text-xs text-[var(--color-text-muted)] font-medium mt-1.5">{sub}</p>
+      <p className="text-xs text-(--color-text-muted) font-medium mt-1.5">{sub}</p>
     </Card>
   );
 }
@@ -124,13 +124,13 @@ function StockBar({ label, count, total, color, dotColor }: {
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1.5">
-        <span className="font-semibold text-[var(--color-text-secondary)] flex items-center gap-1.5">
+        <span className="font-semibold text-(--color-text-secondary) flex items-center gap-1.5">
           <span className={["w-2 h-2 rounded-full", dotColor].join(" ")} />
           {label}
         </span>
-        <span className="font-bold text-[var(--color-text-primary)] tabular">{count}</span>
+        <span className="font-bold text-(--color-text-primary) tabular">{count}</span>
       </div>
-      <div className="w-full h-1.5 bg-[var(--color-surface-high)] rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-(--color-surface-high) rounded-full overflow-hidden">
         <div
           className={["h-full rounded-full transition-all duration-700", color].join(" ")}
           style={{ width: `${pct}%` }}
@@ -233,19 +233,19 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* RECENT PRODUCTS */}
-        <div className="lg:col-span-2 bg-[var(--color-surface)] rounded-2xl shadow-card border border-[var(--color-border)]/40 overflow-hidden">
-          <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-[var(--color-border)]/30">
+        <div className="lg:col-span-2 bg-(--color-surface) rounded-2xl shadow-card border border-(--color-border)/40 overflow-hidden">
+          <div className="px-6 pt-6 pb-4 flex items-center justify-between border-b border-(--color-border)/30">
             <div>
-              <h2 className="text-base font-bold text-[var(--color-text-primary)] font-headline">
+              <h2 className="text-base font-bold text-(--color-text-primary) font-headline">
                 Recent Products
               </h2>
-              <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              <p className="text-xs text-(--color-text-muted) mt-0.5">
                 Latest additions to the ledger
               </p>
             </div>
             <Link
               to="/app/products"
-              className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] transition-colors"
+              className="flex items-center gap-1 text-xs font-bold text-primary hover:text-primary-hover transition-colors"
             >
               View all <ArrowRight size={12} strokeWidth={2.5} />
             </Link>
@@ -256,14 +256,14 @@ export default function DashboardPage() {
               <div className="py-12 text-center space-y-3">
                 <Package
                   size={36}
-                  className="mx-auto text-[var(--color-text-muted)] opacity-30"
+                  className="mx-auto text-(--color-text-muted) opacity-30"
                   strokeWidth={1.5}
                 />
-                <p className="text-sm text-[var(--color-text-muted)]">
+                <p className="text-sm text-(--color-text-muted)">
                   No products yet.{" "}
                   <Link
                     to="/app/products/new"
-                    className="text-[var(--color-primary)] font-semibold hover:underline"
+                    className="text-primary font-semibold hover:underline"
                   >
                     Create one
                   </Link>
@@ -279,14 +279,14 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-5">
 
           {/* QUICK ACTIONS */}
-          <div className="bg-[var(--color-surface)] rounded-2xl shadow-card border border-[var(--color-border)]/40 p-5">
-            <h2 className="text-sm font-bold text-[var(--color-text-primary)] font-headline mb-4">
+          <div className="bg-(--color-surface) rounded-2xl shadow-card border border-(--color-border)/40 p-5">
+            <h2 className="text-sm font-bold text-(--color-text-primary) font-headline mb-4">
               Quick Actions
             </h2>
             <div className="space-y-1">
               {QUICK_ACTIONS.map((item) => {
                 const inner = (
-                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-surface-low)] transition-colors duration-150 group cursor-pointer">
+                  <div className="flex items-center gap-3 p-3 rounded-xl hover:bg-(--color-surface-low) transition-colors duration-150 group cursor-pointer">
                     <div
                       className={[
                         "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
@@ -298,12 +298,12 @@ export default function DashboardPage() {
                       {item.icon}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-[var(--color-text-primary)]">{item.label}</p>
-                      <p className="text-xs text-[var(--color-text-muted)]">{item.sub}</p>
+                      <p className="text-sm font-semibold text-(--color-text-primary)">{item.label}</p>
+                      <p className="text-xs text-(--color-text-muted)">{item.sub}</p>
                     </div>
                     <ArrowRight
                       size={13}
-                      className="text-[var(--color-text-muted)] opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="text-(--color-text-muted) opacity-0 group-hover:opacity-100 transition-opacity"
                       strokeWidth={2.5}
                     />
                   </div>
@@ -322,9 +322,9 @@ export default function DashboardPage() {
           </div>
 
           {/* STOCK SUMMARY */}
-          <div className="bg-[var(--color-surface)] rounded-2xl shadow-card border border-[var(--color-border)]/40 p-5">
+          <div className="bg-(--color-surface) rounded-2xl shadow-card border border-(--color-border)/40 p-5">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-[var(--color-text-primary)] font-headline">
+              <h2 className="text-sm font-bold text-(--color-text-primary) font-headline">
                 Stock Summary
               </h2>
               <Badge variant={stockRate >= 75 ? "success" : stockRate >= 50 ? "warning" : "danger"}>

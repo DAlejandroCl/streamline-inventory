@@ -20,7 +20,7 @@ export default function LoginPage() {
 
       {/* ---- LEFT PANEL — branding ---- */}
       <div
-        className="hidden lg:flex flex-col justify-between w-[480px] shrink-0 p-12"
+        className="hidden lg:flex flex-col justify-between w-120 shrink-0 p-12"
         style={{ background: "var(--color-sidebar-bg)" }}
       >
         {/* Logo */}

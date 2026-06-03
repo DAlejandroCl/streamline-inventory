@@ -63,12 +63,12 @@ export default function EditProductPage() {
           />
         </div>
 
-        <aside className="bg-[var(--color-surface)] rounded-2xl p-6 shadow-card border border-[var(--color-border)]/40 space-y-5">
+        <aside className="bg-(--color-surface) rounded-2xl p-6 shadow-card border border-(--color-border)/40 space-y-5">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted) mb-1">
               Current Record
             </p>
-            <h3 className="text-base font-bold text-[var(--color-text-primary)] font-headline">
+            <h3 className="text-base font-bold text-(--color-text-primary) font-headline">
               Ledger Entry #{product.id}
             </h3>
           </div>
@@ -76,18 +76,18 @@ export default function EditProductPage() {
           <div className="space-y-4">
             {FIELDS.map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-(--color-surface-low) border border-(--color-border)/50 flex items-center justify-center shrink-0">
                   <Icon
                     size={14}
-                    className="text-[var(--color-text-secondary)]"
+                    className="text-(--color-text-secondary)"
                     strokeWidth={2}
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-(--color-text-muted)">
                     {label}
                   </p>
-                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">
+                  <p className="text-sm font-bold text-(--color-text-primary) mt-0.5">
                     {value}
                   </p>
                 </div>
@@ -96,17 +96,17 @@ export default function EditProductPage() {
 
             {product.category && (
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-(--color-surface-low) border border-(--color-border)/50 flex items-center justify-center shrink-0">
                   <span
                     className="w-3 h-3 rounded-full shrink-0"
                     style={{ background: product.category.color }}
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-(--color-text-muted)">
                     Category
                   </p>
-                  <p className="text-sm font-bold text-[var(--color-text-primary)] mt-0.5">
+                  <p className="text-sm font-bold text-(--color-text-primary) mt-0.5">
                     {product.category.name}
                   </p>
                 </div>
@@ -114,15 +114,15 @@ export default function EditProductPage() {
             )}
 
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-(--color-surface-low) border border-(--color-border)/50 flex items-center justify-center shrink-0">
                 <ToggleRight
                   size={14}
-                  className="text-[var(--color-text-secondary)]"
+                  className="text-(--color-text-secondary)"
                   strokeWidth={2}
                 />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)] mb-1">
+                <p className="text-[10px] uppercase tracking-widest font-bold text-(--color-text-muted) mb-1">
                   Status
                 </p>
                 <Badge variant={product.availability ? "success" : "danger"}>
@@ -132,19 +132,19 @@ export default function EditProductPage() {
             </div>
 
             {product.updatedAt && (
-              <div className="flex items-center gap-3 pt-3 border-t border-[var(--color-border)]/40">
-                <div className="w-8 h-8 rounded-xl bg-[var(--color-surface-low)] border border-[var(--color-border)]/50 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-3 pt-3 border-t border-(--color-border)/40">
+                <div className="w-8 h-8 rounded-xl bg-(--color-surface-low) border border-(--color-border)/50 flex items-center justify-center shrink-0">
                   <Clock
                     size={13}
-                    className="text-[var(--color-text-muted)]"
+                    className="text-(--color-text-muted)"
                     strokeWidth={2}
                   />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--color-text-muted)]">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-(--color-text-muted)">
                     Last Updated
                   </p>
-                  <p className="text-xs text-[var(--color-text-secondary)] font-semibold mt-0.5">
+                  <p className="text-xs text-(--color-text-secondary) font-semibold mt-0.5">
                     {new Date(product.updatedAt).toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -157,7 +157,7 @@ export default function EditProductPage() {
             )}
           </div>
 
-          <div className="pt-2 border-t border-[var(--color-border)]/40">
+          <div className="pt-2 border-t border-(--color-border)/40">
             <Link to="/app/products">
               <Button variant="secondary" icon={ArrowLeft} className="w-full justify-center">
                 Back to Inventory

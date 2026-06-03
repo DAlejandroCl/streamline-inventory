@@ -173,9 +173,9 @@ export default function ProductsPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-[var(--color-surface)] px-5 py-4 rounded-2xl shadow-card border border-[var(--color-border)]/40"
+            className="bg-(--color-surface) px-5 py-4 rounded-2xl shadow-card border border-(--color-border)/40"
           >
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted) mb-1">
               {s.label}
             </p>
             <p className={["text-2xl font-extrabold font-headline tabular", s.color].join(" ")}>
@@ -190,7 +190,7 @@ export default function ProductsPage() {
         <div className="relative">
           <Search
             size={14}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-(--color-text-muted) pointer-events-none"
             strokeWidth={2}
           />
           <input
@@ -198,7 +198,7 @@ export default function ProductsPage() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name or SKU..."
-            className="pl-9 pr-4 py-2 text-sm rounded-xl w-64 bg-[var(--color-surface)] border border-[var(--color-border)] placeholder:text-[var(--color-text-muted)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:border-[var(--color-primary)] transition-all"
+            className="pl-9 pr-4 py-2 text-sm rounded-xl w-64 bg-(--color-surface) border border-(--color-border) placeholder:text-(--color-text-muted) text-(--color-text-primary) focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
         </div>
 
@@ -211,13 +211,13 @@ export default function ProductsPage() {
               next.set("page", "1");
               setSearchParams(next, { replace: true });
             }}
-            className="text-xs font-semibold text-[var(--color-primary)] hover:underline"
+            className="text-xs font-semibold text-primary hover:underline"
           >
             Clear search
           </button>
         )}
 
-        <span className="text-xs text-[var(--color-text-muted)] ml-auto">
+        <span className="text-xs text-(--color-text-muted) ml-auto">
           {total} product{total !== 1 ? "s" : ""}
           {searchParams.get("search") && ` matching "${searchParams.get("search")}"`}
         </span>
@@ -237,7 +237,7 @@ export default function ProductsPage() {
                 setSearchInput("");
                 setSearchParams({});
               }}
-              className="text-sm font-semibold text-[var(--color-primary)] hover:underline"
+              className="text-sm font-semibold text-primary hover:underline"
             >
               Clear search
             </button>
@@ -248,11 +248,11 @@ export default function ProductsPage() {
       {/* PAGINATION CONTROLS */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between py-2">
-          <p className="text-xs text-[var(--color-text-muted)] font-medium">
+          <p className="text-xs text-(--color-text-muted) font-medium">
             Page{" "}
-            <span className="font-bold text-[var(--color-text-primary)]">{page}</span>
+            <span className="font-bold text-(--color-text-primary)">{page}</span>
             {" "}of{" "}
-            <span className="font-bold text-[var(--color-text-primary)]">{totalPages}</span>
+            <span className="font-bold text-(--color-text-primary)">{totalPages}</span>
           </p>
 
           <div className="flex items-center gap-1.5">
@@ -286,8 +286,8 @@ export default function ProductsPage() {
                     className={[
                       "w-8 h-8 rounded-lg text-xs font-bold transition-all",
                       p === page
-                        ? "bg-[var(--color-primary)] text-white shadow-card"
-                        : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-low)] hover:text-[var(--color-text-primary)]",
+                        ? "bg-primary text-white shadow-card"
+                        : "text-(--color-text-muted) hover:bg-(--color-surface-low) hover:text-(--color-text-primary)",
                     ].join(" ")}
                   >
                     {p}

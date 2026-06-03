@@ -47,7 +47,7 @@ const TABS: Tab[] = [
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-4 mt-6 first:mt-0">
+    <h3 className="text-xs font-bold uppercase tracking-widest text-(--color-text-muted) mb-4 mt-6 first:mt-0">
       {children}
     </h3>
   );
@@ -63,11 +63,11 @@ function Row({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-start justify-between gap-6 py-4 border-b border-[var(--color-border)]/40 last:border-0">
+    <div className="flex items-start justify-between gap-6 py-4 border-b border-(--color-border)/40 last:border-0">
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-[var(--color-text-primary)]">{label}</p>
+        <p className="text-sm font-semibold text-(--color-text-primary)">{label}</p>
         {description && (
-          <p className="text-xs text-[var(--color-text-muted)] mt-0.5 leading-relaxed">
+          <p className="text-xs text-(--color-text-muted) mt-0.5 leading-relaxed">
             {description}
           </p>
         )}
@@ -90,14 +90,14 @@ function Toggle({
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/40 rounded-full"
+      className="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-full"
     >
       <div
         className={[
           "relative w-11 h-6 rounded-full transition-colors duration-300",
           checked
-            ? "bg-[var(--color-primary)]"
-            : "bg-[var(--color-surface-high)] border border-[var(--color-border)]",
+            ? "bg-primary"
+            : "bg-(--color-surface-high) border border-(--color-border)",
         ].join(" ")}
       >
         <div
@@ -126,10 +126,10 @@ function Select({
       onChange={(e) => onChange(e.target.value)}
       className={[
         "px-3 py-2 text-sm rounded-xl appearance-none",
-        "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
-        "text-[var(--color-text-primary)]",
-        "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 focus:border-[var(--color-primary)]",
-        "transition-all duration-200 min-w-[160px]",
+        "bg-(--color-surface-low) border border-(--color-border)",
+        "text-(--color-text-primary)",
+        "focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary",
+        "transition-all duration-200 min-w-40",
       ].join(" ")}
     >
       {options.map((o) => (
@@ -159,9 +159,9 @@ function NumberInput({
       onChange={(e) => onChange(Number(e.target.value))}
       className={[
         "w-24 px-3 py-2 text-sm rounded-xl text-center",
-        "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
-        "text-[var(--color-text-primary)]",
-        "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 focus:border-[var(--color-primary)]",
+        "bg-(--color-surface-low) border border-(--color-border)",
+        "text-(--color-text-primary)",
+        "focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary",
         "transition-all duration-200",
       ].join(" ")}
     />
@@ -178,7 +178,7 @@ function SaveBar({
   loading?: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between pt-6 mt-2 border-t border-[var(--color-border)]/40">
+    <div className="flex items-center justify-between pt-6 mt-2 border-t border-(--color-border)/40">
       <Button variant="ghost" size="sm" onClick={onDiscard} icon={RotateCcw}>
         Discard changes
       </Button>
@@ -398,18 +398,18 @@ function RegionalSection() {
       </Row>
 
       {/* Live preview */}
-      <div className="mt-4 p-4 bg-[var(--color-surface-low)] rounded-xl border border-[var(--color-border)]/40 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+      <div className="mt-4 p-4 bg-(--color-surface-low) rounded-xl border border-(--color-border)/40 space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted)">
           Live preview
         </p>
         <div className="flex flex-wrap gap-6">
           <div>
-            <p className="text-[10px] text-[var(--color-text-muted)] mb-0.5">Price</p>
-            <p className="text-sm font-bold text-[var(--color-text-primary)]">{previewPrice}</p>
+            <p className="text-[10px] text-(--color-text-muted) mb-0.5">Price</p>
+            <p className="text-sm font-bold text-(--color-text-primary)">{previewPrice}</p>
           </div>
           <div>
-            <p className="text-[10px] text-[var(--color-text-muted)] mb-0.5">Date & time</p>
-            <p className="text-sm font-bold text-[var(--color-text-primary)]">{previewDate}</p>
+            <p className="text-[10px] text-(--color-text-muted) mb-0.5">Date & time</p>
+            <p className="text-sm font-bold text-(--color-text-primary)">{previewDate}</p>
           </div>
         </div>
       </div>
@@ -441,7 +441,7 @@ function DisplaySection() {
       <SectionTitle>Layout</SectionTitle>
 
       <Row label="Default inventory view" description="Table view shows more data; grid view shows product cards.">
-        <div className="flex rounded-xl overflow-hidden border border-[var(--color-border)] bg-[var(--color-surface-low)]">
+        <div className="flex rounded-xl overflow-hidden border border-(--color-border) bg-(--color-surface-low)">
           {([
             { value: "table", icon: List,        label: "Table" },
             { value: "grid",  icon: LayoutGrid,  label: "Grid"  },
@@ -453,8 +453,8 @@ function DisplaySection() {
               className={[
                 "flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-all",
                 form.defaultView === value
-                  ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-card"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]",
+                  ? "bg-(--color-surface) text-primary shadow-card"
+                  : "text-(--color-text-muted) hover:text-(--color-text-primary)",
               ].join(" ")}
             >
               <Icon size={14} strokeWidth={2} />
@@ -524,7 +524,7 @@ function NotificationsSection() {
               min={1}
               max={999}
             />
-            <span className="text-sm text-[var(--color-text-muted)]">units</span>
+            <span className="text-sm text-(--color-text-muted)">units</span>
           </div>
         </Row>
       )}
@@ -548,9 +548,9 @@ function NotificationsSection() {
       </Row>
 
       {form.emailNotifications && (
-        <div className="mt-2 p-3 bg-[var(--color-warning-container)]/30 border border-[var(--color-warning)]/20 rounded-xl flex items-start gap-2">
-          <AlertTriangle size={14} className="text-[var(--color-warning)] shrink-0 mt-0.5" strokeWidth={2} />
-          <p className="text-xs text-[var(--color-on-warning-container)]">
+        <div className="mt-2 p-3 bg-warning-container/30 border border-warning/20 rounded-xl flex items-start gap-2">
+          <AlertTriangle size={14} className="text-warning shrink-0 mt-0.5" strokeWidth={2} />
+          <p className="text-xs text-on-warning-container">
             Email delivery requires SMTP configuration in the backend environment variables.
           </p>
         </div>
@@ -599,7 +599,7 @@ function SecuritySection() {
   }) {
     return (
       <div className="space-y-1.5">
-        <label htmlFor={id} className="block text-[11px] font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">
+        <label htmlFor={id} className="block text-[11px] font-bold uppercase tracking-widest text-(--color-text-secondary)">
           {label}
         </label>
         <div className="relative">
@@ -610,9 +610,9 @@ function SecuritySection() {
             onChange={(e) => onChange(e.target.value)}
             className={[
               "w-full px-4 pr-10 py-2.5 text-sm rounded-xl",
-              "bg-[var(--color-surface-low)] border border-[var(--color-border)]",
-              "text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)]",
-              "focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/15 focus:border-[var(--color-primary)]",
+              "bg-(--color-surface-low) border border-(--color-border)",
+              "text-(--color-text-primary) placeholder:text-(--color-text-muted)",
+              "focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary",
               "transition-all duration-200",
             ].join(" ")}
             placeholder="••••••••"
@@ -620,7 +620,7 @@ function SecuritySection() {
           <button
             type="button"
             onClick={onToggle}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-(--color-text-muted) hover:text-(--color-text-primary) transition-colors"
           >
             {show ? <EyeOff size={15} strokeWidth={2} /> : <Eye size={15} strokeWidth={2} />}
           </button>
@@ -661,8 +661,8 @@ function SecuritySection() {
           />
         </div>
 
-        <div className="p-3 bg-[var(--color-surface-low)] rounded-xl border border-[var(--color-border)]/40">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)] mb-2">
+        <div className="p-3 bg-(--color-surface-low) rounded-xl border border-(--color-border)/40">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted) mb-2">
             Password requirements
           </p>
           {[
@@ -675,11 +675,11 @@ function SecuritySection() {
               <CheckCircle
                 size={12}
                 strokeWidth={2.5}
-                className={met ? "text-[var(--color-secondary)]" : "text-[var(--color-text-muted)]"}
+                className={met ? "text-secondary" : "text-(--color-text-muted)"}
               />
               <span className={[
                 "text-xs",
-                met ? "text-[var(--color-secondary)] font-semibold" : "text-[var(--color-text-muted)]",
+                met ? "text-secondary font-semibold" : "text-(--color-text-muted)",
               ].join(" ")}>
                 {label}
               </span>
@@ -696,8 +696,8 @@ function SecuritySection() {
 
       <Row label="Active session" description="You are currently logged in as Administrator.">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[var(--color-secondary)] animate-pulse" />
-          <span className="text-xs font-semibold text-[var(--color-secondary)]">Active</span>
+          <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+          <span className="text-xs font-semibold text-secondary">Active</span>
         </div>
       </Row>
 
@@ -737,7 +737,7 @@ function SystemSection() {
 
       {INFO.map(({ label, value }) => (
         <Row key={label} label={label}>
-          <span className="text-sm font-semibold text-[var(--color-text-secondary)]">{value}</span>
+          <span className="text-sm font-semibold text-(--color-text-secondary)">{value}</span>
         </Row>
       ))}
 
@@ -755,7 +755,7 @@ function SystemSection() {
 
       <SectionTitle>Danger zone</SectionTitle>
 
-      <div className="rounded-xl border border-[var(--color-error)]/30 bg-[var(--color-error-container)]/20 p-5 space-y-4">
+      <div className="rounded-xl border border-error/30 bg-error-container/20 p-5 space-y-4">
         <Row
           label="Reset all settings"
           description="Restore all settings to their default values. This cannot be undone."
@@ -807,8 +807,8 @@ export default function SettingsPage() {
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold",
                 "transition-all duration-150 text-left group",
                 activeTab === id
-                  ? "bg-[var(--color-primary-container)] text-[var(--color-primary)]"
-                  : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-low)] hover:text-[var(--color-text-primary)]",
+                  ? "bg-primary-container text-primary"
+                  : "text-(--color-text-secondary) hover:bg-(--color-surface-low) hover:text-(--color-text-primary)",
               ].join(" ")}
             >
               <Icon
@@ -825,7 +825,7 @@ export default function SettingsPage() {
         </nav>
 
         {/* ── Content panel ── */}
-        <div className="flex-1 min-w-0 bg-[var(--color-surface)] rounded-2xl p-8 shadow-card border border-[var(--color-border)]/40">
+        <div className="flex-1 min-w-0 bg-(--color-surface) rounded-2xl p-8 shadow-card border border-(--color-border)/40">
           <ActiveSection />
         </div>
       </div>

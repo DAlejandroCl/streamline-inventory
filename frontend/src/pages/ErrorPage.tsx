@@ -59,14 +59,14 @@ export default function ErrorPage() {
             className={[
               "w-24 h-24 rounded-3xl flex items-center justify-center shadow-card",
               is404
-                ? "bg-[var(--color-primary-container)]"
-                : "bg-[var(--color-error-container)]",
+                ? "bg-primary-container"
+                : "bg-error-container",
             ].join(" ")}
           >
             <Icon
               size={44}
               strokeWidth={1.5}
-              className={is404 ? "text-[var(--color-primary)]" : "text-[var(--color-error)]"}
+              className={is404 ? "text-primary" : "text-error"}
             />
           </div>
         </div>
@@ -76,15 +76,15 @@ export default function ErrorPage() {
           <p
             className={[
               "text-8xl font-extrabold font-headline tracking-tight",
-              is404 ? "gradient-text" : "text-[var(--color-error)]",
+              is404 ? "gradient-text" : "text-error",
             ].join(" ")}
           >
             {status}
           </p>
-          <h1 className="text-2xl font-bold font-headline text-[var(--color-text-primary)]">
+          <h1 className="text-2xl font-bold font-headline text-(--color-text-primary)">
             {title}
           </h1>
-          <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed max-w-xs mx-auto">
+          <p className="text-sm text-(--color-text-secondary) leading-relaxed max-w-xs mx-auto">
             {description}
           </p>
         </div>
@@ -97,7 +97,7 @@ export default function ErrorPage() {
         <div className="flex items-center justify-center gap-3">
           <a
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl border border-[var(--color-border)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-low)] transition-all"
+            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl border border-(--color-border) text-(--color-text-secondary) hover:text-(--color-text-primary) hover:bg-(--color-surface-low) transition-all"
           >
             <Home size={15} strokeWidth={2} />
             Back to home
@@ -111,7 +111,7 @@ export default function ErrorPage() {
           </a>
         </div>
 
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-(--color-text-muted)">
           Streamline — Operational Ledger
         </p>
       </div>
