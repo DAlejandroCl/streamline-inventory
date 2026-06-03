@@ -60,10 +60,10 @@ export default function Toast({
       <span className={`material-symbols-filled text-xl leading-none shrink-0 ${s.icon}`}>
         {s.iconName}
       </span>
-      <p className="text-sm font-medium text-[var(--color-on-surface)] flex-1">{message}</p>
+      <p className="text-sm font-medium text-(--color-on-surface) flex-1">{message}</p>
       <button
         onClick={() => { setVisible(false); setTimeout(onClose, 300); }}
-        className="ml-1 text-[var(--color-outline)] hover:text-[var(--color-on-surface)] transition-colors"
+        className="ml-1 text-(--color-outline) hover:text-(--color-on-surface) transition-colors"
         aria-label="Dismiss"
       >
         <span className="material-symbols-outlined text-lg leading-none">close</span>

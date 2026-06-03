@@ -24,8 +24,8 @@ export default function Card({
   return (
     <div
       className={[
-        "bg-[var(--color-surface)] rounded-2xl p-6 shadow-card",
-        "border border-[var(--color-border)]/40",
+        "bg-(--color-surface) rounded-2xl p-6 shadow-card",
+        "border border-(--color-border)/40",
         hover && "transition-all duration-200 hover:shadow-lifted hover:-translate-y-0.5 cursor-pointer",
         accents[accent],
         className,

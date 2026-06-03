@@ -42,9 +42,9 @@ export default function ThemeToggle({ variant = "full" }: Props) {
         title={`Theme: ${theme} — click to switch`}
         className={[
           "p-2 rounded-xl transition-all duration-200 active:scale-95",
-          "text-[var(--color-text-secondary)]",
-          "hover:text-[var(--color-primary)] hover:bg-[var(--color-primary-container)]",
-          "dark:hover:bg-[var(--color-surface-high)]",
+          "text-(--color-text-secondary)",
+          "hover:text-primary hover:bg-primary-container",
+          "dark:hover:bg-(--color-surface-high)",
         ].join(" ")}
         aria-label={`Current theme: ${theme}`}
       >
@@ -58,7 +58,7 @@ export default function ThemeToggle({ variant = "full" }: Props) {
     <div
       className={[
         "inline-flex p-1 rounded-xl gap-0.5",
-        "bg-[var(--color-surface-low)] border border-[var(--color-border)]/50",
+        "bg-(--color-surface-low) border border-(--color-border)/50",
       ].join(" ")}
       role="radiogroup"
       aria-label="Theme selection"
@@ -75,8 +75,8 @@ export default function ThemeToggle({ variant = "full" }: Props) {
               "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold",
               "transition-all duration-200 select-none active:scale-95",
               isActive
-                ? "bg-[var(--color-surface)] text-[var(--color-primary)] shadow-card"
-                : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]",
+                ? "bg-(--color-surface) text-primary shadow-card"
+                : "text-(--color-text-muted) hover:text-(--color-text-primary)",
             ].join(" ")}
           >
             <Icon size={13} strokeWidth={isActive ? 2.5 : 2} />

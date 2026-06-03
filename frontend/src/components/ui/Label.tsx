@@ -15,12 +15,12 @@ export default function Label({ htmlFor, required, children, className = "" }: P
       htmlFor={htmlFor}
       className={[
         "block text-xs font-bold uppercase tracking-widest",
-        "text-[var(--color-text-secondary)] mb-1.5",
+        "text-(--color-text-secondary) mb-1.5",
         className,
       ].join(" ")}
     >
       {children}
-      {required && <span className="ml-1 text-[var(--color-primary)]" aria-hidden="true">*</span>}
+      {required && <span className="ml-1 text-primary" aria-hidden="true">*</span>}
     </label>
   );
 }

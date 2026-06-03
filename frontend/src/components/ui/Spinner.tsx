@@ -15,7 +15,7 @@ export default function Spinner({ size = "md", className = "" }: Props) {
       role="status"
       aria-label="Loading"
       className={[
-        "material-symbols-outlined animate-spin text-[var(--color-primary)] leading-none",
+        "material-symbols-outlined animate-spin text-primary leading-none",
         sizes[size],
         className,
       ].join(" ")}

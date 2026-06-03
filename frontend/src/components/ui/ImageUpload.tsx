@@ -80,16 +80,16 @@ export default function ImageUpload({ currentImageUrl, name = "image" }: Props) 
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-secondary)]">
+      <p className="text-xs font-bold uppercase tracking-widest text-(--color-text-secondary)">
         Product Image
-        <span className="ml-1.5 font-normal normal-case tracking-normal text-[var(--color-text-muted)]">
+        <span className="ml-1.5 font-normal normal-case tracking-normal text-(--color-text-muted)">
           (optional · max {MAX_SIZE_MB}MB)
         </span>
       </p>
 
       {displayImage ? (
         /* ---- PREVIEW STATE ---- */
-        <div className="relative group rounded-2xl overflow-hidden border border-[var(--color-border)]/40 shadow-card aspect-video bg-[var(--color-surface-low)]">
+        <div className="relative group rounded-2xl overflow-hidden border border-(--color-border)/40 shadow-card aspect-video bg-(--color-surface-low)">
           <img
             src={displayImage}
             alt="Product preview"
@@ -128,18 +128,18 @@ export default function ImageUpload({ currentImageUrl, name = "image" }: Props) 
           className={[
             "flex flex-col items-center justify-center gap-3 py-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all duration-200",
             isDragging
-              ? "border-[var(--color-primary)] bg-[var(--color-primary-container)]"
-              : "border-[var(--color-border)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface-low)] bg-transparent",
+              ? "border-primary bg-primary-container"
+              : "border-(--color-border) hover:border-primary/50 hover:bg-(--color-surface-low) bg-transparent",
           ].join(" ")}
         >
-          <div className="w-12 h-12 rounded-2xl bg-[var(--color-primary-container)] flex items-center justify-center">
-            <ImageIcon size={22} className="text-[var(--color-primary)]" strokeWidth={1.5} />
+          <div className="w-12 h-12 rounded-2xl bg-primary-container flex items-center justify-center">
+            <ImageIcon size={22} className="text-primary" strokeWidth={1.5} />
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+            <p className="text-sm font-semibold text-(--color-text-primary)">
               {isDragging ? "Drop to upload" : "Click or drag image here"}
             </p>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">
+            <p className="text-xs text-(--color-text-muted) mt-1">
               JPEG, PNG, WebP, GIF · max {MAX_SIZE_MB}MB
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function ImageUpload({ currentImageUrl, name = "image" }: Props) 
 
       {/* Error */}
       {error && (
-        <div className="flex items-center gap-2 text-xs font-medium text-[var(--color-error)]">
+        <div className="flex items-center gap-2 text-xs font-medium text-error">
           <AlertCircle size={13} strokeWidth={2.5} className="shrink-0" />
           {error}
         </div>
