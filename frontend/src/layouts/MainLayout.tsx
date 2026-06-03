@@ -9,7 +9,7 @@ import Navbar from "../components/layout/Navbar";
 
 export default function MainLayout() {
   return (
-    <div className="flex h-screen bg-[var(--color-background)] overflow-hidden">
+    <div className="flex h-screen bg-(--color-background) overflow-hidden">
       <Sidebar />
       <div className="flex-1 flex flex-col ml-64 overflow-hidden">
         <Navbar />
