@@ -42,6 +42,14 @@ type ActionErrors = {
   values: Record<string, unknown>;
 };
 
+const makeActionArgs = (request: Request) => ({
+  request,
+  params: {},
+  context: {},
+  unstable_url: new URL("http://localhost"),
+  unstable_pattern: "",
+});
+
 describe("createProductAction — Unit Tests", () => {
 
   beforeEach(() => {
@@ -57,7 +65,7 @@ describe("createProductAction — Unit Tests", () => {
   it("retorna errors.name cuando name está vacío tras trim()", async () => {
     // " " → trim() → "" → Zod.min(1)
     const request = makeRequest({ ...validFields, name: " " });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -67,7 +75,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna errors.price cuando price es 0", async () => {
     const request = makeRequest({ ...validFields, price: "0" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -77,7 +85,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna errors.price cuando price es negativo", async () => {
     const request = makeRequest({ ...validFields, price: "-10" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -86,7 +94,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna errors.stock cuando stock es negativo", async () => {
     const request = makeRequest({ ...validFields, stock: "-1" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -96,7 +104,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna errors.stock cuando stock tiene decimales", async () => {
     const request = makeRequest({ ...validFields, stock: "1.5" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -106,7 +114,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna values con los datos del form tras error Zod", async () => {
     const request = makeRequest({ ...validFields, name: " " });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { values } = result as ActionErrors;
@@ -118,7 +126,7 @@ describe("createProductAction — Unit Tests", () => {
 
   it("retorna múltiples errores cuando varios campos son inválidos", async () => {
     const request = makeRequest({ name: " ", price: "0", stock: "-1", availability: "on" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -136,7 +144,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -153,7 +161,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -169,7 +177,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -185,7 +193,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { values } = result as ActionErrors;
@@ -200,7 +208,7 @@ describe("createProductAction — Unit Tests", () => {
     vi.mocked(fetch).mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { errors } = result as ActionErrors;
@@ -211,7 +219,7 @@ describe("createProductAction — Unit Tests", () => {
     vi.mocked(fetch).mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     expect(result).not.toBeInstanceOf(Response);
     const { values } = result as ActionErrors;
@@ -229,7 +237,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest(validFields);
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     // El action retorna redirect() que es una Response con Location header
     expect(result).toBeInstanceOf(Response);
@@ -251,7 +259,7 @@ describe("createProductAction — Unit Tests", () => {
     });
 
     const request = makeRequest({ ...validFields, availability: "on" });
-    await createProductAction({ request, params: {}, context: {} });
+    await createProductAction(makeActionArgs(request));
 
     // El action pasa el formData original al fetch (no el data parseado)
     // Solo verificamos que el action pasó la validación y llamó a fetch
@@ -267,7 +275,7 @@ describe("createProductAction — Unit Tests", () => {
     );
 
     const request = makeRequest({ ...validFields, availability: "off" });
-    const result = await createProductAction({ request, params: {}, context: {} });
+    const result = await createProductAction(makeActionArgs(request));
 
     // availability: false es válido (optional en Zod) → debe proceder
     expect(result).toBeInstanceOf(Response); // redirect

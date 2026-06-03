@@ -7,19 +7,26 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { updateProductAction } from "../../../../actions/updateProduct.action";
 
-function makeRequest(fields: Record<string, string>, id = "1"): { request: Request; params: { id: string }; context: object } {
+function makeRequest(fields: Record<string, string>, id = "1"): { request: Request; params: { id: string }; context: object; unstable_url: URL; unstable_pattern: string } {
   const formData = new FormData();
   for (const [key, value] of Object.entries(fields)) {
     formData.append(key, value);
   }
   return {
-    request: new Request(`http://localhost/app/products/${id}/edit`, {
+  request: new Request(
+    `http://localhost/app/products/${id}/edit`,
+    {
       method: "POST",
       body: formData,
-    }),
-    params: { id },
-    context: {},
-  };
+    }
+  ),
+  params: { id },
+  context: {},
+  unstable_url: new URL(
+    `http://localhost/app/products/${id}/edit`
+  ),
+  unstable_pattern: "",
+};
 }
 
 const validFields = {

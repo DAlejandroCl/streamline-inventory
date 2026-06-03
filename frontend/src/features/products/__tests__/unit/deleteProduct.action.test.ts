@@ -29,6 +29,14 @@ function makeDeleteRequest(fields: Record<string, string>): Request {
   });
 }
 
+const makeActionArgs = (request: Request) => ({
+  request,
+  params: {},
+  context: {},
+  unstable_url: new URL("http://localhost"),
+  unstable_pattern: "",
+});
+
 describe("deleteProductAction — Unit Tests", () => {
 
   beforeEach(() => { vi.clearAllMocks(); });
@@ -42,6 +50,8 @@ describe("deleteProductAction — Unit Tests", () => {
       request: makeDeleteRequest({ id: "1", name: "Mechanical Keyboard" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(result).toBeInstanceOf(Response);
@@ -56,6 +66,8 @@ describe("deleteProductAction — Unit Tests", () => {
       request: makeDeleteRequest({ id: "42" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(deleteProduct).toHaveBeenCalledWith("42");
@@ -68,6 +80,8 @@ describe("deleteProductAction — Unit Tests", () => {
       request: makeDeleteRequest({ id: "7" }), // sin name
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(result).toBeInstanceOf(Response);
@@ -84,6 +98,8 @@ describe("deleteProductAction — Unit Tests", () => {
         request: makeDeleteRequest({ id: "1" }),
         params: {},
         context: {},
+        unstable_url: new URL("http://localhost"),
+        unstable_pattern: "",
       })
     ).rejects.toBeInstanceOf(Response);
   });
@@ -94,6 +110,8 @@ describe("deleteProductAction — Unit Tests", () => {
         request: makeDeleteRequest({}), // sin id
         params: {},
         context: {},
+        unstable_url: new URL("http://localhost"),
+        unstable_pattern: "",
       })
     ).rejects.toBeInstanceOf(Response);
   });
@@ -105,6 +123,8 @@ describe("deleteProductAction — Unit Tests", () => {
       request: makeDeleteRequest({ id: "3", name: "Test" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(deleteProduct).toHaveBeenCalledTimes(1);

@@ -34,6 +34,14 @@ function makeToggleRequest(
   });
 }
 
+const makeActionArgs = (request: Request) => ({
+  request,
+  params: {},
+  context: {},
+  unstable_url: new URL("http://localhost"),
+  unstable_pattern: "",
+});
+
 describe("toggleAvailabilityAction — Unit Tests", () => {
 
   beforeEach(() => { vi.clearAllMocks(); });
@@ -49,6 +57,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(result).toBeInstanceOf(Response);
@@ -63,6 +73,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       request: makeToggleRequest({ id: "1", availability: "true" }, referer),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect((result as Response).headers.get("Location")).toBe(referer);
@@ -75,6 +87,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       request: makeToggleRequest({ id: "1", availability: "false" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect((result as Response).headers.get("Location")).toBe("/app/products");
@@ -87,6 +101,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       request: makeToggleRequest({ id: "5", availability: "true" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     // Pasa el valor ACTUAL (true) al service para que lo invierta en el backend
@@ -100,6 +116,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       request: makeToggleRequest({ id: "3", availability: "false" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(toggleAvailability).toHaveBeenCalledWith("3", false);
@@ -115,6 +133,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
         request: makeToggleRequest({ id: "1", availability: "true" }),
         params: {},
         context: {},
+        unstable_url: new URL("http://localhost"),
+        unstable_pattern: "",
       })
     ).rejects.toBeInstanceOf(Response);
   });
@@ -125,6 +145,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
         request: makeToggleRequest({ availability: "true" }), // sin id
         params: {},
         context: {},
+        unstable_url: new URL("http://localhost"),
+        unstable_pattern: "",
       })
     ).rejects.toBeInstanceOf(Response);
   });
@@ -136,6 +158,8 @@ describe("toggleAvailabilityAction — Unit Tests", () => {
       request: makeToggleRequest({ id: "2", name: "Mouse", availability: "true" }),
       params: {},
       context: {},
+      unstable_url: new URL("http://localhost"),
+      unstable_pattern: "",
     });
 
     expect(toggleAvailability).toHaveBeenCalledTimes(1);
