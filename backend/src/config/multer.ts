@@ -40,6 +40,12 @@ function fileFilter(
   file: Express.Multer.File,
   cb: FileFilterCallback
 ): void {
+  // El input type="file" vacío llega con originalname "" y mimetype genérico.
+  // Lo ignoramos silenciosamente para que el form funcione sin imagen.
+  if (!file.originalname || file.originalname === "") {
+    cb(null, false);
+    return;
+  }
   if (ALLOWED_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
