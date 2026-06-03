@@ -10,7 +10,9 @@ import type { CreateProductDTO, UpdateProductDTO } from "../types/product.dto.js
 
 /* ---- Multipart body sanitizer ---------------------------- */
 
-function parseMultipartBody(body: Record<string, unknown>): UpdateProductDTO {
+function parseMultipartBody(
+  body: Record<string, unknown>
+): CreateProductDTO {
   const raw = body as Record<string, string | undefined>;
 
   const rawCategoryId = raw.category_id;
