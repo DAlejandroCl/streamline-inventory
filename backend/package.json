@@ -27,6 +27,7 @@
     "@types/pino-http": "^5.8.4",
     "@types/sharp": "^0.31.1",
     "@types/supertest": "^7.2.0",
+    "@types/swagger-jsdoc": "^6.0.4",
     "c8": "^11.0.0",
     "cross-env": "^7.0.3",
     "nodemon": "^3.1.14",
