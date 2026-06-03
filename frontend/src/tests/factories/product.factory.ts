@@ -4,7 +4,7 @@
    para tests de componentes e integración.
    ============================================================ */
 
-import type { Product, Category, ProductFormData } from "../../../features/products/types/products";
+import type { Product, Category, ProductFormData } from "../../features/products/types/products";
 
 let counter = 0;
 

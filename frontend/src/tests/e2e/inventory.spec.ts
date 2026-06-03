@@ -9,7 +9,7 @@
    suite pero se destruye al terminar el proceso del backend.
    ============================================================ */
 
-import { test, expect } from "@playwright/test";
+import { type Page, test, expect } from "@playwright/test";
 import { loginAsAdmin } from "./helpers/auth";
 
 /* Genera un nombre único por test — evita colisiones */
@@ -19,10 +19,10 @@ function uniqueName(prefix: string): string {
 
 /* Helper: crea un producto y espera el redirect al inventario */
 async function createProduct(
-  page: Parameters<Parameters<typeof test>[1]>[0],
+  page: Page,
   name: string,
   price = "99.99",
-  stock = "10"
+  stock = "10",
 ) {
   await page.goto("/app/products/new");
   await page.waitForLoadState("networkidle");
@@ -34,20 +34,25 @@ async function createProduct(
 }
 
 test.describe("E2E — Inventory CRUD Flow", () => {
-
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
   /* ---- Visualizar inventario ---------------------------- */
 
-  test("navegar al inventario muestra título e inventario", async ({ page }) => {
+  test("navegar al inventario muestra título e inventario", async ({
+    page,
+  }) => {
     await page.goto("/app/products");
     await expect(page.getByText("Inventory Ledger").first()).toBeVisible();
-    await expect(page.locator("table, h2").first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator("table, h2").first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
-  test("el botón 'Add Product' navega al formulario de creación", async ({ page }) => {
+  test("el botón 'Add Product' navega al formulario de creación", async ({
+    page,
+  }) => {
     await page.goto("/app/products");
     await page.waitForLoadState("networkidle");
     await page.getByRole("link", { name: /add product/i }).click();
@@ -57,13 +62,17 @@ test.describe("E2E — Inventory CRUD Flow", () => {
 
   /* ---- Crear producto ----------------------------------- */
 
-  test("crear un producto con datos válidos redirige al inventario", async ({ page }) => {
+  test("crear un producto con datos válidos redirige al inventario", async ({
+    page,
+  }) => {
     const name = uniqueName("E2E Create Test");
     await createProduct(page, name, "299.99", "25");
     await expect(page.getByText("Inventory Ledger").first()).toBeVisible();
   });
 
-  test("el producto creado aparece en la tabla del inventario", async ({ page }) => {
+  test("el producto creado aparece en la tabla del inventario", async ({
+    page,
+  }) => {
     const name = uniqueName("E2E Visible Test");
     await createProduct(page, name, "49.99", "5");
 
@@ -78,14 +87,18 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await page.getByLabel(/sale price/i).fill("50");
     await page.getByLabel(/stock quantity/i).fill("5");
     await page.getByText("Create product").click();
-    await expect(page.getByText(/product name is required/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/product name is required/i)).toBeVisible({
+      timeout: 5_000,
+    });
     await expect(page).toHaveURL(/\/app\/products\/new/);
   });
 
   /* ---- Editar producto ---------------------------------- */
 
-  test("editar un producto actualiza los datos en el inventario", async ({ page }) => {
-    const name     = uniqueName("E2E Edit Test");
+  test("editar un producto actualiza los datos en el inventario", async ({
+    page,
+  }) => {
+    const name = uniqueName("E2E Edit Test");
     const editName = uniqueName("E2E Edited");
 
     await createProduct(page, name, "150", "20");
@@ -96,12 +109,16 @@ test.describe("E2E — Inventory CRUD Flow", () => {
 
     await page.getByRole("link", { name: /edit/i }).first().click();
     await expect(page).toHaveURL(/\/edit/);
-    await expect(page.getByDisplayValue(name)).toBeVisible();
+    const nameInput = page.getByPlaceholder(/wireless keyboard/i);
 
-    await page.getByDisplayValue(name).clear();
-    await page.getByDisplayValue("").fill(editName);
+    await expect(nameInput).toHaveValue(name);
+
+    await nameInput.clear();
+    await nameInput.fill(editName);
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, {
+      timeout: 10_000,
+    });
 
     await page.getByPlaceholder(/search by name or sku/i).fill(editName);
     await page.waitForTimeout(600);
@@ -110,7 +127,9 @@ test.describe("E2E — Inventory CRUD Flow", () => {
 
   /* ---- Toggle availability ------------------------------ */
 
-  test("el toggle de availability cambia el estado del producto", async ({ page }) => {
+  test("el toggle de availability cambia el estado del producto", async ({
+    page,
+  }) => {
     const name = uniqueName("E2E Toggle Test");
     await createProduct(page, name, "50", "5");
 
@@ -125,7 +144,9 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await expect(page.getByText("Not available")).toBeVisible();
 
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, {
+      timeout: 10_000,
+    });
   });
 
   /* ---- Eliminar producto -------------------------------- */
@@ -138,9 +159,14 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await page.waitForTimeout(600);
     await expect(page.getByText(name)).toBeVisible({ timeout: 5_000 });
 
-    await page.getByRole("button", { name: /delete/i }).first().click();
+    await page
+      .getByRole("button", { name: /delete/i })
+      .first()
+      .click();
 
-    const confirmBtn = page.getByRole("button", { name: /confirm|yes|delete/i });
+    const confirmBtn = page.getByRole("button", {
+      name: /confirm|yes|delete/i,
+    });
     if (await confirmBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
       await confirmBtn.click();
     }
@@ -148,5 +174,4 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await page.waitForTimeout(600);
     await expect(page.getByText(name)).not.toBeVisible({ timeout: 5_000 });
   });
-
 });
