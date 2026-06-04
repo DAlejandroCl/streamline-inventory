@@ -49,7 +49,7 @@ function fileFilter(
   if (ALLOWED_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only image files are allowed (jpeg, png, webp, gif)"));
+    cb(null, false); // ignorar sin error    
   }
 }
 
