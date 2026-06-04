@@ -29,19 +29,22 @@ export async function updateProductAction({
 
   const formData = await request.formData();
 
-  const rawCategoryId  = formData.get("category_id");
-  const rawCost        = formData.get("cost");
-  const productName    = String(formData.get("name") ?? "").trim();
-  const stock          = Number(formData.get("stock") ?? 0);
-  const availability   = formData.get("availability") === "on";
+  const rawCategoryId = formData.get("category_id");
+  const rawCost = formData.get("cost");
+  const productName = String(formData.get("name") ?? "").trim();
+  const stock = Number(formData.get("stock") ?? 0);
+  const availability = formData.get("availability") === "on";
 
   const data: Partial<ProductFormData> = {
-    name:         productName,
-    sku:          String(formData.get("sku") ?? "").trim() || undefined,
-    description:  String(formData.get("description") ?? "").trim() || undefined,
-    category_id:  rawCategoryId && String(rawCategoryId) !== "" ? Number(rawCategoryId) : null,
-    price:        Number(formData.get("price") ?? 0),
-    cost:         rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
+    name: productName,
+    sku: String(formData.get("sku") ?? "").trim() || undefined,
+    description: String(formData.get("description") ?? "").trim() || undefined,
+    category_id:
+      rawCategoryId && String(rawCategoryId) !== ""
+        ? Number(rawCategoryId)
+        : null,
+    price: Number(formData.get("price") ?? 0),
+    cost: rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
     stock,
     availability,
   };
@@ -52,18 +55,26 @@ export async function updateProductAction({
   }
 
   try {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
-      { method: "PATCH", credentials: "include", body: formData }
-    );
+    // AGREGAR: eliminar campo image vacío antes de enviar al backend
+    const imageFile = formData.get("image") as File | null;
+    if (!imageFile || imageFile.size === 0) {
+      formData.delete("image");
+    }
+    // FIN AGREGAR
+
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({})) as { message?: string };
-      const msg  = body.message ?? "Error updating product.";
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      const msg = body.message ?? "Error updating product.";
 
       dispatchNotification({
-        type:        "error",
-        title:       "Update failed",
+        type: "error",
+        title: "Update failed",
         description: `Could not update "${productName}". ${msg}`,
       });
 
@@ -73,8 +84,8 @@ export async function updateProductAction({
     /* Descripción detallada con los cambios más relevantes */
     const statusLabel = availability ? "Available" : "Out of stock";
     dispatchNotification({
-      type:        "success",
-      title:       "Product updated",
+      type: "success",
+      title: "Product updated",
       description: `"${productName}" — Status: ${statusLabel} · Stock: ${stock} units.`,
     });
 
@@ -82,8 +93,8 @@ export async function updateProductAction({
   } catch {
     const msg = "Network error. Please try again.";
     dispatchNotification({
-      type:        "error",
-      title:       "Connection error",
+      type: "error",
+      title: "Connection error",
       description: msg,
     });
     return { errors: { general: [msg] }, values: data };
