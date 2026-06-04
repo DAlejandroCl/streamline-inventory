@@ -26,17 +26,20 @@ export async function createProductAction({
   const formData = await request.formData();
 
   const rawCategoryId = formData.get("category_id");
-  const rawCost       = formData.get("cost");
-  const productName   = String(formData.get("name") ?? "").trim();
+  const rawCost = formData.get("cost");
+  const productName = String(formData.get("name") ?? "").trim();
 
   const data: ProductFormData = {
-    name:         productName,
-    sku:          String(formData.get("sku") ?? "").trim() || undefined,
-    description:  String(formData.get("description") ?? "").trim() || undefined,
-    category_id:  rawCategoryId && String(rawCategoryId) !== "" ? Number(rawCategoryId) : null,
-    price:        Number(formData.get("price") ?? 0),
-    cost:         rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
-    stock:        Number(formData.get("stock") ?? 0),
+    name: productName,
+    sku: String(formData.get("sku") ?? "").trim() || undefined,
+    description: String(formData.get("description") ?? "").trim() || undefined,
+    category_id:
+      rawCategoryId && String(rawCategoryId) !== ""
+        ? Number(rawCategoryId)
+        : null,
+    price: Number(formData.get("price") ?? 0),
+    cost: rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
+    stock: Number(formData.get("stock") ?? 0),
     availability: formData.get("availability") === "on",
   };
 
@@ -46,6 +49,13 @@ export async function createProductAction({
   }
 
   try {
+    // AGREGAR: eliminar campo image vacío antes de enviar al backend
+    const imageFile = formData.get("image") as File | null;
+    if (!imageFile || imageFile.size === 0) {
+      formData.delete("image");
+    }
+    // FIN AGREGAR
+
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
       method: "POST",
       credentials: "include",
@@ -53,12 +63,12 @@ export async function createProductAction({
     });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => ({})) as { message?: string };
-      const msg  = body.message ?? "Error creating product.";
+      const body = (await res.json().catch(() => ({}))) as { message?: string };
+      const msg = body.message ?? "Error creating product.";
 
       dispatchNotification({
-        type:        "error",
-        title:       "Product creation failed",
+        type: "error",
+        title: "Product creation failed",
         description: msg,
       });
 
@@ -66,8 +76,8 @@ export async function createProductAction({
     }
 
     dispatchNotification({
-      type:        "success",
-      title:       "Product created",
+      type: "success",
+      title: "Product created",
       description: `"${productName}" was added to the inventory ledger.`,
     });
 
@@ -75,8 +85,8 @@ export async function createProductAction({
   } catch {
     const msg = "Network error. Please try again.";
     dispatchNotification({
-      type:        "error",
-      title:       "Connection error",
+      type: "error",
+      title: "Connection error",
       description: msg,
     });
     return { errors: { general: [msg] }, values: data };
