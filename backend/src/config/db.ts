@@ -42,7 +42,15 @@ export const connectDB = async (): Promise<void> => {
   try {
     await db.authenticate();
     console.log(colors.green.bold("✔ Database connected successfully"));
-    await db.sync({ alter: true });
+
+    if (isTest) {
+      // En test: force:true recrea las tablas limpias — más rápido y predecible
+      await db.sync({ force: true });
+    } else {
+      // En dev/prod: alter:true aplica cambios sin destruir datos
+      await db.sync({ alter: true });
+    }
+
     console.log(colors.cyan.bold("✔ Database synchronized"));
   } catch (error) {
     console.error(colors.red.bold("✖ Database connection error"));
