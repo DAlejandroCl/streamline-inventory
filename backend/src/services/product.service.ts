@@ -15,7 +15,7 @@
 import path from "path";
 import fs   from "fs";
 import { fileURLToPath } from "url";
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import Product  from "../models/Product.model.js";
 import Category from "../models/Category.model.js";
 import { AppError } from "../types/AppError.js";
@@ -85,8 +85,14 @@ export const getAllProducts = async (
   const where = opts.search
     ? {
         [Op.or]: [
-          { name: { [Op.iLike]: `%${opts.search}%` } },
-          { sku:  { [Op.iLike]: `%${opts.search}%` } },
+          Sequelize.where(
+            Sequelize.fn("LOWER", Sequelize.col("Product.name")),
+            { [Op.like]: `%${opts.search.toLowerCase()}%` }
+          ),
+          Sequelize.where(
+            Sequelize.fn("LOWER", Sequelize.col("Product.sku")),
+            { [Op.like]: `%${opts.search.toLowerCase()}%` }
+          ),
         ],
       }
     : {};
