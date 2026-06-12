@@ -49,17 +49,29 @@ export async function createProductAction({
   }
 
   try {
-    // AGREGAR: eliminar campo image vacío antes de enviar al backend
+    // Reconstruir FormData limpio con solo los campos de texto.
+    // Evita que el campo `image` vacío del ImageUpload component
+    // cause problemas en el parser multipart de multer en el backend.
+    const cleanFormData = new FormData();
+    cleanFormData.append("name", data.name);
+    if (data.sku)         cleanFormData.append("sku", data.sku);
+    if (data.description) cleanFormData.append("description", data.description);
+    if (data.category_id != null) cleanFormData.append("category_id", String(data.category_id));
+    cleanFormData.append("price", String(data.price));
+    if (data.cost != null) cleanFormData.append("cost", String(data.cost));
+    cleanFormData.append("stock", String(data.stock));
+    cleanFormData.append("availability", data.availability ? "on" : "off");
+
+    // Solo agregar imagen si el usuario seleccionó una
     const imageFile = formData.get("image") as File | null;
-    if (!imageFile || imageFile.size === 0) {
-      formData.delete("image");
+    if (imageFile && imageFile.size > 0) {
+      cleanFormData.append("image", imageFile);
     }
-    // FIN AGREGAR
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
       method: "POST",
       credentials: "include",
-      body: formData,
+      body: cleanFormData,
     });
 
     if (!res.ok) {
