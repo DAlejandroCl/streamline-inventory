@@ -55,18 +55,30 @@ export async function updateProductAction({
   }
 
   try {
-    // AGREGAR: eliminar campo image vacío antes de enviar al backend
-    const imageFile = formData.get("image") as File | null;
-    if (!imageFile || imageFile.size === 0) {
-      formData.delete("image");
-    }
-    // FIN AGREGAR
+    // Reconstruir FormData limpio sin el campo image vacío
+    const cleanFormData = new FormData();
+    cleanFormData.append("name", data.name!);
+    if (data.sku)         cleanFormData.append("sku", data.sku);
+    if (data.description) cleanFormData.append("description", data.description);
+    if (data.category_id != null) cleanFormData.append("category_id", String(data.category_id));
+    cleanFormData.append("price", String(data.price));
+    if (data.cost != null) cleanFormData.append("cost", String(data.cost));
+    cleanFormData.append("stock", String(data.stock));
+    cleanFormData.append("availability", data.availability ? "on" : "off");
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
-      method: "POST",
-      credentials: "include",
-      body: formData,
-    });
+    const imageFile = formData.get("image") as File | null;
+    if (imageFile && imageFile.size > 0) {
+      cleanFormData.append("image", imageFile);
+    }
+
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/products/${id}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        body: cleanFormData,
+      }
+    );
 
     if (!res.ok) {
       const body = (await res.json().catch(() => ({}))) as { message?: string };
@@ -81,7 +93,6 @@ export async function updateProductAction({
       return { errors: { general: [msg] }, values: data };
     }
 
-    /* Descripción detallada con los cambios más relevantes */
     const statusLabel = availability ? "Available" : "Out of stock";
     dispatchNotification({
       type: "success",
