@@ -1,7 +1,9 @@
 /* ============================================================
    CREATE PRODUCT ACTION
-   Al crear con éxito dispara una notificación con el nombre
-   del producto creado. Si falla, dispara notificación de error.
+   Fix: evita que multer/busboy se cuelgue en CI al recibir
+   un request multipart con solo campos de texto desde Playwright.
+   Cuando no hay imagen se envía JSON (express.json() lo parsea,
+   multer lo ignora). Cuando hay imagen se usa FormData.
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
@@ -49,29 +51,48 @@ export async function createProductAction({
   }
 
   try {
-    // Reconstruir FormData limpio con solo los campos de texto.
-    // Evita que el campo `image` vacío del ImageUpload component
-    // cause problemas en el parser multipart de multer en el backend.
-    const cleanFormData = new FormData();
-    cleanFormData.append("name", data.name);
-    if (data.sku)         cleanFormData.append("sku", data.sku);
-    if (data.description) cleanFormData.append("description", data.description);
-    if (data.category_id != null) cleanFormData.append("category_id", String(data.category_id));
-    cleanFormData.append("price", String(data.price));
-    if (data.cost != null) cleanFormData.append("cost", String(data.cost));
-    cleanFormData.append("stock", String(data.stock));
-    cleanFormData.append("availability", data.availability ? "on" : "off");
-
-    // Solo agregar imagen si el usuario seleccionó una
     const imageFile = formData.get("image") as File | null;
-    if (imageFile && imageFile.size > 0) {
-      cleanFormData.append("image", imageFile);
+    const hasImage  = imageFile instanceof File && imageFile.size > 0;
+
+    let body: BodyInit;
+    let headers: Record<string, string> | undefined;
+
+    if (hasImage) {
+      // Con imagen → multipart/form-data (browser pone boundary automáticamente)
+      const fd = new FormData();
+      fd.append("name",  data.name);
+      if (data.sku)                 fd.append("sku",         data.sku);
+      if (data.description)         fd.append("description", data.description);
+      if (data.category_id != null) fd.append("category_id", String(data.category_id));
+      fd.append("price",        String(data.price));
+      if (data.cost != null)        fd.append("cost",         String(data.cost));
+      fd.append("stock",        String(data.stock));
+      fd.append("availability", data.availability ? "on" : "off");
+      fd.append("image",        imageFile);
+      body = fd;
+    } else {
+      // Sin imagen → JSON: evita el cuelgue de busboy/multer en CI con
+      // requests multipart de solo texto (Playwright + multer streaming issue).
+      // express.json() parsea el body antes de que multer lo vea;
+      // multer detecta Content-Type != multipart y llama next() sin tocar el body.
+      body    = JSON.stringify({
+        name:         data.name,
+        sku:          data.sku,
+        description:  data.description,
+        category_id:  data.category_id,
+        price:        data.price,
+        cost:         data.cost,
+        stock:        data.stock,
+        availability: data.availability ? "on" : "off",
+      });
+      headers = { "Content-Type": "application/json" };
     }
 
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
-      method: "POST",
+      method:      "POST",
       credentials: "include",
-      body: cleanFormData,
+      headers,
+      body,
     });
 
     if (!res.ok) {

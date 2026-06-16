@@ -1,5 +1,7 @@
 /* ============================================================
    UPDATE PRODUCT ACTION
+   Fix: mismo patrón que createProductAction — JSON cuando no
+   hay imagen para evitar el cuelgue de busboy/multer en CI.
    Notificación detallada incluye: nombre del producto,
    qué campos cambiaron visiblemente (disponibilidad, stock).
    ============================================================ */
@@ -30,21 +32,21 @@ export async function updateProductAction({
   const formData = await request.formData();
 
   const rawCategoryId = formData.get("category_id");
-  const rawCost = formData.get("cost");
-  const productName = String(formData.get("name") ?? "").trim();
-  const stock = Number(formData.get("stock") ?? 0);
-  const availability = formData.get("availability") === "on";
+  const rawCost       = formData.get("cost");
+  const productName   = String(formData.get("name") ?? "").trim();
+  const stock         = Number(formData.get("stock") ?? 0);
+  const availability  = formData.get("availability") === "on";
 
   const data: Partial<ProductFormData> = {
     name: productName,
-    sku: String(formData.get("sku") ?? "").trim() || undefined,
+    sku:         String(formData.get("sku") ?? "").trim() || undefined,
     description: String(formData.get("description") ?? "").trim() || undefined,
     category_id:
       rawCategoryId && String(rawCategoryId) !== ""
         ? Number(rawCategoryId)
         : null,
     price: Number(formData.get("price") ?? 0),
-    cost: rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
+    cost:  rawCost && String(rawCost) !== "" ? Number(rawCost) : undefined,
     stock,
     availability,
   };
@@ -55,28 +57,48 @@ export async function updateProductAction({
   }
 
   try {
-    // Reconstruir FormData limpio sin el campo image vacío
-    const cleanFormData = new FormData();
-    cleanFormData.append("name", data.name!);
-    if (data.sku)         cleanFormData.append("sku", data.sku);
-    if (data.description) cleanFormData.append("description", data.description);
-    if (data.category_id != null) cleanFormData.append("category_id", String(data.category_id));
-    cleanFormData.append("price", String(data.price));
-    if (data.cost != null) cleanFormData.append("cost", String(data.cost));
-    cleanFormData.append("stock", String(data.stock));
-    cleanFormData.append("availability", data.availability ? "on" : "off");
-
     const imageFile = formData.get("image") as File | null;
-    if (imageFile && imageFile.size > 0) {
-      cleanFormData.append("image", imageFile);
+    const hasImage  = imageFile instanceof File && imageFile.size > 0;
+
+    let body: BodyInit;
+    let headers: Record<string, string> | undefined;
+
+    if (hasImage) {
+      // Con imagen → multipart/form-data; multer la procesa con sharp
+      const fd = new FormData();
+      fd.append("name",  data.name!);
+      if (data.sku)                 fd.append("sku",         data.sku);
+      if (data.description)         fd.append("description", data.description);
+      if (data.category_id != null) fd.append("category_id", String(data.category_id));
+      fd.append("price",        String(data.price));
+      if (data.cost != null)        fd.append("cost",        String(data.cost));
+      fd.append("stock",        String(data.stock));
+      fd.append("availability", data.availability ? "on" : "off");
+      fd.append("image",        imageFile);
+      body = fd;
+    } else {
+      // Sin imagen → JSON: express.json() parsea antes de que multer corra;
+      // multer detecta Content-Type != multipart y llama next() sin tocar el body.
+      body    = JSON.stringify({
+        name:         data.name,
+        sku:          data.sku,
+        description:  data.description,
+        category_id:  data.category_id,
+        price:        data.price,
+        cost:         data.cost,
+        stock:        data.stock,
+        availability: data.availability ? "on" : "off",
+      });
+      headers = { "Content-Type": "application/json" };
     }
 
     const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/products/${id}`,
       {
-        method: "PUT",
+        method:      "PUT",
         credentials: "include",
-        body: cleanFormData,
+        headers,
+        body,
       }
     );
 
@@ -85,8 +107,8 @@ export async function updateProductAction({
       const msg = body.message ?? "Error updating product.";
 
       dispatchNotification({
-        type: "error",
-        title: "Update failed",
+        type:        "error",
+        title:       "Update failed",
         description: `Could not update "${productName}". ${msg}`,
       });
 
@@ -95,8 +117,8 @@ export async function updateProductAction({
 
     const statusLabel = availability ? "Available" : "Out of stock";
     dispatchNotification({
-      type: "success",
-      title: "Product updated",
+      type:        "success",
+      title:       "Product updated",
       description: `"${productName}" — Status: ${statusLabel} · Stock: ${stock} units.`,
     });
 
@@ -104,8 +126,8 @@ export async function updateProductAction({
   } catch {
     const msg = "Network error. Please try again.";
     dispatchNotification({
-      type: "error",
-      title: "Connection error",
+      type:        "error",
+      title:       "Connection error",
       description: msg,
     });
     return { errors: { general: [msg] }, values: data };
