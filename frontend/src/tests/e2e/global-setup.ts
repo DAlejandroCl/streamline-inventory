@@ -33,13 +33,14 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
   // Autenticar vía UI para que la cookie httpOnly quede correctamente
   // en el cookiejar del browser context y se serialice en el storageState.
   // APIRequestContext no propaga cookies httpOnly al storageState del browser.
-  await page.goto(`${FRONTEND_URL}/login`);
+   await page.goto("/login");
   await page.getByLabel(/email/i).fill(ADMIN_EMAIL);
   await page.getByLabel(/password/i).fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
-  await page.waitForURL(`${FRONTEND_URL}/app`, { timeout: 15_000 });
-
-  // Ahora la cookie httpOnly está en el cookiejar del browser → se serializa correctamente.
+  // Usar patrón glob en lugar de URL absoluta — React Router puede redirigir
+  // a /app/products u otra subruta tras login exitoso.
+  await page.waitForURL("**/app**", { timeout: 15_000 });
+  // Cookie httpOnly ya está en el cookiejar del browser context → serializar.
   await context.storageState({ path: AUTH_FILE });
 
   await browser.close();
