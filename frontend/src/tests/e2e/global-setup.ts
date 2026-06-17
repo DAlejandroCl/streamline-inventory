@@ -30,19 +30,16 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
   // POST al backend directamente (no via UI) — más rápido y robusto.
   // El backend pone la cookie httpOnly en la response.
   // Playwright la almacena en el context.
-  const response = await page.request.post(`${API_URL}/api/auth/login`, {
-    data:    { email: ADMIN_EMAIL, password: ADMIN_PASSWORD },
-    headers: { "Content-Type": "application/json" },
-  });
+  // Autenticar vía UI para que la cookie httpOnly quede correctamente
+  // en el cookiejar del browser context y se serialice en el storageState.
+  // APIRequestContext no propaga cookies httpOnly al storageState del browser.
+  await page.goto(`${FRONTEND_URL}/login`);
+  await page.getByLabel(/email/i).fill(ADMIN_EMAIL);
+  await page.getByLabel(/password/i).fill(ADMIN_PASSWORD);
+  await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
+  await page.waitForURL(`${FRONTEND_URL}/app`, { timeout: 15_000 });
 
-  if (!response.ok()) {
-    const body = await response.text().catch(() => "(no body)");
-    throw new Error(
-      `[global-setup] Login failed (${response.status()}): ${body}`
-    );
-  }
-
-  // Guardar el storageState (cookies + localStorage) para reutilizar en cada test.
+  // Ahora la cookie httpOnly está en el cookiejar del browser → se serializa correctamente.
   await context.storageState({ path: AUTH_FILE });
 
   await browser.close();
