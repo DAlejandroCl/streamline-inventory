@@ -1,11 +1,15 @@
 /* ============================================================
    E2E — AUTHENTICATION FLOWS
-   
+
    Flujos de autenticación end-to-end:
    - Login correcto → redirect al dashboard
    - Login incorrecto → mensaje de error visible
    - Rutas protegidas sin sesión → redirect a login
    - Logout → redirect a login y sesión destruida
+
+   NOTA: los tests que verifican rutas sin sesión usan
+   `browser.newContext({ storageState: { cookies:[], origins:[] } })`
+   para anular el storageState global que inyecta la cookie de admin.
    ============================================================ */
 
 import { test, expect } from "@playwright/test";
@@ -29,7 +33,6 @@ test.describe("E2E — Authentication", () => {
     await loginAsAdmin(page);
     await page.goto("/app");
 
-    // El Navbar o Sidebar debe mostrar el nombre del usuario admin
     await expect(
       page.getByText(/admin/i).first()
     ).toBeVisible({ timeout: 10_000 });
@@ -44,21 +47,16 @@ test.describe("E2E — Authentication", () => {
     await page.getByLabel(/password/i).fill("wrong_password_12345");
     await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
 
-    // El mensaje de error debe aparecer
     await expect(
       page.getByText(/invalid|credentials|incorrect|wrong/i)
     ).toBeVisible({ timeout: 5_000 });
 
-    // No debe navegar al app
     await expect(page).toHaveURL(/\/login/);
   });
 
   test("login con email vacío muestra error de validación", async ({ page }) => {
     await page.goto("/login");
 
-    // El input tiene `required` — el browser bloquea submit con campo vacío.
-    // Usamos un email inexistente para que el action retorne "Invalid credentials",
-    // verificando que el sistema de validación del login funciona end-to-end.
     await page.getByLabel(/email/i).fill("noexiste@test.com");
     await page.getByLabel(/password/i).fill("wrongpassword");
     await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
@@ -68,22 +66,32 @@ test.describe("E2E — Authentication", () => {
     ).toBeVisible({ timeout: 5_000 });
   });
 
-  /* ---- Protección de rutas ------------------------------ */
+  /* ---- Protección de rutas (sin sesión) -----------------
+     Usan un context limpio para anular el storageState global.
+     -------------------------------------------------------- */
 
-  test("acceder a /app sin sesión redirige a /login", async ({ page }) => {
-    // Navegar sin estar autenticado
+  test("acceder a /app sin sesión redirige a /login", async ({ browser }) => {
+    const ctx  = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await ctx.newPage();
     await page.goto("/app");
     await expect(page).toHaveURL(/\/login/, { timeout: 5_000 });
+    await ctx.close();
   });
 
-  test("acceder a /app/products sin sesión redirige a /login", async ({ page }) => {
+  test("acceder a /app/products sin sesión redirige a /login", async ({ browser }) => {
+    const ctx  = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await ctx.newPage();
     await page.goto("/app/products");
     await expect(page).toHaveURL(/\/login/, { timeout: 5_000 });
+    await ctx.close();
   });
 
-  test("acceder a /app/products/new sin sesión redirige a /login", async ({ page }) => {
+  test("acceder a /app/products/new sin sesión redirige a /login", async ({ browser }) => {
+    const ctx  = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await ctx.newPage();
     await page.goto("/app/products/new");
     await expect(page).toHaveURL(/\/login/, { timeout: 5_000 });
+    await ctx.close();
   });
 
   /* ---- Persistencia de sesión -------------------------- */
@@ -91,14 +99,12 @@ test.describe("E2E — Authentication", () => {
   test("la sesión persiste al navegar entre páginas", async ({ page }) => {
     await loginAsAdmin(page);
 
-    // Navegar entre páginas
     await page.goto("/app/products");
     await expect(page).toHaveURL(/\/app\/products/);
 
     await page.goto("/app");
     await expect(page).toHaveURL(/\/app/);
 
-    // Seguir autenticado — no redirige a login
     await expect(page).not.toHaveURL(/\/login/);
   });
 
@@ -110,12 +116,9 @@ test.describe("E2E — Authentication", () => {
     await page.getByLabel(/email/i).fill("admin@streamline.app");
     await page.getByLabel(/password/i).fill("admin123");
 
-    // Click sin await completo — capturamos el estado loading
     const submitBtn = page.getByRole("button", { name: /sign in|log in|login|enter/i });
     await submitBtn.click();
 
-    // Durante la request el botón puede estar disabled o mostrar texto de carga
-    // (depende de la implementación — el test verifica que eventualmente navega)
     await expect(page).toHaveURL(/\/app/, { timeout: 10_000 });
   });
 
