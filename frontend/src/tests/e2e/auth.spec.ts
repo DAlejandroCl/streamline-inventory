@@ -48,7 +48,7 @@ test.describe("E2E — Authentication", () => {
     await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
 
     await expect(
-      page.getByText(/invalid|credentials|incorrect|wrong/i)
+      page.getByRole("alert").filter({ hasText: /invalid credentials/i })
     ).toBeVisible({ timeout: 5_000 });
 
     await expect(page).toHaveURL(/\/login/);
