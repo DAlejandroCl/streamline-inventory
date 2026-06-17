@@ -13,7 +13,7 @@ import { AppError } from "../types/AppError.js";
 import type { LoginDto, JwtPayload, AuthUser } from "../types/auth.dto.js";
 
 const JWT_EXPIRES_IN = "7d";
-const BCRYPT_ROUNDS  = 12;
+const BCRYPT_ROUNDS = 12;
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -29,7 +29,8 @@ export async function seedAdminUser(): Promise<void> {
   });
   if (existing) return;
 
-  const hashed = await bcrypt.hash("admin123", BCRYPT_ROUNDS);
+  const rounds = process.env.NODE_ENV === "test" ? 1 : BCRYPT_ROUNDS;
+  const hashed = await bcrypt.hash("admin123", rounds);
   await User.create({
     name: "Admin User",
     email: "admin@streamline.app",
@@ -41,7 +42,7 @@ export async function seedAdminUser(): Promise<void> {
 /* ---- LOGIN ----------------------------------------------- */
 
 export async function login(
-  dto: LoginDto
+  dto: LoginDto,
 ): Promise<{ token: string; user: AuthUser }> {
   const user = await User.findOne({ where: { email: dto.email } });
   if (!user) throw new AppError("Invalid credentials", 401);
