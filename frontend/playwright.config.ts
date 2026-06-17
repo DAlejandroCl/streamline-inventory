@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { AUTH_FILE } from "./src/tests/e2e/global-setup";
 
 const BASE_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 
@@ -13,6 +14,9 @@ export default defineConfig({
     ["list"],
   ],
 
+  // Autenticar una vez antes de todos los tests; el cookie se guarda en AUTH_FILE.
+  globalSetup: "./src/tests/e2e/global-setup",
+
   use: {
     baseURL:           BASE_URL,
     trace:             "on",
@@ -20,6 +24,8 @@ export default defineConfig({
     video:             "retain-on-failure",
     actionTimeout:     10_000,
     navigationTimeout: 15_000,
+    // Cargar el storageState pre-autenticado en cada browser context.
+    storageState:      AUTH_FILE,
   },
 
   projects: [

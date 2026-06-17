@@ -21,6 +21,29 @@ import colors             from "colors";
 
 validateEnv();
 
+/* ---- Global error handlers (evitan crash del proceso) ----
+   Express 5 captura errores de route handlers async, pero
+   errores en callbacks no-standard (multer internals, drivers
+   nativos, etc.) pueden escapar al event loop.
+   En E2E/CI el proceso background no se puede reiniciar fácil,
+   así que los capturamos y logueamos sin matar el servidor.
+   ----------------------------------------------------------- */
+process.on("unhandledRejection", (reason, promise) => {
+  console.error(
+    colors.red("[unhandledRejection] Process kept alive. Reason:"),
+    reason,
+    "Promise:",
+    promise
+  );
+});
+
+process.on("uncaughtException", (err) => {
+  console.error(
+    colors.red("[uncaughtException] Process kept alive. Error:"),
+    err
+  );
+});
+
 const startServer = async (): Promise<void> => {
   try {
     await connectDB();

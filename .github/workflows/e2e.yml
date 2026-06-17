@@ -1,24 +1,10 @@
-# ============================================================
-# E2E PIPELINE — Streamline
-# Runs Playwright tests after CI passes on merge to main.
-#
-# Requiere:
-#   - Secrets: JWT_SECRET, DATABASE_URL_TEST, VITE_API_URL
-#   - El backend se levanta en el runner antes de correr los tests
-#   - El frontend se levanta en preview mode (vite preview)
-#
-# Si el backend no está disponible (staging env), usar:
-#   E2E_BASE_URL: URL del frontend en staging
-#   BACKEND_URL: URL del backend en staging
-# ============================================================
-
 name: E2E
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:            # Trigger manual desde GitHub Actions UI
+  workflow_dispatch:
     inputs:
       environment:
         description: 'Target environment'
@@ -55,8 +41,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          # Monorepo: los package-lock.json están en backend/ y frontend/
-          # actions/setup-node necesita al menos uno para activar el cache
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
@@ -78,8 +62,9 @@ jobs:
       - name: Start backend server
         working-directory: backend
         run: |
-          npx tsx src/index.ts &
-          # Wait for backend to be ready
+          # Redirigir stdout+stderr a log file para diagnóstico de crashes.
+          npx tsx src/index.ts > /tmp/backend.log 2>&1 &
+          echo $! > /tmp/backend.pid
           for i in $(seq 1 30); do
             if curl -sf http://localhost:3000/api/categories > /dev/null 2>&1; then
               echo "Backend ready after ${i}s"
@@ -88,8 +73,7 @@ jobs:
             echo "Waiting for backend... (${i}s)"
             sleep 1
           done
-          # Verify it's actually up
-          curl -sf http://localhost:3000/api/categories || (echo "Backend failed to start" && exit 1)
+          curl -sf http://localhost:3000/api/categories || (echo "Backend failed to start"; cat /tmp/backend.log; exit 1)
 
       # ---- Frontend setup ---------------------------------
 
@@ -107,7 +91,6 @@ jobs:
         working-directory: frontend
         run: |
           npx vite preview --port 4173 &
-          # Wait for frontend to be ready
           for i in $(seq 1 20); do
             if curl -sf http://localhost:4173 > /dev/null 2>&1; then
               echo "Frontend ready after ${i}s"
@@ -124,23 +107,35 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
 
+      # Crear directorio para el storageState del global setup
+      - name: Create auth directory
+        working-directory: frontend
+        run: mkdir -p src/tests/e2e/.auth
+
       - name: Run smoke tests
         working-directory: frontend
         run: npx playwright test e2e/smoke.spec.ts --reporter=list
-        env:
-          FRONTEND_URL: http://localhost:4173
 
       - name: Run auth E2E tests
         working-directory: frontend
         run: npx playwright test e2e/auth.spec.ts --reporter=list
-        env:
-          FRONTEND_URL: http://localhost:4173
 
       - name: Run inventory E2E tests
         working-directory: frontend
         run: npx playwright test e2e/inventory.spec.ts --reporter=list
-        env:
-          FRONTEND_URL: http://localhost:4173
+
+      # ---- Diagnóstico ------------------------------------
+
+      - name: Show backend logs (always)
+        if: always()
+        run: |
+          echo "=== BACKEND LOGS ==="
+          cat /tmp/backend.log || echo "(no backend log found)"
+          echo "=== BACKEND PROCESS STATUS ==="
+          if [ -f /tmp/backend.pid ]; then
+            PID=$(cat /tmp/backend.pid)
+            kill -0 $PID 2>/dev/null && echo "Backend still alive (PID $PID)" || echo "Backend DEAD (PID $PID)"
+          fi
 
       # ---- Artifacts ------------------------------------------
 
@@ -151,6 +146,14 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 14
+
+      - name: Upload backend log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-log
+          path: /tmp/backend.log
+          retention-days: 7
 
       - name: Upload Playwright traces (on failure)
         uses: actions/upload-artifact@v4

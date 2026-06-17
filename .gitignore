@@ -86,3 +86,4 @@ docker-compose.override.yml
 # =========================
 *.pem
 *.key
+frontend/src/tests/e2e/.auth/

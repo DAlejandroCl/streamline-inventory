@@ -7,10 +7,13 @@
 
    La DB en CI es SQLite in-memory — persiste durante toda la
    suite pero se destruye al terminar el proceso del backend.
+
+   Auth: la cookie de admin se carga desde el storageState global
+   (generado en global-setup.ts). El beforeEach solo navega a /app
+   para verificar que la sesión está activa — no hace UI login.
    ============================================================ */
 
 import { type Page, test, expect } from "@playwright/test";
-import { loginAsAdmin } from "./helpers/auth";
 
 /* Genera un nombre único por test — evita colisiones */
 function uniqueName(prefix: string): string {
@@ -34,8 +37,14 @@ async function createProduct(
 }
 
 test.describe("E2E — Inventory CRUD Flow", () => {
+  // El storageState del playwright.config.ts ya tiene la cookie de admin.
+  // Solo verificamos que la sesión está activa navegando a /app.
+  // Si authLoader detecta token inválido, redirige a /login → el test falla rápido
+  // sin bloquear 10s esperando un UI login.
   test.beforeEach(async ({ page }) => {
-    await loginAsAdmin(page);
+    await page.goto("/app");
+    // Si la cookie no es válida, authLoader redirige a /login.
+    await expect(page).toHaveURL(/\/app/, { timeout: 8_000 });
   });
 
   /* ---- Visualizar inventario ---------------------------- */
