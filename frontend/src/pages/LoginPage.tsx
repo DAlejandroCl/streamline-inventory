@@ -88,6 +88,7 @@ export default function LoginPage() {
           {/* Error banner */}
           {actionData?.error && (
             <div
+              role="alert"
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
               style={{
                 background: "var(--color-error-container)",
