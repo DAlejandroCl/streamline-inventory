@@ -64,7 +64,9 @@ test.describe("E2E — Inventory CRUD Flow", () => {
   }) => {
     await page.goto("/app/products");
     await page.waitForLoadState("networkidle");
-    await page.getByRole("link", { name: /add product/i }).click();
+    // El Link de React Router renderiza <a href="/app/products/new"><button>Add Product</button></a>
+    // getByRole("link") no matchea el texto del hijo button — usar locator por href.
+    await page.locator('a[href="/app/products/new"]').first().click();
     await expect(page).toHaveURL(/\/app\/products\/new/);
     await expect(page.getByPlaceholder(/wireless keyboard/i)).toBeVisible();
   });
