@@ -40,21 +40,31 @@ test.describe("E2E — Authentication", () => {
 
   /* ---- Login incorrecto --------------------------------- */
 
-  test("login con password incorrecto muestra mensaje de error", async ({ page }) => {
-    await page.goto("/login");
+  test("login con password incorrecto muestra mensaje de error", async ({ browser }) => {
+    // Context limpio: anula el storageState global para simular usuario no autenticado.
+    const ctx  = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await ctx.newPage();
 
+    await page.goto("/login");
     await page.getByLabel(/email/i).fill("admin@streamline.app");
     await page.getByLabel(/password/i).fill("wrong_password_12345");
     await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
 
+    // El Toast tiene role="alert" — acotar evita strict mode violation con
+    // el texto estático "Demo credentials are pre-filled above."
     await expect(
       page.getByRole("alert").filter({ hasText: /invalid credentials/i })
     ).toBeVisible({ timeout: 5_000 });
 
     await expect(page).toHaveURL(/\/login/);
+    await ctx.close();
   });
 
-  test("login con email vacío muestra error de validación", async ({ page }) => {
+  test("login con email vacío muestra error de validación", async ({ browser }) => {
+    // Context limpio: anula el storageState global para simular usuario no autenticado.
+    const ctx  = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await ctx.newPage();
+
     await page.goto("/login");
 
     await page.getByLabel(/email/i).fill("noexiste@test.com");
@@ -62,8 +72,9 @@ test.describe("E2E — Authentication", () => {
     await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
 
     await expect(
-      page.getByText(/invalid credentials/i)
+      page.getByRole("alert").filter({ hasText: /invalid credentials/i })
     ).toBeVisible({ timeout: 5_000 });
+    await ctx.close();
   });
 
   /* ---- Protección de rutas (sin sesión) -----------------
