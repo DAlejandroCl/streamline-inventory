@@ -21,6 +21,7 @@
   "include": [
     "vite.config.ts",
     "playwright.config.ts",
-    "src/tests/e2e/**/*.ts"
+    "src/tests/e2e/global-setup.ts",
+    "src/tests/e2e/helpers/auth.ts"
   ]
 }
