@@ -17,13 +17,17 @@ const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    ?? "admin@streamline.app";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "admin123";
 
 export async function loginAsAdmin(page: Page): Promise<void> {
-  await page.goto("/login");
+  // Si ya hay sesión activa (storageState global), ir directo a /app
+  await page.goto("/app");
+  if (page.url().includes("/app") && !page.url().includes("/login")) {
+    return; // sesión válida del storageState
+  }
 
+  // Sin sesión → hacer login UI
+  await page.goto("/login");
   await page.getByLabel(/email/i).fill(ADMIN_EMAIL);
   await page.getByLabel(/password/i).fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: /sign in|login|log in|enter/i }).click();
-
-  // Esperar a que el redirect a /app ocurra
   await page.waitForURL("**/app**", { timeout: 10_000 });
 }
 
