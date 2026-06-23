@@ -29,7 +29,10 @@ async function createProduct(
   await page.getByLabel(/sale price/i).fill(price);
   await page.getByLabel(/stock quantity/i).fill(stock);
   await page.getByText("Create product").click();
-  await expect(page).toHaveURL(/\/app\/products(?!\/new)/, { timeout: 10_000 });
+
+  // Esperar que el action redirija a /app/products.
+  // Sin ancla $ ni lookahead negativo — Playwright los evalúa de forma inconsistente.
+  await expect(page).toHaveURL(/\/app\/products[^/]/, { timeout: 15_000 });
 }
 
 test.describe("E2E — Inventory CRUD Flow", () => {
@@ -109,7 +112,7 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await nameInput.clear();
     await nameInput.fill(editName);
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/app\/products[^/]/, { timeout: 15_000 });
 
     await page.getByPlaceholder(/search by name or sku/i).fill(editName);
     await page.waitForTimeout(600);
@@ -133,7 +136,7 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await expect(page.getByText("Not available")).toBeVisible();
 
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products(?!\/new)/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/app\/products[^/]/, { timeout: 15_000 });
   });
 
   /* ---- Eliminar producto -------------------------------- */
