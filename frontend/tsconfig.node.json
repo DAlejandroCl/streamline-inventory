@@ -21,9 +21,6 @@
   "include": [
     "vite.config.ts",
     "playwright.config.ts",
-    "src/tests/e2e/global-setup.ts"
-    // vitest.config.ts se excluye aquí intencionalmente:
-    // usa tipos de vitest que no están disponibles en el contexto de producción.
-    // Vitest lo procesa con su propio resolver cuando corre los tests.
+    "src/tests/e2e/**/*.ts"
   ]
 }
