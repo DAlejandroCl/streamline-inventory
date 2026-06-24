@@ -67,8 +67,10 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 /* ---- CREATE ---------------------------------------------- */
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
+  console.log("[createProduct] Content-Type:", req.headers["content-type"]);
+  console.log("[createProduct] body:", JSON.stringify(req.body));
   const dto: CreateProductDTO = parseMultipartBody(req.body as Record<string, unknown>);
-  if (req.file) dto.image_url = `/public/uploads/products/${req.file.filename}`;
+
   const product = await ProductService.createProduct(dto);
   res.status(201).json({ data: product });
 };
