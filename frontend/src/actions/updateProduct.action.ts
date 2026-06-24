@@ -2,8 +2,6 @@
    UPDATE PRODUCT ACTION
    Fix: mismo patrón que createProductAction — JSON cuando no
    hay imagen para evitar el cuelgue de busboy/multer en CI.
-   Notificación detallada incluye: nombre del producto,
-   qué campos cambiaron visiblemente (disponibilidad, stock).
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
@@ -66,7 +64,7 @@ export async function updateProductAction({
     if (hasImage) {
       // Con imagen → multipart/form-data; multer la procesa con sharp
       const fd = new FormData();
-      fd.append("name",  data.name!);
+      fd.append("name", data.name!);
       if (data.sku)                 fd.append("sku",         data.sku);
       if (data.description)         fd.append("description", data.description);
       if (data.category_id != null) fd.append("category_id", String(data.category_id));
@@ -77,8 +75,7 @@ export async function updateProductAction({
       fd.append("image",        imageFile);
       body = fd;
     } else {
-      // Sin imagen → JSON: express.json() parsea antes de que multer corra;
-      // multer detecta Content-Type != multipart y llama next() sin tocar el body.
+      // Sin imagen → JSON: evita el cuelgue de busboy/multer en CI.
       body    = JSON.stringify({
         name:         data.name,
         sku:          data.sku,
@@ -107,8 +104,8 @@ export async function updateProductAction({
       const msg = body.message ?? "Error updating product.";
 
       dispatchNotification({
-        type:        "error",
-        title:       "Update failed",
+        type:  "error",
+        title: "Update failed",
         description: `Could not update "${productName}". ${msg}`,
       });
 
@@ -117,8 +114,8 @@ export async function updateProductAction({
 
     const statusLabel = availability ? "Available" : "Out of stock";
     dispatchNotification({
-      type:        "success",
-      title:       "Product updated",
+      type:  "success",
+      title: "Product updated",
       description: `"${productName}" — Status: ${statusLabel} · Stock: ${stock} units.`,
     });
 
@@ -126,8 +123,8 @@ export async function updateProductAction({
   } catch {
     const msg = "Network error. Please try again.";
     dispatchNotification({
-      type:        "error",
-      title:       "Connection error",
+      type:  "error",
+      title: "Connection error",
       description: msg,
     });
     return { errors: { general: [msg] }, values: data };
