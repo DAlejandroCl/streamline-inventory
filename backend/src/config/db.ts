@@ -22,20 +22,17 @@ const isTest = process.env.NODE_ENV === "test";
 export const db = isTest
   ? new Sequelize({
       dialect: "sqlite",
-      storage: ":memory:",
+      storage: "/tmp/streamline-test.db",   // archivo compartido entre conexiones del pool
       logging: false,
       models: [Category, Product, User],
       dialectOptions: {
-        // Evita SQLITE_BUSY cuando hay requests concurrentes en E2E.
-        // Sin busyTimeout, SQLite retorna inmediatamente con SQLITE_BUSY
-        // si otro proceso tiene el lock, dejando a Sequelize en estado indefinido.
-        busyTimeout: 5000,
+        busyTimeout: 10000,
       },
       pool: {
-        max: 1,      // SQLite solo soporta 1 conexión concurrente
-        min: 0,
-        acquire: 10000,
-        idle: 5000,
+        max: 5,
+        min: 1,
+        acquire: 30000,
+        idle: 10000,
       },
     })
   : new Sequelize(process.env.DATABASE_URL as string, {
