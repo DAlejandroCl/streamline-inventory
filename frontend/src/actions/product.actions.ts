@@ -1,9 +1,10 @@
 /* ============================================================
    CREATE PRODUCT ACTION
-   Fix: evita que multer/busboy se cuelgue en CI al recibir
-   un request multipart con solo campos de texto desde Playwright.
-   Cuando no hay imagen se envía JSON (express.json() lo parsea,
-   multer lo ignora). Cuando hay imagen se usa FormData.
+   Fix: cuando no hay imagen se envía JSON en lugar de
+   multipart/form-data para evitar que busboy/multer se cuelgue
+   en CI con requests multipart de solo texto.
+   express.json() parsea el body antes de que multer corra;
+   multer ignora Content-Type != multipart y llama next().
    ============================================================ */
 
 import { redirect, type ActionFunctionArgs } from "react-router-dom";
@@ -58,23 +59,21 @@ export async function createProductAction({
     let headers: Record<string, string> | undefined;
 
     if (hasImage) {
-      // Con imagen → multipart/form-data (browser pone boundary automáticamente)
+      // Con imagen → multipart/form-data; multer la procesa con sharp
       const fd = new FormData();
-      fd.append("name",  data.name);
+      fd.append("name", data.name);
       if (data.sku)                 fd.append("sku",         data.sku);
       if (data.description)         fd.append("description", data.description);
       if (data.category_id != null) fd.append("category_id", String(data.category_id));
       fd.append("price",        String(data.price));
-      if (data.cost != null)        fd.append("cost",         String(data.cost));
+      if (data.cost != null)        fd.append("cost",        String(data.cost));
       fd.append("stock",        String(data.stock));
       fd.append("availability", data.availability ? "on" : "off");
       fd.append("image",        imageFile);
       body = fd;
     } else {
-      // Sin imagen → JSON: evita el cuelgue de busboy/multer en CI con
-      // requests multipart de solo texto (Playwright + multer streaming issue).
-      // express.json() parsea el body antes de que multer lo vea;
-      // multer detecta Content-Type != multipart y llama next() sin tocar el body.
+      // Sin imagen → JSON: evita que busboy/multer se cuelgue en CI con
+      // requests multipart de solo texto (Playwright + multer streaming bug).
       body    = JSON.stringify({
         name:         data.name,
         sku:          data.sku,
@@ -100,7 +99,7 @@ export async function createProductAction({
       const msg = body.message ?? "Error creating product.";
 
       dispatchNotification({
-        type: "error",
+        type:  "error",
         title: "Product creation failed",
         description: msg,
       });
@@ -109,7 +108,7 @@ export async function createProductAction({
     }
 
     dispatchNotification({
-      type: "success",
+      type:  "success",
       title: "Product created",
       description: `"${productName}" was added to the inventory ledger.`,
     });
@@ -118,7 +117,7 @@ export async function createProductAction({
   } catch {
     const msg = "Network error. Please try again.";
     dispatchNotification({
-      type: "error",
+      type:  "error",
       title: "Connection error",
       description: msg,
     });
