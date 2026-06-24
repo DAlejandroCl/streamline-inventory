@@ -15,6 +15,11 @@ async function createProduct(
   price = "99.99",
   stock = "10",
 ) {
+  // Navegar primero a /app para resetear el estado del router de React Router
+  // antes de ir al form. Sin esto, React Router puede quedar en estado
+  // "revalidating" del test anterior bloqueando nuevos Form submissions.
+  await page.goto("/app");
+  await page.waitForLoadState("networkidle");
   await page.goto("/app/products/new");
 
   // Esperar explícitamente a que el form esté listo — más fiable que networkidle
