@@ -25,6 +25,18 @@ export const db = isTest
       storage: ":memory:",
       logging: false,
       models: [Category, Product, User],
+      dialectOptions: {
+        // Evita SQLITE_BUSY cuando hay requests concurrentes en E2E.
+        // Sin busyTimeout, SQLite retorna inmediatamente con SQLITE_BUSY
+        // si otro proceso tiene el lock, dejando a Sequelize en estado indefinido.
+        busyTimeout: 5000,
+      },
+      pool: {
+        max: 1,      // SQLite solo soporta 1 conexión concurrente
+        min: 0,
+        acquire: 10000,
+        idle: 5000,
+      },
     })
   : new Sequelize(process.env.DATABASE_URL as string, {
       dialect: "postgres",
