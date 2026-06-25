@@ -1,9 +1,5 @@
 # ============================================================
 # COVERAGE REPORT — Streamline
-# Genera reporte de cobertura y lo postea como comentario en PR.
-#
-# Se ejecuta sólo en pull_request para dar feedback al autor
-# antes del merge.
 # ============================================================
 
 name: Coverage Report
@@ -32,8 +28,6 @@ jobs:
           node-version: 22
           cache: npm
 
-      # ---- Backend coverage --------------------------------
-
       - name: Install backend dependencies
         working-directory: backend
         run: npm ci --ignore-scripts
@@ -50,7 +44,7 @@ jobs:
         working-directory: backend
         env:
           NODE_ENV: test
-          DATABASE_URL: sqlite::memory:
+          DATABASE_URL: "sqlite::memory:"
           JWT_SECRET: ci-coverage-secret-key-min-32-chars
         run: |
           npx c8 \
@@ -62,19 +56,15 @@ jobs:
               src/tests/unit/**/*.test.ts \
           2>/dev/null || true
 
-      # ---- Frontend coverage --------------------------------
-
       - name: Install frontend dependencies
         working-directory: frontend
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Frontend coverage
         working-directory: frontend
         run: npm run coverage 2>/dev/null || true
         env:
           VITE_API_URL: http://localhost:3000
-
-      # ---- Build coverage comment -------------------------
 
       - name: Build coverage summary
         id: coverage
@@ -120,7 +110,6 @@ jobs:
               issue_number: context.issue.number,
             });
 
-            // Actualizar comentario existente en lugar de crear uno nuevo
             const existing = comments.find(c =>
               c.user.login === 'github-actions[bot]' &&
               c.body.includes('Coverage Report')
