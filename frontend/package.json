@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "overrides": {
-  "vitest": {
-    "vite": "$vite"
-  }
-},
+    "vitest": {
+      "vite": "$vite"
+    }
+  },
   "scripts": {
     "postinstall": "rm -rf node_modules/vitest/node_modules/vite || true",
     "dev": "vite",
@@ -42,6 +42,7 @@
     "@axe-core/playwright": "^4.10.0",
     "@eslint/js": "^9.39.4",
     "@playwright/test": "^1.48.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",
