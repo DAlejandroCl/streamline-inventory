@@ -1,15 +1,5 @@
 # ============================================================
 # CI PIPELINE — Streamline
-# Runs on every push to main and every pull request.
-#
-# Jobs:
-#   backend-ci  → lint (tsc), test (node --test), coverage
-#   frontend-ci → lint (eslint), type-check (tsc), test (vitest), build
-#   quality-gate → fails the PR if coverage drops below threshold
-#
-# No PostgreSQL needed: backend tests use SQLite in-memory.
-# No browsers needed: frontend tests run in jsdom via vitest.
-# E2E (Playwright) runs separately in e2e.yml on merge to main.
 # ============================================================
 
 name: CI
@@ -27,10 +17,6 @@ on:
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
-
-# ============================================================
-# BACKEND
-# ============================================================
 
 jobs:
   backend-ci:
@@ -54,7 +40,6 @@ jobs:
       - name: Install dependencies
         run: npm ci --ignore-scripts
 
-      # Compile native sqlite3 with local node headers
       - name: Build sqlite3 native module
         run: |
           node_modules/.bin/node-gyp rebuild \
@@ -64,22 +49,19 @@ jobs:
           npm rebuild sqlite3 --ignore-scripts=false 2>/dev/null || true
 
       - name: Type check
-        # swagger-jsdoc y un DTO legacy tienen errores pre-existentes documentados.
-        # El CI los reporta pero no bloquea (--noEmitOnError false es el comportamiento
-        # por defecto de --noEmit). Se resuelven en el sprint de deuda técnica.
         run: npx tsc --noEmit || true
 
       - name: Run tests
         env:
           NODE_ENV: test
-          DATABASE_URL: sqlite::memory:
+          DATABASE_URL: "sqlite::memory:"
           JWT_SECRET: ${{ secrets.JWT_SECRET_TEST || 'ci-test-secret-key-min-32-chars-long' }}
         run: npm test
 
       - name: Generate coverage report
         env:
           NODE_ENV: test
-          DATABASE_URL: sqlite::memory:
+          DATABASE_URL: "sqlite::memory:"
           JWT_SECRET: ${{ secrets.JWT_SECRET_TEST || 'ci-test-secret-key-min-32-chars-long' }}
         run: |
           npx c8 \
@@ -108,10 +90,6 @@ jobs:
           path: backend/coverage/
           retention-days: 7
 
-  # ============================================================
-  # FRONTEND
-  # ============================================================
-
   frontend-ci:
     name: Frontend — Lint, Type-check, Test & Build
     runs-on: ubuntu-latest
@@ -131,7 +109,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
       - name: Lint
         run: npm run lint:ci
@@ -189,10 +167,6 @@ jobs:
           name: frontend-build
           path: frontend/dist/
           retention-days: 1
-
-  # ============================================================
-  # QUALITY GATE — Bloquea el PR si algo falla
-  # ============================================================
 
   quality-gate:
     name: Quality Gate
