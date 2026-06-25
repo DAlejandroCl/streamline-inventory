@@ -1,8 +1,5 @@
 /* ============================================================
    PLAYWRIGHT GLOBAL SETUP — Auth via browser UI
-   Autentica una vez navegando por el UI (no APIRequestContext),
-   para que la cookie httpOnly quede correctamente en el
-   cookiejar del browser context y se serialice en storageState.
    ============================================================ */
 import { chromium, type FullConfig } from "@playwright/test";
 import path from "node:path";
@@ -18,25 +15,37 @@ export const AUTH_FILE = path.join(
 );
 
 export default async function globalSetup(_config: FullConfig): Promise<void> {
-  // Asegurar que el directorio .auth exista
   fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true });
 
   const browser = await chromium.launch();
   const context = await browser.newContext({ baseURL: FRONTEND_URL });
   const page    = await context.newPage();
 
+  // Loggear response del login para diagnosticar Set-Cookie
+  page.on("response", async (res) => {
+    if (res.url().includes("/api/auth/login")) {
+      console.log("[global-setup] Login response status:", res.status());
+      const headers = res.headers();
+      console.log("[global-setup] Set-Cookie:", headers["set-cookie"] ?? "NONE");
+    }
+  });
+
   await page.goto("/login");
   await page.getByLabel(/email/i).fill(ADMIN_EMAIL);
   await page.getByLabel(/password/i).fill(ADMIN_PASSWORD);
   await page.getByRole("button", { name: /sign in|log in|login|enter/i }).click();
-
-  // Esperar redirect post-login — React Router puede ir a /app o /app/products
   await page.waitForURL("**/app**", { timeout: 15_000 });
 
-  // Cookie httpOnly ya está en el cookiejar → serializar correctamente
+  // Verificar que la cookie existe antes de serializar
+  const cookies = await context.cookies();
+  const tokenCookie = cookies.find(c => c.name === "token");
+  console.log("[global-setup] Token cookie:", tokenCookie
+    ? `domain=${tokenCookie.domain}, sameSite=${tokenCookie.sameSite}, httpOnly=${tokenCookie.httpOnly}`
+    : "NOT FOUND ❌"
+  );
+
   await context.storageState({ path: AUTH_FILE });
+  console.log("[global-setup] StorageState saved. Cookies count:", cookies.length);
 
   await browser.close();
-
-  console.log("[global-setup] Auth state saved to", AUTH_FILE);
 }
