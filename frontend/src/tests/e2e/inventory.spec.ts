@@ -15,34 +15,29 @@ async function createProduct(
   price = "99.99",
   stock = "10",
 ) {
-  // Navegar primero a /app para resetear el estado del router de React Router
-  // antes de ir al form. Sin esto, React Router puede quedar en estado
-  // "revalidating" del test anterior bloqueando nuevos Form submissions.
-  await page.goto("/app");
-  await page.waitForLoadState("networkidle");
   await page.goto("/app/products/new");
 
-  // Esperar explícitamente a que el form esté listo — más fiable que networkidle
-  // que puede resolver antes de que React Router monte el componente lazy.
+  // Esperar que el form esté montado antes de interactuar
   const nameInput = page.getByPlaceholder(/wireless keyboard/i);
   await nameInput.waitFor({ state: "visible", timeout: 10_000 });
 
-  // Guard: si authLoader redirigió a /login, re-autenticar y reintentar
+  // Guard: si authLoader redirigió a /login, re-autenticar
   if (page.url().includes("/login")) {
     await loginAsAdmin(page);
     await page.goto("/app/products/new");
-    await page.getByPlaceholder(/wireless keyboard/i).waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByPlaceholder(/wireless keyboard/i)
+      .waitFor({ state: "visible", timeout: 10_000 });
   }
 
+  await page.waitForLoadState("networkidle");
   await nameInput.fill(name);
   await page.getByLabel(/sale price/i).fill(price);
   await page.getByLabel(/stock quantity/i).fill(stock);
-
-  // Esperar que el form esté completamente idle antes de submit
-  await page.waitForLoadState("networkidle");
-
   await page.getByText("Create product").click();
-  await expect(page).toHaveURL(/\/app\/products$/, { timeout: 15_000 });
+
+  // Glob pattern: evita problemas con trailing slash o query string
+  // que hacen fallar los regex con ancla $.
+  await page.waitForURL("**/app/products", { timeout: 15_000 });
 }
 
 test.describe("E2E — Inventory CRUD Flow", () => {
@@ -85,12 +80,14 @@ test.describe("E2E — Inventory CRUD Flow", () => {
 
   test("validación Zod bloquea submit con name vacío", async ({ page }) => {
     await page.goto("/app/products/new");
-    await page.getByPlaceholder(/wireless keyboard/i).waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByPlaceholder(/wireless keyboard/i)
+      .waitFor({ state: "visible", timeout: 10_000 });
 
     if (page.url().includes("/login")) {
       await loginAsAdmin(page);
       await page.goto("/app/products/new");
-      await page.getByPlaceholder(/wireless keyboard/i).waitFor({ state: "visible", timeout: 10_000 });
+      await page.getByPlaceholder(/wireless keyboard/i)
+        .waitFor({ state: "visible", timeout: 10_000 });
     }
 
     await page.waitForLoadState("networkidle");
@@ -98,7 +95,8 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await page.getByLabel(/sale price/i).fill("50");
     await page.getByLabel(/stock quantity/i).fill("5");
     await page.getByText("Create product").click();
-    await expect(page.getByText(/product name is required/i)).toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText(/product name is required/i))
+      .toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveURL(/\/app\/products\/new/);
   });
 
@@ -124,7 +122,7 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await nameInput.clear();
     await nameInput.fill(editName);
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products$/, { timeout: 15_000 });
+    await page.waitForURL("**/app/products", { timeout: 15_000 });
 
     await page.getByPlaceholder(/search by name or sku/i).fill(editName);
     await page.waitForTimeout(600);
@@ -144,13 +142,14 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await page.getByRole("link", { name: /edit/i }).first().click();
     await expect(page).toHaveURL(/\/edit/);
 
-    await page.getByPlaceholder(/wireless keyboard/i).waitFor({ state: "visible", timeout: 10_000 });
+    await page.getByPlaceholder(/wireless keyboard/i)
+      .waitFor({ state: "visible", timeout: 10_000 });
     await page.waitForLoadState("networkidle");
     await page.getByRole("switch").click();
     await expect(page.getByText("Not available")).toBeVisible();
 
     await page.getByText("Save changes").click();
-    await expect(page).toHaveURL(/\/app\/products$/, { timeout: 15_000 });
+    await page.waitForURL("**/app/products", { timeout: 15_000 });
   });
 
   /* ---- Eliminar producto -------------------------------- */
