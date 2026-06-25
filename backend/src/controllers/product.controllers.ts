@@ -67,8 +67,6 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 /* ---- CREATE ---------------------------------------------- */
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
-  console.log("[createProduct] Content-Type:", req.headers["content-type"]);
-  console.log("[createProduct] body:", JSON.stringify(req.body));
   const dto: CreateProductDTO = parseMultipartBody(req.body as Record<string, unknown>);
 
   const product = await ProductService.createProduct(dto);
