@@ -23,5 +23,10 @@ export const cleanDatabase = async (): Promise<void> => {
 };
 
 export const teardownDatabase = async (): Promise<void> => {
-  await db.close();
+  // No cerrar la conexión en SQLite :memory: — al cerrar y reabrir
+  // se crea una nueva DB vacía perdiendo las tablas sincronizadas.
+  // El proceso Node termina igual al finalizar los tests.
+  if (process.env.NODE_ENV !== "test") {
+    await db.close();
+  }
 };
