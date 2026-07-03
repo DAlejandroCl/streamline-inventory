@@ -18,7 +18,11 @@ import axe from "axe-core";
    ----------------------------------------------------------- */
 expect.extend({
   async toHaveNoViolations(element: Element) {
-    const { violations } = await axe.run(element);
+    // Deshabilitar color-contrast: usa HTMLCanvasElement.getContext
+    // que jsdom no implementa, causando "Not implemented" en CI.
+    const { violations } = await axe.run(element, {
+      rules: { "color-contrast": { enabled: false } },
+    });
     if (violations.length === 0) {
       return { pass: true, message: () => "No axe violations found" };
     }
@@ -34,6 +38,7 @@ expect.extend({
 });
 
 declare module "vitest" {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Assertion<T = any, R = any> { // eslint-disable-line @typescript-eslint/no-explicit-any
     toHaveNoViolations(): R;
   }
