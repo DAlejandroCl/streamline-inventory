@@ -3,7 +3,7 @@
     "compilerOptions": {
       "noUnusedLocals": false,
       "noUnusedParameters": false,
-      "types": ["vite/client", "vitest/globals", "vitest-axe"]
+      "types": ["vite/client", "vitest/globals"]
     },
     "include": ["src"],
     "exclude": []
