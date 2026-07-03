@@ -29,14 +29,17 @@ async function createProduct(
       .waitFor({ state: "visible", timeout: 10_000 });
   }
 
+  // Esperar que los loaders hayan completado sus fetches antes de interactuar.
+  // networkidle puede resolver mientras React Router aún procesa internamente,
+  // causando que el Form submission sea cancelado por el router en estado loading.
   await page.waitForLoadState("networkidle");
+  // Pausa mínima para que React Router transite a estado idle tras networkidle.
+  await page.waitForTimeout(300);
+
   await nameInput.fill(name);
   await page.getByLabel(/sale price/i).fill(price);
   await page.getByLabel(/stock quantity/i).fill(stock);
   await page.getByText("Create product").click();
-
-  // Glob pattern: evita problemas con trailing slash o query string
-  // que hacen fallar los regex con ancla $.
   await page.waitForURL("**/app/products", { timeout: 15_000 });
 }
 
