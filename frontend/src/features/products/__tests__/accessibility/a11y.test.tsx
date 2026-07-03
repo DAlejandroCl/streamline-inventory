@@ -29,8 +29,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { screen, waitFor } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
-import { axe } from "vitest-axe";
-import type { AxeResults } from "axe-core";
+import { run as axeRun, type AxeResults } from "axe-core";
 import { ThemeProvider } from "../../../../context/ThemeContext";
 import { SettingsProvider } from "../../../../context/SettingsContext";
 import { NotificationsProvider } from "../../../../context/NotificationsContext";
@@ -70,7 +69,7 @@ function renderInRouter(ui: React.ReactElement, route = "/app/products") {
 
 /* ---- axe helper ------------------------------------------ */
 async function runAxe(container: HTMLElement): Promise<AxeResults> {
-  return axe(container, AXE_CONFIG);
+  return axeRun(container, AXE_CONFIG);
 }
 
 /* ============================================================ */
