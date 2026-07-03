@@ -7,10 +7,37 @@
    ============================================================ */
 
 import "@testing-library/jest-dom";
-import "vitest-axe/extend-expect";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { server } from "../msw/server";
+import axe from "axe-core";
+
+/* ---- Accessibility matcher --------------------------------
+   vitest-axe@0.1.0 no es compatible con vitest v3 (Invalid Chai
+   property). Implementación propia con axe-core directamente.
+   ----------------------------------------------------------- */
+expect.extend({
+  async toHaveNoViolations(element: Element) {
+    const { violations } = await axe.run(element);
+    if (violations.length === 0) {
+      return { pass: true, message: () => "No axe violations found" };
+    }
+    const details = violations
+      .map(v => `[${v.impact}] ${v.id}: ${v.description}\n  ` +
+        v.nodes.map(n => n.html).join("\n  "))
+      .join("\n\n");
+    return {
+      pass:    false,
+      message: () => `Expected no axe violations but found ${violations.length}:\n\n${details}`,
+    };
+  },
+});
+
+declare module "vitest" {
+  interface Assertion<T = any, R = any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+    toHaveNoViolations(): R;
+  }
+}
 
 /* ---- Mocks de browser APIs ausentes en jsdom -------------- */
 
