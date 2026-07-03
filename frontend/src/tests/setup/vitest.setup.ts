@@ -17,10 +17,17 @@ import axe from "axe-core";
    property). Implementación propia con axe-core directamente.
    ----------------------------------------------------------- */
 expect.extend({
-  async toHaveNoViolations(element: Element) {
+  async toHaveNoViolations(element: Element | Document | HTMLElement) {
+    // axe.run requiere HTMLElement, Document o un selector string válido.
+    // Si el argumento no es un nodo DOM válido, usar document.body como fallback.
+    const context =
+      element instanceof Element || element instanceof Document
+        ? element
+        : document.body;
+
     // Deshabilitar color-contrast: usa HTMLCanvasElement.getContext
     // que jsdom no implementa, causando "Not implemented" en CI.
-    const { violations } = await axe.run(element, {
+    const { violations } = await axe.run(context, {
       rules: { "color-contrast": { enabled: false } },
     });
     if (violations.length === 0) {
