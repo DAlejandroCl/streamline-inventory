@@ -1,10 +1,14 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config'
-import react from '@vitejs/plugin-react'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 // Config exclusiva de Vitest — separada de vite.config.ts para que
 // `tsc -b && vite build` no falle al no reconocer el campo `test`
+
+const require = createRequire(import.meta.url)
+const react = require('@vitejs/plugin-react').default
+
 export default defineConfig({
   plugins: [react()],
 
