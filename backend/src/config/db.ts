@@ -22,17 +22,17 @@ const isTest = process.env.NODE_ENV === "test";
 export const db = isTest
   ? new Sequelize({
       dialect: "sqlite",
-      storage: "/tmp/streamline-test.db",   // archivo compartido entre conexiones del pool
+      storage: ":memory:",
       logging: false,
       models: [Category, Product, User],
       dialectOptions: {
-        busyTimeout: 10000,
+        busyTimeout: 5000,
       },
       pool: {
-        max: 5,
-        min: 1,
+        max: 1,   // SQLite :memory: requiere exactamente 1 conexión
+        min: 1,   // mantener la conexión abierta para no perder la DB
         acquire: 30000,
-        idle: 10000,
+        idle: Infinity, // nunca cerrar la conexión idle
       },
     })
   : new Sequelize(process.env.DATABASE_URL as string, {
