@@ -68,8 +68,19 @@ function renderInRouter(ui: React.ReactElement, route = "/app/products") {
 }
 
 /* ---- axe helper ------------------------------------------ */
+// axe.run es un singleton — serializar llamadas para evitar
+// "Axe is already running" cuando vitest corre tests en paralelo.
+let axeRunning = false;
 async function runAxe(container: HTMLElement): Promise<AxeResults> {
-  return axeRun(container, AXE_CONFIG);
+  while (axeRunning) {
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  axeRunning = true;
+  try {
+    return await axeRun(container, AXE_CONFIG);
+  } finally {
+    axeRunning = false;
+  }
 }
 
 /* ============================================================ */
