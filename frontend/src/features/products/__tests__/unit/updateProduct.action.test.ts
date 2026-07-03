@@ -172,7 +172,7 @@ describe("updateProductAction — Unit Tests", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/products/5"),
-      expect.objectContaining({ method: "PATCH" })
+      expect.objectContaining({ method: "PUT" })
     );
   });
 
