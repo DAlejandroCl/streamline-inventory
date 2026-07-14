@@ -68,24 +68,13 @@ function renderInRouter(ui: React.ReactElement, route = "/app/products") {
 }
 
 /* ---- axe helper ------------------------------------------ */
-// axe.run es un singleton — serializar llamadas para evitar
-// "Axe is already running" cuando vitest corre tests en paralelo.
-let axeRunning = false;
 async function runAxe(container: HTMLElement): Promise<AxeResults> {
-  while (axeRunning) {
-    await new Promise((r) => setTimeout(r, 50));
-  }
-  axeRunning = true;
-  try {
-    return await axeRun(container, AXE_CONFIG);
-  } finally {
-    axeRunning = false;
-  }
+  return axeRun(container, AXE_CONFIG);
 }
 
 /* ============================================================ */
 
-describe("Accessibility — ProductsTable", () => {
+describe.sequential("Accessibility — ProductsTable", () => {
 
   it("no debe tener violaciones axe con una lista de productos", async () => {
     const products = makeProducts(3);
@@ -167,7 +156,7 @@ describe("Accessibility — ProductsTable", () => {
 
 /* ============================================================ */
 
-describe("Accessibility — ProductForm", () => {
+describe.sequential("Accessibility — ProductForm", () => {
 
   it("no debe tener violaciones axe en modo creación", async () => {
     const { container } = renderInRouter(
@@ -296,7 +285,7 @@ describe("Accessibility — ProductForm", () => {
 
 /* ============================================================ */
 
-describe("Accessibility — EmptyState", () => {
+describe.sequential("Accessibility — EmptyState", () => {
 
   it("no debe tener violaciones axe en estado vacío básico", async () => {
     const { container } = renderInRouter(
@@ -339,7 +328,7 @@ describe("Accessibility — EmptyState", () => {
 
 /* ============================================================ */
 
-describe("Accessibility — ErrorPage", () => {
+describe.sequential("Accessibility — ErrorPage", () => {
 
   function renderErrorPage(error: unknown) {
     const router = createMemoryRouter(
