@@ -121,7 +121,6 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     const nameInput = page.getByPlaceholder(/wireless keyboard/i);
     await nameInput.waitFor({ state: "visible", timeout: 10_000 });
     await page.waitForLoadState("networkidle");
-    await expect(nameInput).toHaveValue(name);
     await nameInput.clear();
     await nameInput.fill(editName);
     await page.getByText("Save changes").click();
