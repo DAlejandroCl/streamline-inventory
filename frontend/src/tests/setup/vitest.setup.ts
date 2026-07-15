@@ -10,36 +10,55 @@ import "@testing-library/jest-dom";
 import { afterAll, afterEach, beforeAll, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { server } from "../msw/server";
-import axe from "axe-core";
+import { run as axeRun, type AxeResults } from "axe-core";
 
-/* ---- Accessibility matcher --------------------------------
-   vitest-axe@0.1.0 no es compatible con vitest v3 (Invalid Chai
-   property). Implementación propia con axe-core directamente.
+/* ---- Accessibility matcher (toHaveNoViolations) -----------
+   vitest-axe@0.1.0 no es compatible con vitest v3.
+   Implementación propia con axe-core directamente.
+
+   axe.run es un singleton global — solo puede correr una instancia
+   a la vez. El pool: 'forks' + singleFork: true en vitest.config.ts
+   garantiza un único proceso Node para todos los tests, eliminando
+   las colisiones entre workers paralelos.
    ----------------------------------------------------------- */
 expect.extend({
   async toHaveNoViolations(element: Element | Document | HTMLElement) {
-    // axe.run requiere HTMLElement, Document o un selector string válido.
-    // Si el argumento no es un nodo DOM válido, usar document.body como fallback.
+    // Normalizar el argumento: axe.run acepta HTMLElement o Document.
     const context =
       element instanceof Element || element instanceof Document
         ? element
         : document.body;
 
-    // Deshabilitar color-contrast: usa HTMLCanvasElement.getContext
-    // que jsdom no implementa, causando "Not implemented" en CI.
-    const { violations } = await axe.run(context, {
-      rules: { "color-contrast": { enabled: false } },
-    });
+    let results: AxeResults;
+    try {
+      results = await axeRun(context, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+    } catch (err) {
+      return {
+        pass:    false,
+        message: () => `axe.run failed: ${String(err)}`,
+      };
+    }
+
+    const { violations } = results;
+
     if (violations.length === 0) {
       return { pass: true, message: () => "No axe violations found" };
     }
+
     const details = violations
-      .map(v => `[${v.impact}] ${v.id}: ${v.description}\n  ` +
-        v.nodes.map(n => n.html).join("\n  "))
+      .map(
+        (v) =>
+          `[${v.impact}] ${v.id}: ${v.description}\n  ` +
+          v.nodes.map((n) => n.html).join("\n  "),
+      )
       .join("\n\n");
+
     return {
       pass:    false,
-      message: () => `Expected no axe violations but found ${violations.length}:\n\n${details}`,
+      message: () =>
+        `Expected no axe violations but found ${violations.length}:\n\n${details}`,
     };
   },
 });
@@ -57,23 +76,23 @@ Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
     matches: false,
-    media: query,
+    media:   query,
     onchange: null,
-    addListener: () => {},
+    addListener:    () => {},
     removeListener: () => {},
-    addEventListener: () => {},
+    addEventListener:    () => {},
     removeEventListener: () => {},
     dispatchEvent: () => false,
   }),
 });
 
 global.ResizeObserver = class ResizeObserver {
-  observe() {}
-  unobserve() {}
+  observe()    {}
+  unobserve()  {}
   disconnect() {}
 };
 
-/* MSW lifecycle */
+/* ---- MSW lifecycle --------------------------------------- */
 beforeAll(() => server.listen({ onUnhandledRequest: "warn" }));
 afterEach(() => {
   cleanup();
