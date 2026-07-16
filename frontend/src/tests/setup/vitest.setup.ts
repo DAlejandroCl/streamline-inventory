@@ -10,38 +10,27 @@ import "@testing-library/jest-dom";
 import { afterAll, afterEach, beforeAll, expect } from "vitest";
 import { cleanup } from "@testing-library/react";
 import { server } from "../msw/server";
-import { run as axeRun, type AxeResults } from "axe-core";
+import { run as axeRun } from "axe-core";
+import type { Result } from "axe-core";
 
 /* ---- Accessibility matcher (toHaveNoViolations) -----------
    vitest-axe@0.1.0 no es compatible con vitest v3.
    Implementación propia con axe-core directamente.
-
-   axe.run es un singleton global — solo puede correr una instancia
-   a la vez. El pool: 'forks' + singleFork: true en vitest.config.ts
-   garantiza un único proceso Node para todos los tests, eliminando
-   las colisiones entre workers paralelos.
+   pool: 'forks' + singleFork: true en vitest.config.ts garantiza
+   un único proceso Node, eliminando colisiones de axe.run singleton.
    ----------------------------------------------------------- */
 expect.extend({
   async toHaveNoViolations(element: Element | Document | HTMLElement) {
-    // Normalizar el argumento: axe.run acepta HTMLElement o Document.
     const context =
       element instanceof Element || element instanceof Document
         ? element
         : document.body;
 
-    let results: AxeResults;
-    try {
-      results = await axeRun(context, {
-        rules: { "color-contrast": { enabled: false } },
-      });
-    } catch (err) {
-      return {
-        pass:    false,
-        message: () => `axe.run failed: ${String(err)}`,
-      };
-    }
+    const results = await axeRun(context, {
+      rules: { "color-contrast": { enabled: false } },
+    });
 
-    const { violations } = results;
+    const violations: Result[] = results.violations;
 
     if (violations.length === 0) {
       return { pass: true, message: () => "No axe violations found" };
@@ -49,7 +38,7 @@ expect.extend({
 
     const details = violations
       .map(
-        (v) =>
+        (v: Result) =>
           `[${v.impact}] ${v.id}: ${v.description}\n  ` +
           v.nodes.map((n) => n.html).join("\n  "),
       )
@@ -75,14 +64,14 @@ declare module "vitest" {
 Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
-    matches: false,
-    media:   query,
+    matches:  false,
+    media:    query,
     onchange: null,
-    addListener:    () => {},
-    removeListener: () => {},
+    addListener:         () => {},
+    removeListener:      () => {},
     addEventListener:    () => {},
     removeEventListener: () => {},
-    dispatchEvent: () => false,
+    dispatchEvent:       () => false,
   }),
 });
 
