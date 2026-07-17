@@ -17,23 +17,20 @@ async function createProduct(
 ) {
   await page.goto("/app/products/new");
 
-  // Esperar que el form esté montado antes de interactuar
+  // Usar "attached" en lugar de "visible" — el input puede estar en el DOM
+  // con opacity:0 (animación de entrada con framer-motion) y aun así ser interactuable.
   const nameInput = page.getByPlaceholder(/wireless keyboard/i);
-  await nameInput.waitFor({ state: "visible", timeout: 10_000 });
+  await nameInput.waitFor({ state: "attached", timeout: 10_000 });
 
   // Guard: si authLoader redirigió a /login, re-autenticar
   if (page.url().includes("/login")) {
     await loginAsAdmin(page);
     await page.goto("/app/products/new");
     await page.getByPlaceholder(/wireless keyboard/i)
-      .waitFor({ state: "visible", timeout: 10_000 });
+      .waitFor({ state: "attached", timeout: 10_000 });
   }
 
-  // Esperar que los loaders hayan completado sus fetches antes de interactuar.
-  // networkidle puede resolver mientras React Router aún procesa internamente,
-  // causando que el Form submission sea cancelado por el router en estado loading.
   await page.waitForLoadState("networkidle");
-  // Pausa mínima para que React Router transite a estado idle tras networkidle.
   await page.waitForTimeout(300);
 
   await nameInput.fill(name);
@@ -84,13 +81,13 @@ test.describe("E2E — Inventory CRUD Flow", () => {
   test("validación Zod bloquea submit con name vacío", async ({ page }) => {
     await page.goto("/app/products/new");
     await page.getByPlaceholder(/wireless keyboard/i)
-      .waitFor({ state: "visible", timeout: 10_000 });
+      .waitFor({ state: "attached", timeout: 10_000 });
 
     if (page.url().includes("/login")) {
       await loginAsAdmin(page);
       await page.goto("/app/products/new");
       await page.getByPlaceholder(/wireless keyboard/i)
-        .waitFor({ state: "visible", timeout: 10_000 });
+        .waitFor({ state: "attached", timeout: 10_000 });
     }
 
     await page.waitForLoadState("networkidle");
@@ -119,7 +116,7 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await expect(page).toHaveURL(/\/edit/);
 
     const nameInput = page.getByPlaceholder(/wireless keyboard/i);
-    await nameInput.waitFor({ state: "visible", timeout: 10_000 });
+    await nameInput.waitFor({ state: "attached", timeout: 10_000 });
     await page.waitForLoadState("networkidle");
     await nameInput.clear();
     await nameInput.fill(editName);
@@ -145,7 +142,7 @@ test.describe("E2E — Inventory CRUD Flow", () => {
     await expect(page).toHaveURL(/\/edit/);
 
     await page.getByPlaceholder(/wireless keyboard/i)
-      .waitFor({ state: "visible", timeout: 10_000 });
+      .waitFor({ state: "attached", timeout: 10_000 });
     await page.waitForLoadState("networkidle");
     await page.getByRole("switch").click();
     await expect(page.getByText("Not available")).toBeVisible();
