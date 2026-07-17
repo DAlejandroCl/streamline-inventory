@@ -16,9 +16,14 @@ import type { Result } from "axe-core";
 /* ---- Accessibility matcher (toHaveNoViolations) -----------
    vitest-axe@0.1.0 no es compatible con vitest v3.
    Implementación propia con axe-core directamente.
-   pool: 'forks' + singleFork: true en vitest.config.ts garantiza
-   un único proceso Node, eliminando colisiones de axe.run singleton.
+
+   axe.run es un singleton global. Para evitar "Axe is already running"
+   cuando varios its corren en paralelo dentro del mismo describe.sequential,
+   serializamos las llamadas con una Promise queue a nivel de módulo.
+   fileParallelism: false en vitest.config.ts previene colisiones entre archivos.
    ----------------------------------------------------------- */
+let _axeQueue: Promise<void> = Promise.resolve();
+
 expect.extend({
   async toHaveNoViolations(element: Element | Document | HTMLElement) {
     const context =
@@ -26,11 +31,17 @@ expect.extend({
         ? element
         : document.body;
 
-    const results = await axeRun(context, {
-      rules: { "color-contrast": { enabled: false } },
+    let violations: Result[] = [];
+
+    // Encolar la llamada para garantizar que solo una axeRun corre a la vez.
+    _axeQueue = _axeQueue.then(async () => {
+      const results = await axeRun(context, {
+        rules: { "color-contrast": { enabled: false } },
+      });
+      violations = results.violations;
     });
 
-    const violations: Result[] = results.violations;
+    await _axeQueue;
 
     if (violations.length === 0) {
       return { pass: true, message: () => "No axe violations found" };
@@ -45,7 +56,7 @@ expect.extend({
       .join("\n\n");
 
     return {
-      pass:    false,
+      pass: false,
       message: () =>
         `Expected no axe violations but found ${violations.length}:\n\n${details}`,
     };
