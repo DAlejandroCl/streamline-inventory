@@ -37,14 +37,10 @@ export default defineConfig({
     ],
 
     /* axe-core es un singleton global — no puede correr en paralelo.
-       singleFork garantiza que todos los test files comparten el mismo
-       proceso Node, eliminando el "Axe is already running" entre workers. */
-    pool: 'forks',
-    poolOptions: {
-      forks: {
-        singleFork: true,
-      },
-    },
+       fileParallelism: false garantiza que los archivos de test corren
+       uno a la vez, eliminando "Axe is already running" entre workers.
+       Los describes usan .sequential para serializar también dentro del archivo. */
+    fileParallelism: false,
 
     coverage: {
       provider: 'v8',
