@@ -11,7 +11,9 @@ export const getCategories = async (
   _req: Request,
   res: Response
 ): Promise<void> => {
+  console.log("[getCategories] called");
   const categories = await CategoryService.getAllCategories();
+  console.log("[getCategories] returning", categories.length, "categories");
   res.json(categories);
 };
 
